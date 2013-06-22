@@ -8,5 +8,4 @@ It allows to use a proxy to manage 'zombies'.
 ----------
 
  + Web:  http://ufonet.sf.net
- + IRC:  irc.freenode.net - #ufonet
 ----------

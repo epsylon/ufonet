@@ -14,26 +14,30 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
                            description='\nUFONet - DDoS attacks via Web Abuse (XSS/CSRF) - 2013 - by psy',
                            prog='UFONet.py',
-                           version='\nUFONet v0.1\n')
+                           version='\nUFONet v0.2\n')
 
         group1 = optparse.OptionGroup(self, "Connections")
         group1.add_option("-v", "--verbose", action="store_true", dest="verbose", help="Active verbose on connections")
         group1.add_option("--proxy", action="store", dest="proxy", help="Use proxy server (tor: http://localhost:8118)")
         group1.add_option("--user-agent", action="store", dest="agent", help="Change your HTTP User-Agent header (default SPOOFED)")
-        group1.add_option("--referer", action="store", dest="referer", help="Use another HTTP Referer header (default NONE)")                         
-        #group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 30)")
-        #group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 1)")
+        group1.add_option("--referer", action="store", dest="referer", help="Use another HTTP Referer header (default SPOOFED)")                         
+        group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 30)")
+        group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 1)")
         #group1.add_option("--threads", action="store", dest="threads", type="int", help="Maximum number of concurrent HTTP requests (default 5)") 
-        #group1.add_option("--delay", action="store", dest="delay", type="int", help="Delay in seconds between each HTTP request (default 0)")
+        group1.add_option("--delay", action="store", dest="delay", type="int", help="Delay in seconds between each HTTP request (default 0)")
         self.add_option_group(group1)
 
         group2 = optparse.OptionGroup(self, "Botnet")
         group2.add_option("-t", action="store", dest="test", help="Test list of web 'zombie' servers (ex: -t zombies.txt)")
+        #group2.add_option("--tc", action="store", dest="testCSRF", help="Test only CSRF vulnerabilities on 'zombies'")
+        #group2.add_option("--tx", action="store", dest="testXSS", help="Test only XSS vulnerabilities on 'zombies'")
         self.add_option_group(group2)
 
         group3 = optparse.OptionGroup(self, "Attacks")
-        group3.add_option("-a", action="store", dest="target", help="Start a Web DDoS attack (ex: -u http(s)://target.com)")
+        group3.add_option("-a", action="store", dest="target", help="Start a Web DDoS attack (ex: -a http(s)://target.com)")
         group3.add_option("-r", action="store", dest="rounds", help="Set number of 'rounds' for the attack (default: 1)")
+        group3.add_option("-b", action="store", dest="place", help="Set a place to 'bit' on target (ex: -b /path/big.jpg)")
+        #group3.add_option("-s", action="store_true", dest="sniper", help="Set 'zombie snipers' Web DDoS attack")
         self.add_option_group(group3)
 
     def get_options(self, user_args=None):

