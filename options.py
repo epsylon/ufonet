@@ -4,7 +4,7 @@
 UFONet - DDoS attacks via Web Abuse (XSS/CSRF) - 2013 - by psy
 
 You should have received a copy of the GNU General Public License along
-with masxssive; if not, write to the Free Software Foundation, Inc., 51
+with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import optparse

