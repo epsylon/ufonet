@@ -1,8 +1,4 @@
 http://anonymouse.org/cgi-bin/anon-www.cgi/
-http://www.google.com/translate?u=
-http://translate.google.com/translate?u=
-http://66.196.80.202/babelfish/translate_url_content?lp=en_ru&trurl=
-http://keepvid.com/?url=
 http://validator.w3.org/feed/check.cgi?url=
 http://www.w3.org/2001/03/webdata/xsv?style=xsl&docAddrs=
 http://validator.w3.org/check?uri=
@@ -20,9 +16,5 @@ http://online.htmlvalidator.com/php/onlinevallite.php?url=
 http://feedvalidator.org/check.cgi?url=
 http://www.google.com/ig/adde?moduleurl=
 http://gmodules.com/ig/creator?url=
-http://www.cynthiasays.com/mynewtester/cynthia.exe?rptmode=-1&url1=
-http://www.watchmouse.com/en/checkit.php?c=jpcheckit&vurl=
 http://host-tracker.com/check_page/?furl=
-http://panel.stopthehacker.com/services/validate-payflow?email=1@1.com&callback=a&target=
-http://www.viewdns.info/ismysitedown/?domain=
 http://www.onlinewebcheck.com/check.php?url=
