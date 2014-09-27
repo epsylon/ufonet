@@ -14,7 +14,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
                            description='\nUFONet - DDoS attacks via Web Abuse - 2013/2014 - by psy',
                            prog='UFONet.py',
-                           version='\nUFONet v0.3 - Abduction\n')
+                           version='\nUFONet v0.3.1 - Abduction\n')
 
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--check-tor", action="store_true", dest="checktor", help="check to see if Tor is used properly")
@@ -27,7 +27,7 @@ class UFONetOptions(optparse.OptionParser):
         group1.add_option("--host", action="store", dest="host", help="Use another HTTP Host header (default NONE)")
         group1.add_option("--xforw", action="store_true", dest="xforw", help="Set your HTTP X-Forwarded-For with random IP values")
         group1.add_option("--xclient", action="store_true", dest="xclient", help="Set your HTTP X-Client-IP with random IP values")
-        group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 30)")
+        group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 10)")
         group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 1)")
         #group1.add_option("--threads", action="store", dest="threads", type="int", help="Maximum number of concurrent HTTP requests (default 5)") 
         group1.add_option("--delay", action="store", dest="delay", type="int", help="Delay in seconds between each HTTP request (default 0)")
@@ -64,4 +64,3 @@ class UFONetOptions(optparse.OptionParser):
             print '='*75, "\n"
             return False
         return options
-

