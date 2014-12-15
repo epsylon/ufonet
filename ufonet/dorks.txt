@@ -1,0 +1,4 @@
+proxy.php?url=
+check.cgi?url=
+checklink?uri=
+validator?uri=
