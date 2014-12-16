@@ -16,17 +16,18 @@ class Updater(object):
     Update UFONet automatically from a .git repository
     """     
     def __init__(self):
+        GIT_REPOSITORY = "https://github.com/epsylon/ufonet"
         rootDir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', ''))
         if not os.path.exists(os.path.join(rootDir, ".git")):
             print "Not any .git repository found!\n"
             print "="*30
             print "\nYou should checkout UFONet manually with:\n"
             print "$ git clone https://github.com/epsylon/ufonet\n"
-        else:   
-            checkout = execute("git checkout master", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
+        else:
+            checkout = execute("git checkout .", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
             if "fast-forwarded" in checkout:
-                reset = execute("git fetch --all", shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                pull = execute("git reset --hard origin/master", shell=True, stdout=PIPE, stderr=PIPE).communicate()
+                pull = execute("git pull %s HEAD" % GIT_REPOSITORY, shell=True, stdout=PIPE, stderr=PIPE).communicate()
                 print "Congratulations!! UFONet has been updated to latest version ;-)\n"
             else:
                 print "You are updated! ;-)\n"
+
