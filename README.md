@@ -3,7 +3,7 @@
   UFONet - is a tool designed to launch DDoS attacks against a target, 
   using 'Open Redirect' vectors on third party web applications, like botnet.
 
-  See this links for more info:
+  See these links for more info:
 
    - CWE-601:Open Redirect: 
      http://cwe.mitre.org/data/definitions/601.html
