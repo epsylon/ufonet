@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS attacks via Web Abuse - 2013/2014 - by psy (epsylon@riseup.net)
+UFONet - DDoS attacks via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -21,8 +21,8 @@ class Updater(object):
         if not os.path.exists(os.path.join(rootDir, ".git")):
             print "Not any .git repository found!\n"
             print "="*30
-            print "\nYou should checkout UFONet manually with:\n"
-            print "$ git clone https://github.com/epsylon/ufonet\n"
+            print "\nYou should clone UFONet manually with:\n"
+            print "$ git clone %s" % GIT_REPOSITORY
         else:
             checkout = execute("git checkout .", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
             if "fast-forwarded" in checkout:

@@ -111,6 +111,7 @@ If you reply 'Y', your file: zombies.txt will be updated.
 
      + with verbose:     ./ufonet -t zombies.txt -v
      + with proxy TOR:   ./ufonet -t zombies.txt --proxy="http://127.0.0.1:8118"
+     + with threads:     ./ufonet -t zombies.txt --threads 50
 
 ###############################
 # Inspecting a target
@@ -153,6 +154,7 @@ this will do the attack more effective.
      + with verbose:     ./ufonet -a http://target.com -r 10 -v
      + with proxy TOR:   ./ufonet -a http://target.com -r 10 --proxy="http://127.0.0.1:8118"
      + with a place:     ./ufonet -a http://target.com -r 10 -b "/images/big_size_image.jpg"
+     + with threads:     ./ufonet -t zombies.txt --threads 50
 
 ###############################
 # Updating
@@ -182,48 +184,40 @@ To launch it, use:
 This will open a tab on your default browser with all the options of the tool.
 
 ###############################
-# Changelog
+# Timelog
 ###############################
 
 --------------------------
-15.12.2014
-
-Fourth release: v.0.4b
+24.05.2015 : v.0.5b
 --------------------------
 
 --------------------------
-27.09.2014
-
-Third release: v.0.3.1b
+15.12.2014 : v.0.4b
 --------------------------
 
 --------------------------
-20.09.2014
-
-Third release: v.0.3b
+27.09.2014 : v.0.3.1b
 --------------------------
 
 --------------------------
-22.06.2013
-
-Second release: v.0.2b
+20.09.2014 : v.0.3b
 --------------------------
 
 --------------------------
-18.06.2013
+22.06.2013 : v.0.2b
+--------------------------
 
-First release: v.0.1b
+--------------------------
+18.06.2013 : v.0.1b
 --------------------------
 
 ###############################
 # Thanks to
 ###############################
 
-- Mandingo: mandingo@yoire.com
+- UFo & Mandingo & Ikujam
 ------------------------
-- My loves: UFo & luLzCat! ;-)
-------------------------
-- All squaters arround the w0rld!
+- People that doesn't say 'thanks'!
 
 ############
 

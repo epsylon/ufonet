@@ -7,11 +7,3 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-from core.main import UFONet
-
-if __name__ == "__main__":
-    app = UFONet()
-    options = app.create_options()
-    if options:
-        app.set_options(options)
-        app.run()

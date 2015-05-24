@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS attacks via Web Abuse - 2013/2014 - by psy (epsylon@riseup.net)
+UFONet - DDoS attacks via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -14,8 +14,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
                            description='\nUFONet - DDoS attacks via Web Abuse - by psy',
                            prog='UFONet.py',
-                           version='\nVersion: v0.4 - Infection!\n')
-
+                           version='\nVersion: v0.5 - Invasion!\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--check-tor", action="store_true", dest="checktor", help="check to see if Tor is used properly")
         #self.add_option("--force-ssl", action="store_true", dest="forcessl", help="Force usage of SSL/HTTPS requests")
@@ -32,7 +31,7 @@ class UFONetOptions(optparse.OptionParser):
         group1.add_option("--xclient", action="store_true", dest="xclient", help="Set your HTTP X-Client-IP with random IP values")
         group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 10)")
         group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 1)")
-        #group1.add_option("--threads", action="store", dest="threads", type="int", help="Maximum number of concurrent HTTP requests (default 5)") 
+        group1.add_option("--threads", action="store", dest="threads", type="int", help="Maximum number of concurrent HTTP requests (default 5)") 
         group1.add_option("--delay", action="store", dest="delay", type="int", help="Delay in seconds between each HTTP request (default 0)")
         self.add_option_group(group1)
 
@@ -75,3 +74,26 @@ class UFONetOptions(optparse.OptionParser):
             print '='*75, "\n"
             return False
         return options
+
+    def print_options(self):
+        mode=None
+        if  options.test and mode != None:
+            mode="test"
+        if options.target and mode != None:
+            mode="target"
+        if options.checktor and mode != None:
+            mode="checktor"
+        if options.search and mode != None:
+            mode="search"
+        if options.dorks and mode != None:
+            mode="dorks"
+        if options.inspect and mode != None:
+            mode="inspect"
+        if options.update and mode != None:
+            mode="update"
+        if options.download and mode != None:
+            mode="download"
+        if options.upload and mode != None:
+            mode="upload"
+        if options.web and mode != None:
+            mode="web"
