@@ -1,0 +1,125 @@
+body{
+	font-family: 'SourceSansPro-Regular', Arial, serif;
+	font-size: 12px;
+}
+.header{
+	width: inherit;
+	height: 20px;
+	text-align: center;
+	color:red;
+	font-size: 14px;
+}
+
+#url{
+	top:50px;
+	font-size: 30px;
+	color:#7777;
+	font-family: 'SourceSansPro-Bold';
+	text-shadow: 0px 2px 3px rgba(150, 150, 150, 1)
+}
+
+#map {
+ z-index:1;
+ top: 0px;
+ left: 0px;
+ position:absolute; 
+}
+
+.bar{
+	z-index:2;
+	top:0px;
+	left:0px;
+	width:20px;
+	height:100%;
+	position:absolute;
+        background-color:rgba(255, 255, 255, 0.8);
+	-webkit-box-shadow:  12px 0px 8px -4px rgba(0, 0, 0, 0.5);
+    box-shadow:  12px 0px 8px -4px rgba(0, 0, 0, 0.5);
+    overflow: auto;
+}
+
+#button{
+	z-index:4;
+	float:right;
+	width: 10px;
+	height: 90%;
+	padding: 5px;
+	font-size: 20px;
+
+}
+
+.info{
+	z-index: 3;
+	width:250;
+	position: absolute;
+	top: 0px;
+	z-index: 4;
+	color:black;
+	padding: 15px;
+	float: left;
+	overflow: auto;
+	
+}
+.test{
+	background: repeat;
+}
+
+.divider{
+	font-size: 14;
+	text-align: center;
+}
+#footer{
+	bottom:0;
+	overflow: auto;
+}
+.info a {
+	color:#6cb9f7;
+}
+.info img{
+	top :0px;
+}
+.info p {
+	overflow: auto;
+	padding-left: 10px;
+}
+.info #info-text{
+	text-align: justify;
+	height:inherit;
+	overflow: auto;
+
+}
+.toggle{
+	text-align: center;
+	font-weight: 700;
+	cursor: pointer;
+	font-size: 14;
+}
+
+#metadata{
+	visibility: hidden;
+}
+
+.bc-custom-control {
+    background-color:rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 7px rgba(0,0,0,0.65);
+    -webkit-border-radius: 4px;
+            border-radius: 4px;
+    font-color: black;
+    color: black;
+    border-radius: 4px;
+    margin: 10px;
+    padding: 10px;
+}
+
+.leaflet-container a{
+    font-weight:700;
+}
+
+#error{
+    text-align: center;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14;
+    color:red;
+    margin:42px; 
+}

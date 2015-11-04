@@ -13,23 +13,25 @@
 
 ----------
 
- + Web:  http://ufonet.sf.net
+ + Web:  http://ufonet.03c8.net
 
 ----------
 
     Installing:
 
-  UFONet runs on many platforms.  It requires Python (2.x.y) and the following library:
+  UFONet runs on many platforms.  It requires Python (2.x.y) and the following libraries:
 
        python-pycurl - Python bindings to libcurl
+       python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
 
   On Debian-based systems (ex: Ubuntu), run: 
 
-       sudo apt-get install python-pycurl
+       sudo apt-get install python-pycurl python-geoip
 
   Source libs:
 
        * Python: https://www.python.org/downloads/
        * PyCurl: http://pycurl.sourceforge.net/
+       * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
 
 ----------

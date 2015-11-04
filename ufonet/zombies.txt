@@ -1,1 +1,6 @@
+http://validator.w3.org/check?uri=
 http://validator.w3.org/checklink?uri=
+http://validator.w3.org/unicorn/check?ucn_task=conformance&ucn_uri=
+http://validator.w3.org/nu/?doc=
+http://validator.w3.org/mobile/check?docAddr=
+http://validator.w3.org/p3p/20020128/p3p.pl?uri=

