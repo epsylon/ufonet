@@ -1584,7 +1584,7 @@ class UFONet(object):
                     return #sys.exit(2)
                 else:
                     req_reply = ''
-            regex = '<h3 class="title"><a class=" ac-algo ac-21th" href="(.+?)">' # regex magics
+            regex = '<h3 class="title"><a class=" ac-algo ac-21th lh-15" href="(.+?)">' # regex magics 20/02/2016
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
 
@@ -1661,6 +1661,8 @@ class UFONet(object):
                 break
             if options.engine == "bing":
                 url = url.rsplit('" h=',1)[0]
+            if options.engine == "yahoo":
+                url = url.rsplit('" target=',1)[0]
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
