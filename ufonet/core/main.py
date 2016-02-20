@@ -1659,6 +1659,8 @@ class UFONet(object):
         for url in url_links: # general parse on urls
             if int(num) < int(total_results):
                 break
+            if options.engine == "bing":
+                url = url.rsplit('" h=',1)[0]
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
