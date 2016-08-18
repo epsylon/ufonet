@@ -1,5 +1,5 @@
 /*
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -393,7 +393,7 @@ function initMap (targetdoll=false) {
 	doll=targetdoll
     }
     index = 0
-    osm_sat = L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png')
+    //osm_sat = L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png')
     streets = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
     dark = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.dark/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
 
@@ -415,7 +415,7 @@ function initMap (targetdoll=false) {
     var baseMaps = {
 	"Light": streets,
         "Dark": dark,
-	"Sats": osm_sat,
+	//"Sats": osm_sat, // goo.gl/xBOxXt
     }
     
     //  initializing controls:

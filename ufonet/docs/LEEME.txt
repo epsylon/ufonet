@@ -75,17 +75,14 @@ O utilizando una lista de "dorks" que tengas en un fichero:
 
        ./ufonet --sd 'dorks.txt'
 
-Por defecto, UFONet utiliza un motor de búsqueda que se llama 'duck'. Pero puedes elegir uno diferente:
+Por defecto, UFONet utiliza un motor de búsqueda que se llama 'bing'. Pero puedes elegir uno diferente:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - duck [07/10/2015: OK!]
-        - google [07/10/2015: OK!]
-        - bing [07/10/2015: OK!]
-        - yahoo [07/10/2015: OK!]
-        - yandex [07/10/2015: OK!]
+        - bing [17/08/2016: OK!]
+        - yahoo [17/08/2016: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -93,7 +90,7 @@ También puedes buscar masívamente utilizando todos los motores de búsqueda so
 
 Para controlar cuantos 'zombies' recibir como resultado puedes utilizar:
 
-       ./ufonet --sd 'dorks.txt' --sa --sn 20
+       ./ufonet --sd 'botnet/dorks.txt' --sa --sn 20
 
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
@@ -111,7 +108,7 @@ Si respondes 'Y', tus nuevos 'zombies' se sumarán al fichero: zombies.txt
   Ejemplos:
 
      + con detalle:       ./ufonet -s 'proxy.php?url=' -v
-     + con hilos:         ./ufonet --sd 'dorks.txt' --sa --threads 100
+     + con hilos:         ./ufonet --sd 'botnet/dorks.txt' --sa --threads 100
 
 ###############################
 # Probando la botnet
@@ -124,7 +121,7 @@ Las urls de los 'zombies' deberían ser algo así:
 
 Después de eso, lanza el test:
 
-       ./ufonet -t zombies.txt
+       ./ufonet -t "botnet/zombies.txt"
 
 También puedes ordenar a los 'zombies' que te ataquen a ti mismo y ver como responden usando:
 
@@ -140,9 +137,9 @@ Si respondes 'Y', tu fichero: zombies.txt será actualizado.
   -------------
   Examples:
 
-     + con detalle:     ./ufonet -t zombies.txt -v
-     + con proxy TOR:   ./ufonet -t zombies.txt --proxy="http://127.0.0.1:8118"
-     + con hilos:       ./ufonet -t zombies.txt --threads 50
+     + con detalle:     ./ufonet -t 'botnet/zombies.txt' -v
+     + con proxy TOR:   ./ufonet -t 'botnet/zombies.txt' --proxy="http://127.0.0.1:8118"
+     + con hilos:       ./ufonet -t 'botnet/zombies.txt' --threads 50
 
 ###############################
 # Inspeccionando un objetivo
@@ -214,7 +211,17 @@ ataque más efectivo.
      + con hilos:       ./ufonet -a http://target.com -r 10 --threads 500
 
 ###############################
-# Updating
+# Ataques Especiales
+###############################
+
+UFONet utiliza diferentes maneras para explotar las vulnerabilides 'Open Redirect'. Por ejemplo:
+
+Puedes usar UFONet para estresar la base de datos de tu objetivo mediante la petición de cadenas aleatorias válidas como si fueran búsquedas:
+
+       ./ufonet -a http://target.com --db "search.php?q="
+
+###############################
+# Actualizando
 ###############################
 
 UFONet implementa una opción para actualizarse automáticamente a la última versión estable.
@@ -238,12 +245,16 @@ Para lanzarla usa:
 
       ./ufonet --gui
 
-Ésto abrirá una pestaña (o una ventana nueva) en tu navegador por defecto, con todas las opciones de la herramienta más 
-algunas "extra".
+Ésto abrirá una pestaña (o una ventana nueva) en tu navegador por defecto, con todas las opciones de la herramienta 
+más algunas "extra". ;-)
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+17.08.2016 : v.0.7b
+--------------------------
 
 --------------------------
 05.11.2015 : v.0.6b
@@ -278,6 +289,7 @@ algunas "extra".
 ###############################
 
 - UFo & Mandingo & Ikujam
+- Phineas Fisher ;-)
 ------------------------
 
 ############

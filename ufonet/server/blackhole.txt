@@ -1,6 +1,6 @@
-===============================================================
-How to set up a 'blackhole' - eg a Community 'zombies' server
-===============================================================
+=================================================================
+How to set up a 'blackhole' - eg a P2P/Community 'zombies' server
+=================================================================
 
 * Setup web server with a folder "ufonet", this folder should be:
   - Located in /var/www/ufonet (default debian/ubuntu install)
@@ -16,3 +16,5 @@ How to set up a 'blackhole' - eg a Community 'zombies' server
 ===============================================================
 
 WARNING : this *ADVANCED* function is *NOT* secure, proceed if you really want to.
+
+===============================================================

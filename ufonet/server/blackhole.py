@@ -1,13 +1,14 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket
+import re
 import time
 import string
 import sys
@@ -32,7 +33,7 @@ class Computer(Thread):
         try:
             for f in os.listdir(self.tmp_dir + "blackhole"):
                 if f[-3:] == '.gz':
-                    print "[Computer] found meat in "+str(f)
+                    print "[Computer] Found meat in "+str(f)
                     self.meats.append(f)
         except:
             print "[Computer] No meat in the fridge "+self.tmp_dir + "blackhole"
@@ -40,44 +41,122 @@ class Computer(Thread):
         return self.meats != []
 
     def process( self ):
-        f_out = open(self.tmp_dir+'meat.txt', 'wb')
         zombies_incoming=[]
+        aliens_incoming=[]
+        droids_incoming=[]
+        ucavs_incoming=[]
         for meat in self.meats:
             f_in = gzip.open(self.tmp_dir+"blackhole/"+meat)
-            for line in f_in.readlines() : 
-                zombies_incoming.append(line)
-                f_out.write(line.strip()+os.linesep)
+            if 'community_zombies.txt.gz' in f_in: # zombies found
+                f_out = open(self.tmp_dir+'meat.txt', 'wb')
+                for line in f_in.readlines(): 
+                    zombies_incoming.append(line)
+                    f_out.write(line.strip()+os.linesep)
+                f_out.close()
+            elif 'community_aliens.txt.gz' in f_in: # aliens found
+                f_out = open(self.tmp_dir+'larva.txt', 'wb')
+                for line in f_in.readlines(): 
+                    aliens_incoming.append(line)
+                    f_out.write(line.strip()+os.linesep)
+                f_out.close()
+            elif 'community_droids.txt.gz' in f_in: # droids found
+                f_out = open(self.tmp_dir+'chip.txt', 'wb')
+                for line in f_in.readlines(): 
+                    droids_incoming.append(line)
+                    f_out.write(line.strip()+os.linesep)
+                f_out.close()
+            elif 'community_ucavs.txt.gz' in f_in: # ucavs found
+                f_out = open(self.tmp_dir+'arduino.txt', 'wb')
+                for line in f_in.readlines(): 
+                    ucavs_incoming.append(line)
+                    f_out.write(line.strip()+os.linesep)
+                f_out.close()
             f_in.close()
             os.remove(self.tmp_dir+"blackhole/"+meat)
-        f_out.close()
         import subprocess
         f_tmp = open(self.tmp_dir + 'meat.tmp','wb')
-        subprocess.call('../ufonet --force-yes -t "'+self.tmp_dir+'meat.txt"', shell=True, stdout=f_tmp)
+        subprocess.call('../ufonet --force-yes -t "'+self.tmp_dir+'meat.txt"', shell=True, stdout=f_tmp) # testing zombies (GET)
         f_tmp.close()
         f_tmp = open(self.tmp_dir + 'meat.tmp')
         testoutput=f_tmp.read()
         f_tmp.close()
         if "Not any zombie active" in testoutput:
-            print "[Computer] no valid zombies !"
-            return
-        f_tested = open(self.tmp_dir+'meat.txt')
-        zombies_community = f_tested.readlines()
-        f_tested.close()
-        o_in = gzip.open(self.target_dir+'abductions.txt.gz', 'rb')
-        zombies_army = o_in.readlines()
-        initial = len(zombies_army)
-        o_in.close()
-        for zombie in zombies_community:
-            if zombie.strip() not in zombies_army:
-                zombies_army.append(zombie)
-            else:
-                pass
-        fc = gzip.open(self.tmp_dir+'newzombies.txt.gz', 'wb')
-        for zombie in zombies_army:
-            fc.write(zombie.strip()+os.linesep)
-        fc.close()
-        shutil.move(self.tmp_dir+'newzombies.txt.gz', self.target_dir+'abductions.txt.gz')
-        print "[Computer] Zombies tested : " +str(len(zombies_community)) + " / initial : " +str(initial) + " / final : " + str(len(zombies_army))
+            if not aliens_incoming and not droids_incoming and not ucavs_incoming: # not any valid zombie (GET or POST)
+                print "[Computer] no valid zombies !"
+                return
+        else:
+            f_tested = open(self.tmp_dir+'meat.txt')
+            zombies_community = f_tested.readlines()
+            f_tested.close()
+            o_in = gzip.open(self.target_dir+'abductions.txt.gz', 'rb')
+            zombies_army = o_in.readlines()
+            initial = len(zombies_army)
+            o_in.close()
+            for zombie in zombies_community:
+                if zombie.strip() not in zombies_army:
+                    zombies_army.append(zombie)
+                else:
+                    pass
+            fc = gzip.open(self.tmp_dir+'newzombies.txt.gz', 'wb')
+            for zombie in zombies_army:
+                fc.write(zombie.strip()+os.linesep)
+            fc.close()
+            shutil.move(self.tmp_dir+'newzombies.txt.gz', self.target_dir+'abductions.txt.gz')
+            print "[Computer] Zombies tested : " +str(len(zombies_community)) + " / initial : " +str(initial) + " / final : " + str(len(zombies_army))
+            f_tested = open(self.tmp_dir+'larva.txt')
+            aliens_community = f_tested.readlines()
+            f_tested.close()
+            o_in = gzip.open(self.target_dir+'troops.txt.gz', 'rb')
+            aliens_army = o_in.readlines()
+            initial = len(aliens_army)
+            o_in.close()
+            for alien in aliens_community:
+                if alien.strip() not in aliens_army:
+                    aliens_army.append(alien)
+                else:
+                    pass
+            fc = gzip.open(self.tmp_dir+'newaliens.txt.gz', 'wb')
+            for alien in aliens_army:
+                fc.write(alien.strip()+os.linesep)
+            fc.close()
+            shutil.move(self.tmp_dir+'newaliens.txt.gz', self.target_dir+'troops.txt.gz')
+            print "[Computer] Aliens tested : " +str(len(aliens_community)) + " / initial : " +str(initial) + " / final : " + str(len(aliens_army))
+            f_tested = open(self.tmp_dir+'chip.txt')
+            droids_community = f_tested.readlines()
+            f_tested.close()
+            o_in = gzip.open(self.target_dir+'robots.txt.gz', 'rb')
+            droids_army = o_in.readlines()
+            initial = len(droids_army)
+            o_in.close()
+            for droid in droids_community:
+                if droid.strip() not in droids_army:
+                    droids_army.append(droid)
+                else:
+                    pass
+            fc = gzip.open(self.tmp_dir+'newdroids.txt.gz', 'wb')
+            for droid in droids_army:
+                fc.write(droid.strip()+os.linesep)
+            fc.close()
+            shutil.move(self.tmp_dir+'newdroids.txt.gz', self.target_dir+'robots.txt.gz')
+            print "[Computer] Droids tested : " +str(len(droids_community)) + " / initial : " +str(initial) + " / final : " + str(len(droids_army))
+            f_tested = open(self.tmp_dir+'arduino.txt')
+            ucavs_community = f_tested.readlines()
+            f_tested.close()
+            o_in = gzip.open(self.target_dir+'drones.txt.gz', 'rb')
+            ucavs_army = o_in.readlines()
+            initial = len(ucavs_army)
+            o_in.close()
+            for ucav in ucavs_community:
+                if ucav.strip() not in ucavs_army:
+                    ucavs_army.append(ucav)
+                else:
+                    pass
+            fc = gzip.open(self.tmp_dir+'newucavs.txt.gz', 'wb')
+            for ucav in ucavs_army:
+                fc.write(ucav.strip()+os.linesep)
+            fc.close()
+            shutil.move(self.tmp_dir+'newucavs.txt.gz', self.target_dir+'drones.txt.gz')
+            print "[Computer] Drones tested : " +str(len(ucavs_community)) + " / initial : " +str(initial) + " / final : " + str(len(ucavs_army))
 
     def run(self):
         self.power_on = True
@@ -138,13 +217,46 @@ class Eater(Thread):
 
     def run(self):
         print '[Eater] Yum... got meat'
-        f = open(self.parent.tmp_dir+"blackhole/"+str(time.time())+".gz","wb")
+        zombie_meat = "community_zombies.txt.gz"
+        alien_meat = "community_aliens.txt.gz"
+        droid_meat = "community_droids.txt.gz"
+        ucav_meat = "community_ucavs.txt.gz"
         while 1:
             data = self.client.recv(1024)
-            if not data: break
+            if not data:
+                break
+        if zombie_meat in data: # get zombies
+            r = re.compile(".*("+zombie_meat+").*") # regex magics
+            meat_type = r.search(data)
+            m = meat_type.group(1)
+            f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
             f.write(data)
-        f.close()
-        print '[Eater] Got "%s Closing media transfer"' % f.name
+            print '\n[Eater] Got "%s Closing media transfer"' % f.name
+            f.close()
+        elif alien_meat in data: # get aliens
+            r = re.compile(".*("+alien_meat+").*") # regex magics
+            meat_type = r.search(data)
+            m = meat_type.group(1)
+            f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
+            f.write(data)
+            print '\n[Eater] Got "%s Closing media transfer"' % f.name
+            f.close()
+        elif droid_meat in data: # get zombies
+            r = re.compile(".*("+droid_meat+").*") # regex magics
+            meat_type = r.search(data)
+            m = meat_type.group(1)
+            f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
+            f.write(data)
+            print '\n[Eater] Got "%s Closing media transfer"' % f.name
+            f.close()
+        elif ucav_meat in data: # get ucavs
+            r = re.compile(".*("+ucav_meat+").*") # regex magics
+            meat_type = r.search(data)
+            m = meat_type.group(1)
+            f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
+            f.write(data)
+            print '\n[Eater] Got "%s Closing media transfer"' % f.name
+            f.close()
         self.client.close()
         self.parent.eater_full(self)
 
@@ -201,14 +313,60 @@ class BlackHole ( Thread ):
 
     def dream(self):
         if not os.path.exists(self.target_dir+"abductions.txt.gz"):
+            abductions_fail = 0
             try:
                 fc = gzip.open(self.target_dir+'abductions.txt.gz', 'wb')
                 fc.close()
             except:
-                print "[Error] unable to create empty abductions file in "+self.target_dir
-                sys.exit(2)
+                print "[Error] not abductions.txt.gz file in "+self.target_dir
+                abductions_fail = abductions_fail + 1
+        else:
+            abductions_fail = 0
+        if not os.path.exists(self.target_dir+"troops.txt.gz"):
+            troops_fail = 0
+            try:
+                fc = gzip.open(self.target_dir+'troops.txt.gz', 'wb')
+                fc.close()
+            except:
+                print "[Error] not troops.txt.gz file in "+self.target_dir
+                troops_fail = troops_fail + 1
+        else:
+            troops_fail = 0
+        if not os.path.exists(self.target_dir+"robots.txt.gz"):
+            robots_fail = 0
+            try:
+                fc = gzip.open(self.target_dir+'robots.txt.gz', 'wb')
+                fc.close()
+            except:
+                print "[Error] not robots.txt.gz file in "+self.target_dir
+                robots_fail = robots_fail + 1
+        else:
+            robots_fail = 0
+        if not os.path.exists(self.target_dir+"drones.txt.gz"):
+            drones_fail = 0
+            try:
+                fc = gzip.open(self.target_dir+'drones.txt.gz', 'wb')
+                fc.close()
+            except:
+                print "[Error] not drones.txt.gz file in "+self.target_dir
+                drones_fail = drones_fail + 1
+        else:
+            drones_fail = 0
         if not os.access(self.target_dir+"abductions.txt.gz",os.W_OK):
-            print "[Error] write acces denied to abductions file in "+self.target_dir
+            print "[Error] write access denied for abductions file in "+self.target_dir
+            abductions_fail = abductions_fail + 1
+        if not os.access(self.target_dir+"troops.txt.gz",os.W_OK):
+            print "[Error] write access denied for troops file in "+self.target_dir
+            troops_fail = troops_fail + 1
+        if not os.access(self.target_dir+"robots.txt.gz",os.W_OK):
+            print "[Error] write access denied for robots file in "+self.target_dir
+            robots_fail = robots_fail + 1
+        if not os.access(self.target_dir+"drones.txt.gz",os.W_OK):
+            print "[Error] write access denied for drones file in "+self.target_dir
+            drones_fail = drones_fail + 1
+        if abductions_fail > 0 and troops_fail > 0 and robots_fail > 0 and drones_fail > 0:
+            print "[Error] cannot found any zombies container. Aborting..."
+            print "[Info] suspend blackhole with: Ctrl+z"
             sys.exit(2)
         if self.consume():
             os.mkdir(self.tmp_dir + "blackhole")
