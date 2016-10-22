@@ -1,4 +1,4 @@
-  ![Alt_text](https://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet Botnet Attacking Map")
+  ![Alt_text](http://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet Botnet Attacking Map")
 
 =================================================================== 
 
@@ -13,7 +13,7 @@
    - OWASP:URL Redirector Abuse: 
      https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
 
-  ![Alt text](https://ufonet.03c8.net/ufonet/ufonet-schema.png "UFONet Schema")
+  ![Alt text](http://ufonet.03c8.net/ufonet/ufonet-schema.png "UFONet Schema")
 
 ----------
 
