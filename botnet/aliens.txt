@@ -1,1 +1,1 @@
-https://gtmetrix.com/analyze.html;$POST;url
+http://nibbler.silktide.com/en_US/report/submit;$POST;url

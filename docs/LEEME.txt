@@ -22,6 +22,12 @@ Website: http://ufonet.03c8.net
 IRC: irc.freenode.net - #ufonet
 
 ###############################
+# FAQ/Preguntas frecuentes
+###############################
+
+http://ufonet.03c8.net/FAQ.html
+
+###############################
 # Introducción
 ###############################
 
@@ -40,14 +46,18 @@ En los siguientes enlaces tienes más información:
 # Instalando
 ###############################
 
-  UFONet funciona en muchas plataformas. Requiere Python (2.x.y) y las siguientes librerías:
+  UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
 
        python-pycurl - Python bindings to libcurl
        python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
 
-  En sistemas basados en Debian (ej: Ubuntu), lanzar: 
+  En sistemas basados en Debian, lanzar: 
 
        sudo apt-get install python-pycurl python-geoip
+
+  En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, etc... también lanzar:
+
+       pip install geoip 
 
   Paquetes fuente de las librerías:
 
@@ -251,6 +261,10 @@ más algunas "extra". ;-)
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+21.10.2016 : v.0.8b
+--------------------------
 
 --------------------------
 17.08.2016 : v.0.7b

@@ -16,7 +16,7 @@ import base64, traceback
 try:
     import pygeoip
 except:
-    print "\nError importing: pygeoip lib. \n\n On Debian based systems:\n\n $ sudo apt-get install python-geoip\n"
+    print "\nError importing: pygeoip lib. \n\n On Debian based systems:\n\n $ 'sudo apt-get install python-geoip' or 'pip install geoip')\n"
     sys.exit(2)
 
 class AjaxMap(object):
@@ -25,6 +25,17 @@ class AjaxMap(object):
         self._geoasn=None
         self._geoipstatus='nomap'
         self._err=''
+        ufonet = UFONet()
+        ufonet.create_options()
+        self.zombies = ufonet.extract_zombies()
+        aliens_army = ufonet.extract_aliens()
+        droids_army = ufonet.extract_droids()
+        ucavs_army = ufonet.extract_ucavs()
+        rpcs_army = ufonet.extract_rpcs()
+        self.zombies.extend(aliens_army)
+        self.zombies.extend(droids_army)
+        self.zombies.extend(ucavs_army)
+        self.zombies.extend(rpcs_army)
 
     def get_err(self):
         return self._err
@@ -52,16 +63,16 @@ class AjaxMap(object):
 
     def retrieve(self,url,name):
 	try:
-	        handle = urllib2.urlopen(url)
-        	CHUNK = 16384
-	        with open(name,'wb') as fp:
-	            while True:
-	                chunk = handle.read(CHUNK)
-	                if not chunk:
-	                    break
-	                fp.write(chunk)
+	    handle = urllib2.urlopen(url)
+            CHUNK = 16384
+	    with open(name,'wb') as fp:
+	        while True:
+	            chunk = handle.read(CHUNK)
+	            if not chunk:
+	                break
+	            fp.write(chunk)
 	except:
-		traceback.print_exc()
+	    traceback.print_exc()
 
     def download_maps(self):
         import subprocess, shlex
@@ -91,7 +102,6 @@ class AjaxMap(object):
                 return False #sys.exit(2)
         subprocess.call(shlex.split('tar zxfv maps.tar.gz'))
         print "\n[Info] GeoIP maps and databases: ready!\n"
-
         # set pygeoip data sources
         self._geoip = pygeoip.GeoIP('maps/GeoLiteCity.dat')
         self._geoasn = pygeoip.GeoIP('maps/GeoIPASNum.dat')
@@ -106,16 +116,16 @@ class AjaxMap(object):
         if self.get_status() != 'ok':
             if self._geoipstatus =='downloading':
                 print "\n[Info] GeoIP maps and databases: downloading\n"
-                self._err= "ufomsg('downloading maps...')"
+	        self._err= "ufomsg('Downloading maps...')"
             elif not os.path.exists('maps/GeoIPASNum.dat') or not os.path.exists('maps/GeoLiteCity.dat'):
                 print "\n[Info] GeoIP maps and databases: download starting!\n"
-                self._err= "ufomsg('map download starting')\n$('#ufomsg').load('/js/ajax.js?fetchgeoip=')"
+                self._err= "ufomsg('[Info] Map download starting')\n$('#ufomsg').load('/js/ajax.js?fetchgeoip=')"
             else:
                 print "\n[Info] GeoIP maps and databases: unknown error\n"
-                self._err= "ufomsg('maps: unknown error...')"
+                self._err= "ufomsg('<font color='red'>[Info]</font> Maps: unknown error...')"
             return None
         if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', zombie) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', zombie) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', zombie) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', zombie) or re.match('localhost', zombie):
-            self._err= "ufomsg('maps: invalid ip data...')"
+            self._err= "ufomsg('<font color='red'>[Info]</font> Maps: invalid ip data...')"
             return None
         # create geoip data skeleton
         geo_zombie={}
@@ -134,14 +144,14 @@ class AjaxMap(object):
         try:
             ip = socket.gethostbyname(url.netloc)
         except:
-            self._err= "ufomsg('geoip: hostbyname failed for "+str(url.netloc)+"...')"
+            self._err= "ufomsg('<font color='yellow'>[Info]</font> GeoIP: hostbyname failed for "+str(url.netloc)+"...')"
             return None
         if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
             geo_zombie['ip'] = ip
             try:
                 record = self._geoip.record_by_addr(ip)
             except:
-                self._err= "ufomsg('geoip: lookup failed for "+ip+", page reload required...')"
+                self._err= "ufomsg('<font color='yellow'>[Info]</font> GeoIP: lookup failed for "+ip+", page reload required...')"
                 return None
             try:
                 asn = self._geoasn.org_by_addr(ip)
@@ -169,77 +179,72 @@ class AjaxMap(object):
                 pass
         return geo_zombie
 
-    # generates javascipt for adding a new zombie with geoip data
+    # generates javascript for adding a new zombie with geoip data
     def get_js(self,z):
         ret = ""
         gz = self.geo_ip(z)
         if gz is not None and gz['latitude']!= '-':
             ret = "Zombies.add('"+z+"',Array(new L.LatLng("+str(gz['latitude'])+","+str(gz['longitude'])+"),'"+gz['city']+"','"+gz['country']+"','"+gz['country_code']+"','"+gz['asn']+"','"+gz['ip']+"','"+gz['host_name']+"'))\n"
         else:
-            print 'geozombie dead : ',z
+            #print 'geozombie dead : ',z
             ret += "dead_zombies.push('"+z+"')\n"
         ret += "last_zombie = '"+z+"'\n"
         return ret
 
-    # fetches next zombie from list
+    # fetches next zombie from list (using all types of zombies)
     def get_next_zombie(self,name):
-        ufonet = UFONet()
-        ufonet.create_options()
-        zombies = ufonet.extract_zombies()
-        if name in zombies : 
-            for z in zombies :
+        if name in self.zombies:
+            for z in self.zombies:
                 if name == None:
                     return z
-                if z == name :
+                if z == name:
                     name = None
             return None
         else:
-            return zombies[0]
+            return self.zombies[0]
 
     # ajax controller
     def ajax(self,pGet={}):
-        if 'fetchgeoip' in  pGet.keys():
+        if 'fetchgeoip' in pGet.keys():
             if self.get_status() == "nomap":
                 self.download_maps()
-                return "geoip data download done<br/>"
-        if 'stats' in  pGet.keys():
+                return "[Info] Geoip data download done!<br/>"
+        if 'stats' in pGet.keys():
             stat='<script>$(".ufo_stat_div").show()</script>'
             if os.path.exists('/tmp/ufonet.html'):
                 for x in open(r'/tmp/ufonet.html').readlines():
                     stat = stat + x
             else:
-                stat="<i>Waiting for statistics generation...</i>"
+                stat="<i>[Info] Waiting for statistics generation...</i>"
             return stat+"</div>"
         if self.get_status() != "ok":
             dljs=""
             if self.get_status() == "nomap":
                 dljs+="$('#ufomsg').load('/js/ajax.js?fetchgeoip=')\n"
-            if 'doll' in  pGet.keys():
+            if 'doll' in pGet.keys():
                 dljs+="$('#ufomsg').load('/js/ajax.js?fetchdoll="+pGet['doll']+"')\n"
                 dljs+="doll=new Doll('"+pGet["doll"]+"')\n"
-            return "GeoIP data download in progress...<br><i>see console for errors</i>+<script>"+dljs+"</script>"
-
-        if 'zombie' in  pGet.keys():
+            return "[Info] GeoIP data download in progress...<br><i>see console for errors</i>+<script>"+dljs+"</script>"
+        if 'zombie' in pGet.keys():
             zn=base64.b64decode(pGet['zombie'])
             nzn=self.get_next_zombie(zn)
             if nzn is not None:
                 zombie=self.get_js(nzn)
                 return """ <script>
                 """+zombie+"""
-                ufomsg('Adding zombie """+nzn+"""...')
+                ufomsg('[Info] Adding zombie: """+nzn+"""...')
                 </script>"""
             else:
-                return "<script>zdone=true\nufomsg('all zombies ready !')\n </script>\n"
-        if 'fetchdoll' in  pGet.keys():
+                return "<script>zdone=true\nufomsg('[Info] All zombies deployed!...')\n </script>\n"
+        if 'fetchdoll' in pGet.keys():
             tn=pGet['fetchdoll']
             target = self.geo_ip(tn)
             if target is None:
                 return "doll waiting for geoip data !"
             return """ doll up !<script>
-doll.setData(Array(new L.LatLng("""+str(target['latitude'])+","+str(target['longitude'])+"),'"+target['city']+"','"+target['country']+"','"+target['country_code']+"','"+target['asn']+"','"+target['ip']+"','"+target['host_name']+"'))\nufomsg('Adding target """+tn+"""...')\ndoll.show() </script>"""
-        if 'doll' in  pGet.keys():
+doll.setData(Array(new L.LatLng("""+str(target['latitude'])+","+str(target['longitude'])+"),'"+target['city']+"','"+target['country']+"','"+target['country_code']+"','"+target['asn']+"','"+target['ip']+"','"+target['host_name']+"'))\nufomsg('[Info] Adding target: """+tn+"""...')\ndoll.show() </script>"""
+        if 'doll' in pGet.keys():
             tn=pGet['doll']
-            print "loading doll ",tn
             return """<script>
 doll=new Doll('"""+tn+"""')\n</script>"""
         return "\n"

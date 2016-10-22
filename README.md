@@ -32,6 +32,10 @@
 
        sudo apt-get install python-pycurl python-geoip
 
+  On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, etc... also run:
+
+       pip install geoip 
+
   Source libs:
 
        * Python: https://www.python.org/downloads/

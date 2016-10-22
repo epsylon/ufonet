@@ -95,11 +95,11 @@ class Herd(object):
 
     # retrieve result by zombie name
     def get_result(self,zombie):
-        return  self.result[zombie] or False
+        return self.result[zombie] or False
 
     # retrieve connection status by zombie name
     def connection_failed(self,zombie):
-        return  self.connection[zombie] or False
+        return self.connection[zombie] or False
 
     # retrieve size on correct format
     def sizeof_fmt(self, size, suffix='B'):
@@ -114,12 +114,12 @@ class Herd(object):
         buf=""
         out=self.get_stat()
         if os.path.exists("/tmp/ufonet.html.tmp"):
-            print 'tmp file found, html output abort 2 !!!'
+            print 'tmp file found, html output abort !!!'
             return
         buf += "<div>" + os.linesep
         if out['err'] is not None:
             buf += "<div>Errors : <br/>"+str(out['err'])+'</div>'+os.linesep
-        buf += "<h2>Conn: " +str(self.total_connections)+" - Zombies: "+str(len(self.stats))+" - Hits: "+str(self.total_hits)+" - Fails: "+str(self.total_fails)+"</h2>"+os.linesep
+        buf += "<h2>Conn: " +str(self.total_connections)+" - Zombies: "+str(len(self.stats))+" -> Hits: "+str(self.total_hits)+" - Fails: "+str(self.total_fails)+"</h2>"+os.linesep
         buf += "<div id='zombie_list'><h3>Zombies: </h3>"
         if len(out['data'])==0:
             buf += "waiting..."
@@ -137,6 +137,12 @@ class Herd(object):
         buf += "<hr/>"+os.linesep
         buf += "<div>Total time:" +str(out['total_time'])+ " | Avg time:"+str(out['avg_time'])+"</div>"+os.linesep
         buf += "<div>Total size:"+str(out['total_size'])+" | Avg size:"+str(out['avg_size'])+"</div>"+os.linesep
+        buf += "<hr/>"+os.linesep
+        buf += "<div><h3>Troops: </h3></div>"+os.linesep
+        buf += "<div>Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)+"</div>" + os.linesep
+        buf += "<div>Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)+"</div>" + os.linesep
+        buf += "<div>UCAVs: " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail)+"</div>" + os.linesep
+        buf += "<div>XRPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)+"</div>" + os.linesep
         f = open("/tmp/ufonet.html.tmp", "w") 
         f.write(buf)
         if(final):
@@ -168,6 +174,17 @@ class Herd(object):
         print "Total invocations:", self.total_connections,"| Zombies:", len(self.stats),"| Hits:", self.total_hits,"| Fails:", self.total_fails
         print "Total time:", out['total_time'], "| Avg time:", out['avg_time']
         print "Total size:", out['total_size'],"| Avg size:", out['avg_size']
+        print "-"*21
+        print "="*42
+        print "Troops statistics"
+        print "="*42
+        print "Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)
+        print "Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)
+        print "UCAVs : " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail)
+        print "XRPCs : " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)
+        print "-"*21
+        print "\n" # gui related
+        print '='*21
 
     # show what we have
     def get_stat(self):

