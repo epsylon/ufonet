@@ -50,20 +50,24 @@ See this links for more info:
 
        python-pycurl - Python bindings to libcurl
        python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
+       python-crypto - Cryptographic algorithms and protocols for Python
 
-  On Debian systems, run: 
+  On Debian-based systems (ex: Ubuntu), run: 
 
-       sudo apt-get install python-pycurl python-geoip
+       sudo apt-get install python-pycurl python-geoip python-crypto
 
-  On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, etc... also run:
+  On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
        pip install geoip 
+       pip install requests
+       pip install pycrypto
 
   Source libs:
 
        * Python: https://www.python.org/downloads/
        * PyCurl: http://pycurl.sourceforge.net/
        * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
+       * PyCrypto: https://pypi.python.org/pypi/pycrypto
 
 ###############################
 # Searching for 'zombies'
