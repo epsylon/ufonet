@@ -1,6 +1,5 @@
   ![Alt_text](http://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet Botnet Attacking Map")
 
-=================================================================== 
 
   UFONet - is a tool designed to launch DDoS attacks against a target, 
   using 'Open Redirect' vectors on third party web applications, like botnet.
@@ -17,11 +16,16 @@
 
 ----------
 
+ UFONet is released under the GPLv3. You can find the full license text
+in the [LICENSE](./docs/LICENSE) file.
+
+----------
+
  + Web:  http://ufonet.03c8.net
 
 ----------
 
-    Installing:
+#### Installing:
 
   UFONet runs on many platforms.  It requires Python (>2.7.9) and the following libraries:
 
@@ -39,11 +43,13 @@
        pip install requests
        pip install pycrypto
 
-  Source libs:
+####  Source libs:
 
-       * Python: https://www.python.org/downloads/
-       * PyCurl: http://pycurl.sourceforge.net/
-       * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
-       * PyCrypto: https://pypi.python.org/pypi/pycrypto
+ * Python: https://www.python.org/downloads/
+ * PyCurl: http://pycurl.sourceforge.net/
+ * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
+ * PyCrypto: https://pypi.python.org/pypi/pycrypto
+ * Leaflet: http://leafletjs.com/ (provided)
 
 ----------
+

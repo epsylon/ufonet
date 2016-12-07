@@ -1815,8 +1815,8 @@ class UFONet(object):
                     else: # not any XML-RPC discovering methods are working
                         rpc_pingback_url = rpc_host + "/xmlrpc.php"
                         rpc_vulnerable = False
-        except: # something wrong discovering XML-RCP Pingback
-            rpc_pingback_url = rpc_host + "/xmlrpc.php"
+        except: # something wrong discovering XML-RPC Pingback
+            rpc_pingback_url = str(rpc_host.path) + "/xmlrpc.php"
             rpc_vulnerable = False
         return rpc_vulnerable, rpc_pingback_url
 

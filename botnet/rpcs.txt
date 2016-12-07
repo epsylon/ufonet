@@ -1,1 +1,1 @@
-http://smartcows.com/xmlrpc.php
+http://www.rainbow-fund.org/xmlrpc.php
