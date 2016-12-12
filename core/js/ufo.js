@@ -368,14 +368,12 @@ function initMap (targetdoll=false) {
 	doll=targetdoll
     }
     index = 0
-    //osm_sat = L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png')
-    streets = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
-    dark = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.dark/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
+    osm_sat = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
     map = L.map('map',{
 	minZoom: 2,
 	maxZoom: 7,
 	zoomControl:false,
-	layers: [dark]
+	layers: [osm_sat]
     });
     if (typeof latlong !== 'undefined') {
 	map.setView(latlong[index], 1)
@@ -383,11 +381,9 @@ function initMap (targetdoll=false) {
     else{
 	map.setView(new L.LatLng(0,0), 1)
     }
-    dark.addTo(map)
+    osm_sat.addTo(map)
     var baseMaps = {
-	"Light": streets,
-        "Dark": dark,
-	//"Sats": osm_sat, // goo.gl/xBOxXt
+	"Sats": osm_sat,
     }
     //  initializing controls:
     new L.control.layers(baseMaps, null, {collapsed:false}).addTo(map)

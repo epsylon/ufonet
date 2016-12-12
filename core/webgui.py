@@ -929,7 +929,7 @@ function show(one) {
 <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none;" >+ How can I help?</a></div> <div class="nb" id="nb6" style="display: none;">      - Testing; use the tool and search for possible bugs and new ideas
       - Coding; you can try to develop more features
       - Promoting; talk about UFONet on the internet, events, hacklabs, etc
-      - Donating; <a href="https://blockchain.info/address/1Q63KtiLGzXiYA8XkWFPnWo7nKPWFr3nrc" target="_blank">bitcoin</a>, objects, support, love ;-)</div> <div><a id="mH7" href="javascript:show('nb7');" style="text-decoration: none" >+ Contact methods</a></div> <div class="nb" id="nb7" style="display: none;">  You can contact using:
+      - Donating; <a href="https://blockchain.info/address/19aXfJtoYJUoXEZtjNwsah2JKN9CK5Pcjw" target="_blank">bitcoin</a>, objects, support, love ;-)</div> <div><a id="mH7" href="javascript:show('nb7');" style="text-decoration: none" >+ Contact methods</a></div> <div class="nb" id="nb7" style="display: none;">  You can contact using:
    
       - Email: <a href="mailto: epsylon@riseup.net">epsylon@riseup.net</a> [GPG:0xB8AC3776]
 
