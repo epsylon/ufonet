@@ -24,9 +24,8 @@ class Updater(object):
             print "\nTo have working this feature, you should clone UFONet with:\n"
             print "$ git clone %s" % GIT_REPOSITORY
         else:
-            checkout = execute("git checkout .", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
-            if "fast-forwarded" in checkout:
-                pull = execute("git pull %s HEAD" % GIT_REPOSITORY, shell=True, stdout=PIPE, stderr=PIPE).communicate()
-                print "Congratulations!! UFONet has been updated to latest version ;-)\n"
+            checkout = execute("git pull", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
+            if "Fast-forward" in checkout:
+                print "Congratulations!! UFONet has been updated... ;-)\n"
             else:
-                print "You are updated! ;-)\n"
+                print "Your UFONet doesn't need to be updated... ;-)\n"
