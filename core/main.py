@@ -965,7 +965,7 @@ class UFONet(object):
         with open('drones.txt') as f:
             for _ in f:
                 num_drones = num_drones + 1
-        print("[Info] - UCAVs : " + str(num_drones))
+        print("[Info] - UCAVs  : " + str(num_drones))
         num_reflectors = 0
         with open('reflectors.txt') as f:
             for _ in f:
@@ -1248,7 +1248,8 @@ class UFONet(object):
         #    url_links = re.findall(pattern, req_reply)
 
         elif options.engine == 'yahoo': # yahoo [18/08/2015: OK!]
-            location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
+            #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
+            location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
             location = str(random.choice(location).strip()) # suffle location
             url = 'https://'+location+'.search.yahoo.com/search?'
             if options.search: # search from query
@@ -1286,7 +1287,8 @@ class UFONet(object):
                     return #sys.exit(2)
                 else:
                     req_reply = ''
-            regex = '<h3 class="title"><a style="color:#2C46C7" class=" td-u" href="(.+?)" target="_blank"' # regex magics [18/08/2016]
+            #regex = '<h3 class="title"><a style="color:#2C46C7" class=" td-u" href="(.+?)" target="_blank"' # regex magics [18/08/2016]
+            regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
 
@@ -1349,7 +1351,6 @@ class UFONet(object):
                 return #sys.exit(2)
             else:
                 req_reply = ''
-
         if options.num_results: # set number of results to search
             try:
                 num = int(options.num_results)
@@ -1368,6 +1369,8 @@ class UFONet(object):
             if options.engine == "yahoo":
                 if 'RU=' in url: # regex magics [18/08/2016]
                     url = url.rsplit('RU=',1)[1] 
+                if '&u=' in url: # regex magics [08/04/2017]
+                    url = url.rsplit('&u=',1)[1]  
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
@@ -1376,12 +1379,17 @@ class UFONet(object):
             if options.dorks:
                 sep = str(dork)
             url_link = url_link.rsplit(sep, 1)[0] + sep
-            if url_link not in zombies: # parse possible repetitions
-                print('+Victim found: ' + url_link)
-                print '-'*12
-                zombies.append(url_link)
-            else:
+            if 'href="' in url_link:
+                url_link = url_link.rsplit('href="', 1)[1]
+            if "instreamset" in url_link:
                 pass
+            else:
+                if url_link not in zombies: # parse possible repetitions
+                    print('+Victim found: ' + url_link)
+                    print '-'*12
+                    zombies.append(url_link)
+                else:
+                    pass
         if len(zombies) == 0: # print dorking results
             print "[Info] - Not any possible victim(s) found for this query!"
             if not options.dorks:

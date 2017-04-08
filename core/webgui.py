@@ -983,7 +983,7 @@ function Start(){
 <tr>
 <td>
 <pre>
-  This feature will provides you the biggest file on target. 
+  This feature will provide you the biggest file on target. 
   You can use this when attacking to be more effective.
 
   <button onclick="Requests()">Configure requests</button> 
