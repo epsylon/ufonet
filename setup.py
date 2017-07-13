@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ufonet',
-    version='0.8',
+    version='0.9',
     license='GPLv3',
     author_email='epsylon@riseup.net',
     author='psy',
@@ -16,10 +16,10 @@ setup(
     url='http://ufonet.03c8.net/',
     long_description=open('docs/README.txt').read(),
     packages=find_packages(),
-    install_requires=['GeoIP >= 1.3.2', 'pygeoip >= 0.3.2', 'requests', 'pycrypto >= 2.6.1', 'pycurl >= 7.19.5.1'],
+    install_requires=['GeoIP >= 1.3.2', 'pygeoip >= 0.3.2', 'requests', 'pycrypto >= 2.6.1', 'pycurl >= 7.19.5.1', 'python-whois >= 0.7.5'],
     include_package_data=True,
     package_data={
-        'core': ['images/*', 'js/*.css', 'js/*.js', 'js/leaflet/*.css', 'js/leaflet/*.js', 'js/leaflet/images/*', 'js/cluster/*'],
+        'core': ['images/*', 'js/*.css', 'js/*.js', 'js/leaflet/*.css', 'js/leaflet/*.js', 'js/leaflet/images/*', 'js/cluster/*', 'txt/*.txt'],
         'server': ['*.dat', '*.txt'],
     },
     entry_points={
@@ -30,7 +30,7 @@ setup(
             'ufonet=UFONet:core.main',
         ],
     },
-    keywords='DDoS DoS botnet WebAbuse UFONet',
+    keywords='DDoS Botnet WebAbuse UFONet',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         "Environment :: Web Environment",

@@ -9,23 +9,29 @@
 Y88b. .d88P 888       Y88b. .d88P 888   Y8888 Y8b.     Y88b.  
  'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888
 
-UFONet - DDoS Botnet via Abuso Web - por psy 
-
 =========================================================================== 
+
+Bienvenida a UFONet DDoS Botnet/C&C/Darknet ;-)
+
+===========================================================================
 
 ###############################
 # Información del proyecto
 ###############################
 
-Website: http://ufonet.03c8.net
+- Website: 
 
-IRC: irc.freenode.net - #ufonet
+   http://ufonet.03c8.net
+
+- IRC: 
+
+   irc.freenode.net - #ufonet
 
 ###############################
 # FAQ/Preguntas frecuentes
 ###############################
 
-http://ufonet.03c8.net/FAQ.html
+   http://ufonet.03c8.net/FAQ.html
 
 ###############################
 # Introducción
@@ -50,11 +56,13 @@ En los siguientes enlaces tienes más información:
 
        python-pycurl - Python bindings to libcurl
        python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
+       python-whois  - Python module for retrieving WHOIS information - Python 2
        python-crypto - Cryptographic algorithms and protocols for Python
+       python-requests - elegant and simple HTTP library for Python2, built for human beings
 
   En sistemas basados en Debian, lanzar: 
 
-       sudo apt-get install python-pycurl python-geoip python-crypto
+       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
 
   En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 
@@ -67,13 +75,15 @@ En los siguientes enlaces tienes más información:
        * Python: https://www.python.org/downloads/
        * PyCurl: http://pycurl.sourceforge.net/
        * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
+       * PyWhois: https://pypi.python.org/pypi/whois
        * PyCrypto: https://pypi.python.org/pypi/pycrypto
+       * PyRequests: https://pypi.python.org/pypi/requests
 
 ###############################
 # Buscando 'zombies'
 ###############################
 
-UFONet puede excavar en los resultados de diferentes motores de búsqueda para encontrar sitios web vulnerables a 'Open Redirect'. 
+UFONet puede buscar en los resultados de diferentes motores de búsqueda para encontrar sitios web vulnerables a 'Open Redirect'. 
 Generalmente los parámetros de las peticiones, suelen ser similares a los siguientes:
 
         'proxy.php?url='
@@ -95,8 +105,9 @@ Por defecto, UFONet utiliza un motor de búsqueda que se llama 'bing'. Pero pued
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - bing [17/08/2016: OK!]
-        - yahoo [17/08/2016: OK!]
+        - bing [14/07/2017: OK!]
+        - yahoo [14/07/2017: OK!]
+        - yandex [14/07/2017: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -105,6 +116,10 @@ También puedes buscar masívamente utilizando todos los motores de búsqueda so
 Para controlar cuantos 'zombies' recibir como resultado puedes utilizar:
 
        ./ufonet --sd 'botnet/dorks.txt' --sa --sn 20
+
+O puedes hacer que la herramienta búsque de manera autómatica el mayor número posible de resultados (ésto puede tardar bastante tiempo!):
+
+       ./ufonet --auto-search
 
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
@@ -196,6 +211,11 @@ Puedes utilizar el resultado para hacer tus ataques más efectivos:
 	================================================================================
 	=Biggest File: http://target.com/images/wizard.jpg
 	================================================================================
+  -------------
+
+También puedes obtener información sobre la configuración del servidor web de tu objetivo usando:
+
+       ./ufonet -x http://target.com
 
 ###############################
 # Atacando un objetivo
@@ -230,9 +250,22 @@ ataque más efectivo.
 
 UFONet utiliza diferentes maneras para explotar las vulnerabilides 'Open Redirect'. Por ejemplo:
 
-Puedes usar UFONet para estresar la base de datos de tu objetivo mediante la petición de cadenas aleatorias válidas como si fueran búsquedas:
+Puedes usar UFONet para estresar la base de datos de tu objetivo mediante la petición de cadenas aleatorias válidas 
+como si fueran búsquedas:
 
        ./ufonet -a http://target.com --db "search.php?q="
+
+También explota (por defecto) una vulnerabilidad en XML-RPC Pingback, generando peticiones que requieren respuesta e
+incrementando el procesamiento que quiere el objetivo.
+
+Puedes probar tu lista de zombies "X-RPCs" lanzando:
+
+     ./ufonet --test-rpc
+
+Al mismo tiempo, puedes conectar un LOIC (con soporte para proxy), para hacer un número determinado de peticiones recursivas 
+directamente sobre tu objetivo:
+
+     ./ufonet -a http://target.com --loic 100
 
 ###############################
 # Actualizando
@@ -260,11 +293,22 @@ Para lanzarla usa:
       ./ufonet --gui
 
 Ésto abrirá una pestaña (o una ventana nueva) en tu navegador por defecto, con todas las opciones de la herramienta 
-más algunas "extra". ;-)
+más algunas "extra":
+
+ - NEWS: Permite leer las últimas 'noticias' publicadas por la "nave madre"
+ - MISSIONS: Permite leer las últimas 'misiones' publicadas por la "nave madre"
+ - SHIP STATS: Permite consultar las estadísticas de tu "nave"
+ - BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
+ - WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
+ - GLOBAL GRID: Permite revisar las estadísticas de otras "naves"
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+14.07.2017 : v.0.9b
+--------------------------
 
 --------------------------
 21.10.2016 : v.0.8b
@@ -308,6 +352,7 @@ más algunas "extra". ;-)
 
 - UFo & Mandingo & Ikujam
 - Phineas Fisher ;-)
+- The Shadow Brokers (TSB) ;_)
 ------------------------
 
 ############

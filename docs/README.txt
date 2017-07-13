@@ -9,23 +9,29 @@
 Y88b. .d88P 888       Y88b. .d88P 888   Y8888 Y8b.     Y88b.  
  'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888
 
-UFONet - DDoS Botnet via Web Abuse - by psy 
-
 =========================================================================== 
+
+Welcome to UFONet DDoS Botnet/C&C/Darknet ;-)
+
+===========================================================================
 
 ###############################
 # Project info
 ###############################
 
-Website: http://ufonet.03c8.net
+- Website: 
 
-IRC: irc.freenode.net - #ufonet
+   http://ufonet.03c8.net
+
+- IRC: 
+
+   irc.freenode.net - #ufonet
 
 ###############################
 # FAQ
 ###############################
 
-http://ufonet.03c8.net/FAQ.html
+   http://ufonet.03c8.net/FAQ.html
 
 ###############################
 # Summary
@@ -50,11 +56,13 @@ See this links for more info:
 
        python-pycurl - Python bindings to libcurl
        python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
+       python-whois  - Python module for retrieving WHOIS information - Python 2
        python-crypto - Cryptographic algorithms and protocols for Python
+       python-requests - elegant and simple HTTP library for Python2, built for human beings
 
   On Debian-based systems (ex: Ubuntu), run: 
 
-       sudo apt-get install python-pycurl python-geoip python-crypto
+       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
@@ -67,7 +75,9 @@ See this links for more info:
        * Python: https://www.python.org/downloads/
        * PyCurl: http://pycurl.sourceforge.net/
        * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
+       * PyWhois: https://pypi.python.org/pypi/whois
        * PyCrypto: https://pypi.python.org/pypi/pycrypto
+       * PyRequests: https://pypi.python.org/pypi/requests
 
 ###############################
 # Searching for 'zombies'
@@ -95,8 +105,9 @@ By default UFONet will uses a search engine called 'bing'. But you can choose a 
 
 This is the list of available search engines with last time that were working:
 
-        - bing [17/08/2016: OK!]
-        - yahoo [17/08/2016: OK!]
+        - bing [14/07/2017: OK!]
+        - yahoo [14/07/2017: OK!]
+        - yandex [14/07/2017: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -105,6 +116,10 @@ You can also search massively using all search engines supported:
 To control how many 'zombies' recieve from search engines you can use:
 
        ./ufonet --sd 'botnet/dorks.txt' --sa --sn 20
+
+Or you can make the tool to search automatically for the max number of results (this may take time!))
+
+       ./ufonet --auto-search
 
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
@@ -195,6 +210,11 @@ You can use this when attacking to be more effective:
 	================================================================================
 	=Biggest File: http://target.com/images/wizard.jpg
 	================================================================================
+  -------------
+
+Also you can obtain information about web server configuration from your target using:
+
+       ./ufonet -x http://target.com
 
 ###############################
 # Attacking a target
@@ -233,6 +253,18 @@ You can use UFONet to stress database on target by requesting random valid strin
 
        ./ufonet -a http://target.com --db "search.php?q="
 
+Also, it exploits (by default) XML-RPC Pingback Vulnerability, generating callback requests and increasing 
+processing required by target.
+
+You can test your list of 'X-RPCs zombies' by launching:
+
+     ./ufonet --test-rpc
+
+At same time, you can connect a LOIC (with proxy support), to make a determinate number of recursive requests 
+directly to your target:
+
+     ./ufonet -a http://target.com --loic 100
+
 ###############################
 # Updating
 ###############################
@@ -258,11 +290,22 @@ To launch it use:
 
       ./ufonet --gui
 
-This will open a tab on your default browser with all features of the tool and some 'extra' options. ;-)
+This will open a tab on your default browser with all features of the tool and some 'extra' options:
+
+ - NEWS: Allows to read last 'news' published by a "mothership"
+ - MISSIONS: Allows to read last 'missions' published by a "mothership"
+ - SHIP STATS: Allows to review statistics from your "spaceship"
+ - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
+ - WARPS: Allows to interact with a "mothership" to download/upload 'zombies'
+ - GLOBAL GRID: Allows to review statistics from other "spaceships"
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+14.07.2017 : v.0.9b
+--------------------------
 
 --------------------------
 21.10.2016 : v.0.8b
@@ -306,6 +349,7 @@ This will open a tab on your default browser with all features of the tool and s
 
 - UFo & Mandingo & Ikujam
 - Phineas Fisher ;-)
+- The Shadow Brokers (SDB) ;_)
 -------------------------
 
 ############

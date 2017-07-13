@@ -1,5 +1,5 @@
 =================================================================
-How to set up a 'blackhole' - eg a P2P/Community 'zombies' server
+How to set up a 'grider' - eg a P2P/Community stats/board server
 =================================================================
 
 * Setup web server with a folder "ufonet", this folder should be:
@@ -7,11 +7,8 @@ How to set up a 'blackhole' - eg a P2P/Community 'zombies' server
   - Owned by the user running the blackhole
   - Accessible with http://<your ip>/ufonet/
 
-* Start the blackhole with:
-  ./ufonet --blackhole or python2 blackhole.py
-
-* Anyone wanting to connect to your server needs to set the --up-to/--down-from 
-  to the ip address of your webserver.
+* Start the grider with: 
+  python2 grider.py
 
 ===============================================================
 
