@@ -1320,7 +1320,7 @@ class UFONet(object):
         if not options.engine or options.engine == 'bing': # using bing by default [27/06/2017: OK!]
             if not options.engine:
                 options.engine = 'bing'
-            url = 'https://www.bing.com/search?'
+            url = 'https://www.bing.com/?scope'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
             if options.dorks or options.autosearch: # search from a dork
