@@ -1,1 +1,1 @@
-http://cheeseballchick.com/xmlrpc.php
+http://www.ch-orthez.fr/xmlrpc.php

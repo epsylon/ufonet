@@ -8,12 +8,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='ufonet',
-    version='0.9',
+    version='1.0',
     license='GPLv3',
     author_email='epsylon@riseup.net',
     author='psy',
-    description='DDoS Botnet via Web Abuse',
-    url='http://ufonet.03c8.net/',
+    description='(DDoS botnet + DoS tool) via Web Abuse',
+    url='https://ufonet.03c8.net/',
     long_description=open('docs/README.txt').read(),
     packages=find_packages(),
     install_requires=['GeoIP >= 1.3.2', 'pygeoip >= 0.3.2', 'requests', 'pycrypto >= 2.6.1', 'pycurl >= 7.19.5.1', 'python-whois >= 0.6.5'],

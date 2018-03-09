@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2017 - by psy (epsylon@riseup.net)
+UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -64,6 +64,11 @@ class Paster(Thread):
                             fc=open(self.parent.target_dir+"board.txt","a")
                             fc.write(data+"\n")
                             fc.close()
+                        elif data.find("#-#")!=-1:
+                            print "[DEBUG] adding to wargames"
+                            fc=open(self.parent.target_dir+"wargames.txt","a")
+                            fc.write(data+"\n")
+                            fc.close()
                     conn.close()
         print '[Paster] done'
         self.sock.close()
@@ -97,17 +102,30 @@ class Grider ( Thread ):
                 fc.close()
             except:
                 print "[Error] no board.txt file in "+self.target_dir
-                grid_fail = board_fail + 1
+                board_fail = board_fail + 1
         else:
             board_fail = 0
+        if not os.path.exists(self.target_dir+"wargames.txt"):
+            wargames_fail = 0
+            try:
+                fc = open(self.target_dir+'wargames.txt', 'wb')
+                fc.close()
+            except:
+                print "[Error] no wargames.txt file in "+self.target_dir
+                wargames_fail = wargames_fail + 1
+        else:
+            wargames_fail = 0
         if not os.access(self.target_dir+"grid.txt",os.W_OK):
             print "[Error] write access denied for grid file in "+self.target_dir
             grid_fail = grid_fail + 1
         if not os.access(self.target_dir+"board.txt",os.W_OK):
             print "[Error] write access denied for board file in "+self.target_dir
             board_fail = board_fail + 1
-        if grid_fail > 0 and board_fail > 0:
-            print "[Error] grids and board unuseable. Aborting..."
+        if not os.access(self.target_dir+"wargames.txt",os.W_OK):
+            print "[Error] write access denied for wargames file in "+self.target_dir
+            wargames_fail = wargames_fail + 1
+        if grid_fail > 0 and board_fail > 0 and wargames_fail > 0:
+            print "[Error] grid, board and wargames are unuseable. Aborting..."
             sys.exit(2)
         self.paster = Paster(self)
         self.awake = False
@@ -130,10 +148,10 @@ class Grider ( Thread ):
         self.dream()
         try:
             self.paster.start()
-            if  self.paster.clean:
+            if self.paster.clean:
                 print "[Grider] Advancing time in another space (waiting for server)"+os.linesep
                 time.sleep(1)
-            while  self.paster.clean:
+            while self.paster.clean:
                 print "[Grider] Advancing time in another space (waiting for server)"+os.linesep
                 time.sleep(1)
             print "\n[Grider] sheets are all up and ready"

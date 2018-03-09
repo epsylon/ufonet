@@ -114,6 +114,26 @@ class Abductor(object):
             pattern_s = re.compile(regex_s)
             cve = re.findall(pattern_s, target_reply)
         return cve
+
+    def waf_detection(self, banner, target_reply):
+        self.wafs_file = "core/txt/wafs.txt" # set source path to retrieve 'wafs'
+        try:
+            f = open(self.wafs_file)
+            wafs = f.readlines()
+            f.close()
+        except:
+            wafs = "broken!"
+        sep = "##"
+        for w in wafs:
+            if sep in w:
+                w = w.split(sep)
+                signature = w[0] # signature
+                t = w[1] # vendor
+        if signature in target_reply or signature in banner:
+            waf = "VENDOR -> " + str(t) 
+        else:
+            waf = "FIREWALL NOT PRESENT (or not discovered yet)! ;-)\n"
+        return waf
                   
     def abducting(self, target):
         try:
@@ -179,10 +199,12 @@ class Abductor(object):
         print ' -Banner:', banner 
         print ' -Vía   :', via , "\n"
         print '---------'
-        #print "\nSearching for extra Anti-DDoS protections...\n"
-        #print ' -WAF active:', ""
-        #print ' -mod_evasive filter:', "", "\n"
-        #print '---------'
+        print "\nSearching for extra Anti-DDoS protections...\n"
+        waf = self.waf_detection(banner, target_reply)
+        print ' -WAF/IDS: ' +  waf
+        if 'VENDOR' in waf:
+            print ' -NOTICE : This FIREWALL probably is using Anti-(D)DoS measures!', "\n"
+        print '---------'
         if banner == "NOT found!":
             pass
         else:

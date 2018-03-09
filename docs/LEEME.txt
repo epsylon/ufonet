@@ -11,7 +11,7 @@ Y88b. .d88P 888       Y88b. .d88P 888   Y8888 Y8b.     Y88b.
 
 =========================================================================== 
 
-Bienvenida a UFONet DDoS Botnet/C&C/Darknet ;-)
+Bienvenida a UFONet [ DDoS+DoS ] Botnet/C&C/Darknet ;-)
 
 ===========================================================================
 
@@ -21,7 +21,7 @@ Bienvenida a UFONet DDoS Botnet/C&C/Darknet ;-)
 
 - Website: 
 
-   http://ufonet.03c8.net
+   https://ufonet.03c8.net
 
 - IRC: 
 
@@ -31,14 +31,14 @@ Bienvenida a UFONet DDoS Botnet/C&C/Darknet ;-)
 # FAQ/Preguntas frecuentes
 ###############################
 
-   http://ufonet.03c8.net/FAQ.html
+   https://ufonet.03c8.net/FAQ.html
 
 ###############################
 # Introducción
 ###############################
 
-UFONet - es una herramienta diseñada para lanzar ataques DDoS contra un objetivo,
-utilizando vectores 'Open Redirect' en aplicaciones web de terceros como botnet.
+UFONet - es una herramienta diseñada para lanzar ataques DDoS y DoS en la capa 7 (HTTP/Web Abuse),
+utilizando vectores 'Open Redirect' en aplicaciones web de terceros (una botnet).
 
 En los siguientes enlaces tienes más información:
 
@@ -52,7 +52,7 @@ En los siguientes enlaces tienes más información:
 # Instalando
 ###############################
 
-  UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
+UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
 
        python-pycurl - Python bindings to libcurl
        python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
@@ -60,17 +60,21 @@ En los siguientes enlaces tienes más información:
        python-crypto - Cryptographic algorithms and protocols for Python
        python-requests - elegant and simple HTTP library for Python2, built for human beings
 
-  En sistemas basados en Debian, lanzar: 
+Puedes obtener todas las librerías requeridas automáticamente usando:
 
-       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
+     python setup.py install
 
-  En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
+Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
+
+     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
+
+En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 
        pip install geoip 
        pip install requests
        pip install pycrypto
 
-  Paquetes fuente de las librerías:
+Paquetes fuente de las librerías:
 
        * Python: https://www.python.org/downloads/
        * PyCurl: http://pycurl.sourceforge.net/
@@ -83,7 +87,9 @@ En los siguientes enlaces tienes más información:
 # Buscando 'zombies'
 ###############################
 
-UFONet puede buscar en los resultados de diferentes motores de búsqueda para encontrar sitios web vulnerables a 'Open Redirect'. 
+UFONet puede buscar en los resultados de diferentes motores de búsqueda para encontrar posibles sitios 
+web vulnerables a 'Open Redirect'. 
+
 Generalmente los parámetros de las peticiones, suelen ser similares a los siguientes:
 
         'proxy.php?url='
@@ -99,15 +105,14 @@ O utilizando una lista de "dorks" que tengas en un fichero:
 
        ./ufonet --sd 'dorks.txt'
 
-Por defecto, UFONet utiliza un motor de búsqueda que se llama 'bing'. Pero puedes elegir uno diferente:
+Por defecto, UFONet utiliza un motor de búsqueda que se llama 'Yahoo'. Pero puedes elegir uno diferente:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - bing [14/07/2017: OK!]
-        - yahoo [14/07/2017: OK!]
-        - yandex [14/07/2017: OK!]
+        - bing [06/03/2018: OK!]
+        - yahoo [06/03/2018: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -117,19 +122,20 @@ Para controlar cuantos 'zombies' recibir como resultado puedes utilizar:
 
        ./ufonet --sd 'botnet/dorks.txt' --sa --sn 20
 
-O puedes hacer que la herramienta búsque de manera autómatica el mayor número posible de resultados (ésto puede tardar bastante tiempo!):
+O puedes hacer que la herramienta búsque de manera autómatica el mayor número posible de resultados 
+(ésto puede tardar bastante tiempo!):
 
        ./ufonet --auto-search
 
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
 
-       Wanna check if they are valid zombies? (Y/n)
+       Want to check if they are valid zombies? (Y/n)
 
 También serás preguntado por si quieres actualizar tu lista de 'zombies' añadiendo solamente 
 aquellas aplicaciones web que sean vulnerables.
 
-       Wanna update your list (Y/n)
+       Want to update your list? (Y/n)
 
 Si respondes 'Y', tus nuevos 'zombies' se sumarán al fichero: zombies.txt
 
@@ -143,38 +149,57 @@ Si respondes 'Y', tus nuevos 'zombies' se sumarán al fichero: zombies.txt
 # Probando la botnet
 ###############################
 
-Abre 'zombies.txt' (u otro fichero) y crea una lista de posibles 'zombies'.
-Las urls de los 'zombies' deberían ser algo así:
+UFONet puede probar si tus 'zombies' son vulnerables y si pueden ser usados para tareas de ataque.
+
+Por ejemplo, abre 'botnet/zombies.txt' (u otro fichero) y crea una lista de posibles 'zombies'.
+Recuerdas que las urls de los 'zombies' deberían ser algo así:
 
        http://objetivo.com/check?uri=
 
-Después de eso, lanza el test:
+Después de eso, lanza:
 
-       ./ufonet -t "botnet/zombies.txt"
+       ./ufonet -t 'botnet/zombies.txt'
 
-También puedes ordenar a los 'zombies' que te ataquen a ti mismo y ver como responden usando:
+Puedes hacer pruebas para descubrir 'zombies' relacionados con la vulnerabilidad XML-RPC Pingback, mediante:
+
+       ./ufonet --test-rpc
+
+Para probar si tus 'zombies' siguen infectados (ésto puede tardar bastante tiempo!):
+
+       ./ufonet --test-all
+
+Y para probar si tus 'zombies' siguen conectados a internet:
+
+       ./ufonet --test-offline
+
+Finalmente, puedes ordenar a tus 'zombies' que te ataquen a ti mismo, para ver como responden a tus necesidades:
 
        ./ufonet --attack-me 
 
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
 
-       Wanna update your list (Y/n)
+       Want to check if they are valid zombies? (Y/n)
 
-Si respondes 'Y', tu fichero: zombies.txt será actualizado.
+Si respondes 'Y', tu fichero: "botnet/zombies.txt" será actualizado.
 
   -------------
   Examples:
 
-     + con detalle:     ./ufonet -t 'botnet/zombies.txt' -v
-     + con proxy TOR:   ./ufonet -t 'botnet/zombies.txt' --proxy="http://127.0.0.1:8118"
-     + con hilos:       ./ufonet -t 'botnet/zombies.txt' --threads 50
+     + con detalle:       ./ufonet -t 'botnet/zombies.txt' -v
+     + con proxy TOR:     ./ufonet -t 'botnet/zombies.txt' --proxy="http://127.0.0.1:8118"
+     + con hilos:         ./ufonet -t 'botnet/zombies.txt' --threads 50
+
+     + probar botnet:     ./ufonet --test-all
+     + probar XML-RPCs:   ./ufonet --test-rpc
+     + buscar 'offlines': ./ufonet --test-offline 
+     + auto-atacarte:     ./ufonet --attack-me
 
 ###############################
 # Inspeccionando un objetivo
 ###############################
 
-Ésta opción te permite encontrar el fichero de mayor tamaño en el objetivo:
+UFONet puede buscar el fichero más grande de tu objetivo analizándolo:
 
        ./ufonet -i http://target.com
 
@@ -213,15 +238,59 @@ Puedes utilizar el resultado para hacer tus ataques más efectivos:
 	================================================================================
   -------------
 
-También puedes obtener información sobre la configuración del servidor web de tu objetivo usando:
+###############################
+# Abduciendo un objetivo
+###############################
+
+UFONet puede entregarte bastante información interesante de tu objetivo:
 
        ./ufonet -x http://target.com
+
+  -------------
+  Ejemplo:
+
+    +input:
+
+       ./ufonet -x https://yahoo.com
+
+    +output:
+
+       [...]
+
+       -Target URL: https://yahoo.com 
+       -IP    : 206.190.39.42
+       -IPv6  : OFF
+       -Port  : 443
+       -Domain: yahoo.com
+
+       -Bytes in : 550.09 KB
+       -Load time: 9.10 seconds
+
+       -Banner: ATS
+       -Vía   : http/1.1 usproxy3.fp.ne1.yahoo.com (ApacheTrafficServer), 
+                http/1.1 media-router-fp25.prod.media.ir2.yahoo.com (ApacheTrafficServer [cMsSf ]) 
+
+       -WAF/IDS: FIREWALL NOT PRESENT (or not discovered yet)! ;-)
+
+       -Reports:
+
+        + CVE-2017-7671 -> https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-7671
+        + CVE-2017-5660 -> https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-5660
+        
+        [...]
+
+        ---------
+        [Info] Abduction finished... ;-)
+
+   -------------
 
 ###############################
 # Atacando un objetivo
 ###############################
 
-Introduce un objetivo para atacar con un número de rondas:
+UFONet puede atacar a tus objetivos de muchas maneras.
+
+Por ejemplo, introduce un objetivo para atacar con un número de rondas:
 
        ./ufonet -a http://target.com -r 10
 
@@ -248,7 +317,7 @@ ataque más efectivo.
 # Ataques Especiales
 ###############################
 
-UFONet utiliza diferentes maneras para explotar las vulnerabilides 'Open Redirect'. Por ejemplo:
+UFONet utiliza diferentes maneras para explotar las vulnerabilides 'Open Redirect'.
 
 Puedes usar UFONet para estresar la base de datos de tu objetivo mediante la petición de cadenas aleatorias válidas 
 como si fueran búsquedas:
@@ -256,16 +325,25 @@ como si fueran búsquedas:
        ./ufonet -a http://target.com --db "search.php?q="
 
 También explota (por defecto) una vulnerabilidad en XML-RPC Pingback, generando peticiones que requieren respuesta e
-incrementando el procesamiento que quiere el objetivo.
+incrementando el procesamiento que requiere el objetivo.
 
 Puedes probar tu lista de zombies "X-RPCs" lanzando:
 
      ./ufonet --test-rpc
 
-Al mismo tiempo, puedes conectar un LOIC (con soporte para proxy), para hacer un número determinado de peticiones recursivas 
-directamente sobre tu objetivo:
+Al mismo tiempo, puedes conectar un LOIC (con soporte para proxy), para hacer un número determinado de peticiones 
+recursivas directamente sobre tu objetivo:
 
      ./ufonet -a http://target.com --loic 100
+
+Puedes conectar un LORIS para hacer peticiones que dejen hilos abiertos en tu objetivo, haciendo que el servidor web 
+se vuelva lento:
+
+     ./ufonet -a http://target.com --slow 100
+
+Ambos ataques pueden ser combinados, haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
+
+     ./ufonet -a http://target.com --loic 100 --slow 100
 
 ###############################
 # Actualizando
@@ -282,6 +360,29 @@ Lanza el siguiente comando para chequear si necesitas actualizaciones:
 Ésto actualizará la herramienta automáticamente borrando todos los ficheros del anterior paquete.
 
 ###############################
+# Generando un 'Blackhole'
+###############################
+
+UFONet tiene algunas opciones P2P para compartir/mantener 'zombies' con otras 'naves madre".
+      
+  * Configura un servidor web con una carpeta llamada "ufonet", con las siguientes características: 
+
+    - localizado en /var/www/ufonet (por defecto en debian/ubuntu)
+    - creado por el mismo usuario que ejecuta el "agujero negro" (blackhole)
+    - que sea accesible desde http://tu-ip/ufonet/
+
+  * Comienza el "agujero negro" con: ./ufonet --blackhole (or python2 blackhole.py)
+
+  * Cualquiera que quiera conectarse con tu servidor necesita configurar --up-to/--down-from con la ip
+    de tu servidor web...
+
+  [!]ATENCIÓN : ésta función "AVANZADA" puede "NO" ser segura, ejecútala si realmente lo necesitas.
+
+Para lanzar un nuevo "agujero negro", utiliza:
+
+       ./ufonet --blackhole
+
+###############################
 # GUI/Web Interface
 ###############################
 
@@ -295,16 +396,21 @@ Para lanzarla usa:
 Ésto abrirá una pestaña (o una ventana nueva) en tu navegador por defecto, con todas las opciones de la herramienta 
 más algunas "extra":
 
- - NEWS: Permite leer las últimas 'noticias' publicadas por la "nave madre"
- - MISSIONS: Permite leer las últimas 'misiones' publicadas por la "nave madre"
+ - NEWS: Permite leer las últimas "noticias" publicadas por la "nave madre"
+ - MISSIONS: Permite leer las últimas "misiones" publicadas por la "nave madre"
  - SHIP STATS: Permite consultar las estadísticas de tu "nave"
  - BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
  - WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
  - GLOBAL GRID: Permite revisar las estadísticas de otras "naves"
+ - WARGAMES: Permite proponer e interactuar en algunos "juegos de guerra" reales
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+08.03.2018 : v.1.0
+--------------------------
 
 --------------------------
 14.07.2017 : v.0.9b
@@ -353,6 +459,7 @@ más algunas "extra":
 - UFo & Mandingo & Ikujam
 - Phineas Fisher ;-)
 - The Shadow Brokers (TSB) ;_)
+- World Wide Antifas >-)
 ------------------------
 
 ############

@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
+UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -135,9 +135,12 @@ class Herd(object):
             buf += "<hr/>"+os.linesep
             buf += "<div>Worst zombie: "+str(out['max_failz'])+ " with "+str(out['max_fails'])+" fails</div>"+os.linesep
         buf += "<hr/>"+os.linesep
-        buf += "<div>Total time:" +str(out['total_time'])+ " | Avg time:"+str(out['avg_time'])+"</div>"+os.linesep
-        buf += "<div>Total size:"+str(out['total_size'])+" | Avg size:"+str(out['avg_size'])+"</div>"+os.linesep
-        buf += "<hr/>"+os.linesep
+        try:
+            buf += "<div>Total time:" +str(out['total_time'])+ " | Avg time:"+str(out['avg_time'])+"</div>"+os.linesep
+            buf += "<div>Total size:"+str(out['total_size'])+" | Avg size:"+str(out['avg_size'])+"</div>"+os.linesep
+            buf += "<hr/>"+os.linesep
+        except:
+            pass
         buf += "<div><h3>Troops: </h3></div>"+os.linesep
         buf += "<div>Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)+"</div>" + os.linesep
         buf += "<div>Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)+"</div>" + os.linesep
@@ -156,7 +159,7 @@ class Herd(object):
         print "Herd statistics"
         print "="*42
         if len(out['data'])==0:
-            print "waiting..."
+            print "\n[Error] Something wrong retrieving data feedback. Executing evasion routine!"
             return
         for zo in out['data']:
             z=out['data'][zo]
@@ -202,7 +205,11 @@ class Herd(object):
         self.zero_fails = 0
         for zombie_stat in self.stats:
             zs=self.stats[zombie_stat]
-            entry={'name':zombie_stat,"hits":0,"fails":0,"retries":0,"time":0,"max_time":0,"min_time":zs[0][1],"avg_time":0,"size":0,"max_size":0,"min_size":zs[0][2],"avg_size":0}
+            try:
+                entry={'name':zombie_stat,"hits":0,"fails":0,"retries":0,"time":0,"max_time":0,"min_time":zs[0][1],"avg_time":0,"size":0,"max_size":0,"min_size":zs[0][2],"avg_size":0}
+            except:
+                out['err']=  "No statistics available\n"
+                return out
             if len(zs)==0:
                 continue
             for line in zs:
@@ -254,7 +261,7 @@ class Herd(object):
     def dump(self):
         out=self.get_stat()
         if out['err'] is not None:
-            print "[ERR] "+out['err']
+            print "[Error] "+out['err']
         self.format(out)
 
     def list_fails(self):
@@ -265,7 +272,7 @@ class Herd(object):
             return
         if not options.forceyes:
             print '-'*25
-            update_reply = raw_input("Wanna update your army (Y/n)")
+            update_reply = raw_input("Want to update your army (Y/n)")
             print '-'*25
         else:
             update_reply = "Y"
@@ -274,7 +281,7 @@ class Herd(object):
             return
         else:
             self.ufonet.update_zombies(self.zombies_ready)
-            print "\n[INFO] - Botnet updated! ;-)\n"
+            print "\n[Info] - Botnet updated! ;-)\n"
         if os.path.exists('mothership') == True:
             os.remove('mothership') # remove mothership stream
         if os.path.exists('alien') == True:

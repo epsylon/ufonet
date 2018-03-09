@@ -1,4 +1,7 @@
 proxy.php?url=
+ssl_proxy.php?url=
+urlproxy.php?url=
+jproxy.php?url=
 check.cgi?url=
 checklink?uri=
 validator?uri=
@@ -21,7 +24,10 @@ redirect.html?page=
 redirect.php?blog=
 _redirect=
 redir=
+redir_url=
 redir.php?
+redir.aspx?Url=
+redir.aspx?URL=
 referer=
 referrer/
 derefer/?url=
@@ -58,6 +64,7 @@ checkurl=
 siteurl=
 hostname=
 download/?
+login.php?URL=
 login?r=
 login?url=
 login?redir=
@@ -98,3 +105,6 @@ track.php?next=
 NewForm.aspx?Source=
 urlRedirect.action?fullURL=
 home_url=
+x-urlpath=
+urlforward.aspx?Redir=
+/url/
