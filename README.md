@@ -16,7 +16,7 @@
   See these links for more info:
 
    - CWE-601:Open Redirect: 
-     http://cwe.mitre.org/data/definitions/601.html
+     https://cwe.mitre.org/data/definitions/601.html
 
    - OWASP:URL Redirector Abuse: 
      https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
