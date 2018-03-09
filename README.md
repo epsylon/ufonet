@@ -86,7 +86,7 @@ in the [LICENSE](./docs/LICENSE) file.
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet Botnet GeoMap (attacking)")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-missions_small "UFONet Botnet Missions")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-missions_small.png "UFONet Botnet Missions")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-abduction_small.png "UFONet Botnet Abduction")
 
