@@ -2373,15 +2373,6 @@ class UFONet(object):
         self.head = True
         for zombie in botnet:
             zombie = str(zombie)
-            t = urlparse(zombie)
-            name_zombie = t.netloc
-            reply = str(self.connect_zombie(zombie))
-            if reply == "200" or reply == "302" or reply == "301" or reply == "401" or reply == "403" or reply == "405" or reply == '500':
-                status = "ONLINE!"
-                zombies_online = zombies_online + 1
-            else:
-                status = "NOT Working!"
-                zombies_offline = zombies_offline + 1
             if zombie in zombies: # set zombie type (this way because cannot be same zombie with different type)
                 zombie_type = 'Zombie'
             elif zombie in rpcs:
@@ -2392,6 +2383,18 @@ class UFONet(object):
                 zombie_type = 'Droid'
             elif zombie in ucavs:
                 zombie_type = 'UCAV'
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            if zombie_type == 'Alien': # 'Aliens' are made with keyword ;$POST;
+                sep = ';$POST;'
+                zombie = zombie.split(sep, 1)[0]
+            reply = str(self.connect_zombie(zombie))
+            if reply == "200" or reply == "302" or reply == "301" or reply == "401" or reply == "403" or reply == "405" or reply == '500':
+                status = "ONLINE!"
+                zombies_online = zombies_online + 1
+            else:
+                status = "NOT Working!"
+                zombies_offline = zombies_offline + 1
             print "\nName:", name_zombie
             print "Type: [", zombie_type, "]"
             print "Vector:", zombie
