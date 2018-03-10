@@ -2464,8 +2464,7 @@ class UFONet(object):
             f.write("")
         else:
             for z in m:
-                f.write(z)
-
+                f.write(z+os.linesep)
         return disc_zombies
 
     def testing_rpcs(self, rpcs):
