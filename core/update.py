@@ -26,7 +26,7 @@ class Updater(object):
         else:
             checkout = execute("git checkout . && git pull", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
             print checkout
-            if "Already up-to-date" in checkout:
+            if not "Already up-to-date" in checkout:
                 print "Congratulations!! UFONet has been updated... ;-)\n"
             else:
                 print "Your UFONet doesn't need to be updated... ;-)\n"
