@@ -2350,6 +2350,7 @@ class UFONet(object):
             else:
                 rpc_pingback_url = str(rpc_host) + "/xmlrpc.php"
             rpc_vulnerable = False
+            rpc_pingback_url = False
         return rpc_vulnerable, rpc_pingback_url
 
     def testing_offline(self):
