@@ -2302,6 +2302,7 @@ class UFONet(object):
 
     def search_rpc(self, rpc_host):
         rpc_vulnerable = False
+        rpc_pingback_url = False
         self.user_agent = random.choice(self.agents).strip() # suffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         try:
