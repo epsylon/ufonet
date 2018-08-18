@@ -2345,10 +2345,6 @@ class UFONet(object):
                             rpc_pingback_url = rpc_host + "/xmlrpc.php"
                             rpc_vulnerable = False
         except: # something wrong discovering XML-RPC Pingback
-            if not self.options.testall:
-                rpc_pingback_url = str(rpc_host.path) + "/xmlrpc.php"
-            else:
-                rpc_pingback_url = str(rpc_host) + "/xmlrpc.php"
             rpc_vulnerable = False
             rpc_pingback_url = False
         return rpc_vulnerable, rpc_pingback_url
