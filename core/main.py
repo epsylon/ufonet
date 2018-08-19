@@ -1977,12 +1977,16 @@ class UFONet(object):
             except:
                 print "[Error] UCAV: " + ucav + " -> FAILED (cannot connect!)"
                 self.ucavs_fail = self.ucavs_fail + 1 # add ucav fail to stats
-            if not "is down" or not "looks down" in target_reply: # parse external service for reply
-                print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
-                num_is_up = num_is_up + 1 
+                target_reply = ""
+            if target_reply == "":
+                pass
             else:
-                print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
-                num_is_down = num_is_down + 1
+                if not "is down" or not "looks down" in target_reply: # parse external service for reply
+                    print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
+                    num_is_up = num_is_up + 1 
+                else:
+                    print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
+                    num_is_down = num_is_down + 1
         if num_is_down > 0 and num_is_up == 0: # check for: 1 or more down, 0 up
             print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
             if not self.options.forceyes:
@@ -2347,7 +2351,6 @@ class UFONet(object):
                             rpc_vulnerable = False
         except: # something wrong discovering XML-RPC Pingback
             rpc_vulnerable = False
-            rpc_pingback_url = False
         return rpc_vulnerable, rpc_pingback_url
 
     def testing_offline(self):
