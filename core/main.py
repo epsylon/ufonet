@@ -366,7 +366,7 @@ class UFONet(object):
                 else:
                     print "[Info] NOT any NEW possible zombies found... Exiting!\n"
             except Exception:
-                print ("[Error] - Something wrong searching using: "+engine+"\n")
+                print ("\n[Error] - Something wrong searching using: "+engine+"\n")
 
         # search for 'zombies' from a list of 'dorks'
         if options.dorks:
@@ -512,7 +512,7 @@ class UFONet(object):
                 else:
                     print "[Info] NOT any NEW possible zombies found... Exiting!\n"
             except Exception:
-                print ("[Error] - Something wrong searching using: "+engine+"\n")
+                print ("\n[Error] - Something wrong searching using: "+engine+"\n")
 
         # auto-search for 'zombies' (dorks+all_engines+time -> to discover max new zombies)
         if options.autosearch:
@@ -1601,44 +1601,44 @@ class UFONet(object):
         zombies = []
         if not options.engine: # default search engine
             options.engine = 'yahoo'
-        if options.engine == 'duck': # using duck [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
-            url = 'https://duckduckgo.com/html/' # ex: POST -> path
-            if options.search: # search from query
-               q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results [ deprecated ]
-            if options.dorks: # search from a dork
-               q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
-            data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-            if options.verbose:
-                print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
-            try:
-                req = urllib2.Request(url, data, headers)
-                rsp = urllib2.urlopen(req)
-                content = rsp.read()
-            except:
-                print('[Error] - Unable to connect to duck\n')
-                if options.allengines:
-                    return
-                if not options.dorks:
-                    if not self.options.forceyes:
-                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
-                    else:
-                        update_reply = "Y"
-                    if update_reply == "n" or update_reply == "N":
-                        return #sys.exit(2)
-                    print "\nSearch engines available:"
-                    print '-'*25
-                    for e in self.search_engines:
-                        print "+ "+e
-                    print '-'*25
-                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'duck'"
-                    return #sys.exit(2)
-                else:
-                    req_reply = ''
-            regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
-            pattern = re.compile(regex)
-            url_links = re.findall(pattern, req_reply)
+        #if options.engine == 'duck': # using duck [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
+        #    url = 'https://duckduckgo.com/html/' # ex: POST -> path
+        #    if options.search: # search from query
+        #       q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results [ deprecated ]
+        #    if options.dorks: # search from a dork
+        #       q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
+        #    data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
+        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        #    if options.verbose:
+        #        print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
+        #    try:
+        #        req = urllib2.Request(url, data, headers)
+        #        rsp = urllib2.urlopen(req)
+        #        content = rsp.read()
+        #    except:
+        #        print('[Error] - Unable to connect to duck\n')
+        #        if options.allengines:
+        #            return
+        #        if not options.dorks:
+        #            if not self.options.forceyes:
+        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
+        #            else:
+        #                update_reply = "Y"
+        #            if update_reply == "n" or update_reply == "N":
+        #                return #sys.exit(2)
+        #            print "\nSearch engines available:"
+        #            print '-'*25
+        #            for e in self.search_engines:
+        #                print "+ "+e
+        #            print '-'*25
+        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'duck'"
+        #            return #sys.exit(2)
+        #        else:
+        #            req_reply = ''
+        #    regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
+        #    pattern = re.compile(regex)
+        #    url_links = re.findall(pattern, req_reply)
         if options.engine == 'bing': # using bing [04/02/2018: OK!]
             url = 'https://www.bing.com/search?'
             if options.search: # search from query
@@ -1679,55 +1679,55 @@ class UFONet(object):
             regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
-            url = 'https://www.google.com/xhtml?'
-            if options.search: # search from query
-                q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-            if options.dorks: # search from a dork
-                q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-            start = 0 # set index number of first entry
-            if options.num_results: # set number of results to search
-                try:
-                    num = int(options.num_results)
-                except:
-                    print("You should specify an integer!!!. Using default value: 10\n")
-                    num = 10
-            else:
-                num = 10 
-            gws_rd = 'ssl' # set SSL as default
-            query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
-            data = urllib.urlencode(query_string)
-            url = url + data
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-            if options.verbose:
-                print("Query used: " + url + "\n")
-            try:
-                req = urllib2.Request(url, None, headers)
-                req_reply = urllib2.urlopen(req).read()
-            except: 
-                print('[Error] - Unable to connect to google\n')
-                if options.allengines:
-                    return
-                if not options.dorks:
-                    if not self.options.forceyes:
-                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
-                    else:
-                        update_reply = "Y"
-                    if update_reply == "n" or update_reply == "N":
-                        return #sys.exit(2)
-                    print "\nSearch engines available:"
-                    print '-'*25
-                    for e in self.search_engines:
-                        print "+ "+e
-                    print '-'*25
-                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-                    return #sys.exit(2)
-                else:
-                    req_reply = ''
-            regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
-            pattern = re.compile(regex)
-            url_links = re.findall(pattern, req_reply)
+        #elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
+        #    url = 'https://www.google.com/xhtml?'
+        #    if options.search: # search from query
+        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
+        #    if options.dorks: # search from a dork
+        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
+        #    start = 0 # set index number of first entry
+        #    if options.num_results: # set number of results to search
+        #        try:
+        #            num = int(options.num_results)
+        #        except:
+        #            print("You should specify an integer!!!. Using default value: 10\n")
+        #            num = 10
+        #    else:
+        #        num = 10 
+        #    gws_rd = 'ssl' # set SSL as default
+        #    query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
+        #    data = urllib.urlencode(query_string)
+        #    url = url + data
+        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        #    if options.verbose:
+        #        print("Query used: " + url + "\n")
+        #    try:
+        #        req = urllib2.Request(url, None, headers)
+        #        req_reply = urllib2.urlopen(req).read()
+        #    except: 
+        #        print('[Error] - Unable to connect to google\n')
+        #        if options.allengines:
+        #            return
+        #        if not options.dorks:
+        #            if not self.options.forceyes:
+        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
+        #            else:
+        #                update_reply = "Y"
+        #            if update_reply == "n" or update_reply == "N":
+        #                return #sys.exit(2)
+        #            print "\nSearch engines available:"
+        #            print '-'*25
+        #            for e in self.search_engines:
+        #                print "+ "+e
+        #            print '-'*25
+        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+        #            return #sys.exit(2)
+        #        else:
+        #            req_reply = ''
+        #    regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
+        #    pattern = re.compile(regex)
+        #    url_links = re.findall(pattern, req_reply)
         elif options.engine == 'yahoo': # yahoo [27/06/2017: OK!]
             #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
             location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
@@ -1772,53 +1772,53 @@ class UFONet(object):
             regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'yandex': # yandex [07/10/2015: OK!]
-            url = 'https://yandex.ru/search/?'
-            if options.search: # search from query
-                q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-            if options.dorks or options.autosearch: # search from a dork
-                q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-            start = 0 # set index number of first entry
-            lr = '213' # [27/06/2017: OK!]
-            query_string = { 'text':q, 'lr':lr, 'p':start }
-            data = urllib.urlencode(query_string)
-            url = url + data
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-            if options.verbose:
-                print("Query used: " + url + "\n")
-            try:
-                req = urllib2.Request(url, None, headers)
-                req_reply = urllib2.urlopen(req).read()
-            except:
-                print('[Error] - Unable to connect to yandex\n')
-                if options.allengines or options.autosearch:
-                    return
-                if not options.dorks or not options.autosearch:
-                    if not self.options.forceyes:
-                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
-                    else:
-                        update_reply = "Y"
-                    if update_reply == "n" or update_reply == "N":
-                        return #sys.exit(2)
-                    print "\nSearch engines available:"
-                    print '-'*25
-                    for e in self.search_engines:
-                        print "+ "+e
-                    print '-'*25
-                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-                    return #sys.exit(2)
-                else:
-                    req_reply = ''
+        #elif options.engine == 'yandex': # yandex [07/10/2015: OK!]
+        #    url = 'https://yandex.ru/search/?'
+        #    if options.search: # search from query
+        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
+        #    if options.dorks or options.autosearch: # search from a dork
+        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
+        #    start = 0 # set index number of first entry
+        #    lr = '213' # [27/06/2017: OK!]
+        #    query_string = { 'text':q, 'lr':lr, 'p':start }
+        #    data = urllib.urlencode(query_string)
+        #    url = url + data
+        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        #    if options.verbose:
+        #        print("Query used: " + url + "\n")
+        #    try:
+        #        req = urllib2.Request(url, None, headers)
+        #        req_reply = urllib2.urlopen(req).read()
+        #    except:
+        #        print('[Error] - Unable to connect to yandex\n')
+        #        if options.allengines or options.autosearch:
+        #            return
+        #        if not options.dorks or not options.autosearch:
+        #            if not self.options.forceyes:
+        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
+        #            else:
+        #                update_reply = "Y"
+        #            if update_reply == "n" or update_reply == "N":
+        #                return #sys.exit(2)
+        #            print "\nSearch engines available:"
+        #            print '-'*25
+        #            for e in self.search_engines:
+        #                print "+ "+e
+        #            print '-'*25
+        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+        #            return #sys.exit(2)
+        #        else:
+        #            req_reply = ''
             #regex = '<a class="link link_cropped_no serp-item__title-link" target="_blank" href="(.+?)"' # regex magics
-            if 'captchaSound' in req_reply: # detecting captcha reply
-                print "[Info] - This search engine is asking for a captcha...\n"
-                if options.allengines or options.autosearch:
-                    url_links = "" # keep running!
-            else:
-                regex = 'target="_blank" href="(.+?)" onmousedown="rc' # [27/06/2017] regex magics
-                pattern = re.compile(regex)
-                url_links = re.findall(pattern, req_reply)
+        #    if 'captchaSound' in req_reply: # detecting captcha reply
+        #        print "[Info] - This search engine is asking for a captcha...\n"
+        #        if options.allengines or options.autosearch:
+        #            url_links = "" # keep running!
+        #    else:
+        #        regex = 'target="_blank" href="(.+?)" onmousedown="rc' # [27/06/2017] regex magics
+        #        pattern = re.compile(regex)
+        #        url_links = re.findall(pattern, req_reply)
         else: # no valid search engine
             print('[Error] - This search engine is not supported!\n')
             if not options.dorks or options.autosearch:
@@ -1857,9 +1857,9 @@ class UFONet(object):
                     url = url.rsplit('RU=',1)[1] 
                 if 'UTF-8&u=' in url: # regex magics [05/02/2018]
                     url = url.rsplit('UTF-8&u=',1)[1]  
-            if options.engine == "yandex":
-                if 'rel="' in url: # regex magics [27/06/2017]
-                    url = url.rsplit('rel=',1)[1] 
+            #if options.engine == "yandex":
+            #    if 'rel="' in url: # regex magics [27/06/2017]
+            #        url = url.rsplit('rel=',1)[1] 
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
@@ -1977,12 +1977,16 @@ class UFONet(object):
             except:
                 print "[Error] UCAV: " + ucav + " -> FAILED (cannot connect!)"
                 self.ucavs_fail = self.ucavs_fail + 1 # add ucav fail to stats
-            if not "is down" or not "looks down" in target_reply: # parse external service for reply
-                print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
-                num_is_up = num_is_up + 1 
+                target_reply = ""
+            if target_reply == "":
+                pass
             else:
-                print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
-                num_is_down = num_is_down + 1
+                if not "is down" or not "looks down" in target_reply: # parse external service for reply
+                    print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
+                    num_is_up = num_is_up + 1 
+                else:
+                    print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
+                    num_is_down = num_is_down + 1
         if num_is_down > 0 and num_is_up == 0: # check for: 1 or more down, 0 up
             print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
             if not self.options.forceyes:
@@ -2302,6 +2306,7 @@ class UFONet(object):
 
     def search_rpc(self, rpc_host):
         rpc_vulnerable = False
+        rpc_pingback_url = False
         self.user_agent = random.choice(self.agents).strip() # suffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         try:
@@ -2345,10 +2350,6 @@ class UFONet(object):
                             rpc_pingback_url = rpc_host + "/xmlrpc.php"
                             rpc_vulnerable = False
         except: # something wrong discovering XML-RPC Pingback
-            if not self.options.testall:
-                rpc_pingback_url = str(rpc_host.path) + "/xmlrpc.php"
-            else:
-                rpc_pingback_url = str(rpc_host) + "/xmlrpc.php"
             rpc_vulnerable = False
         return rpc_vulnerable, rpc_pingback_url
 
@@ -2373,15 +2374,6 @@ class UFONet(object):
         self.head = True
         for zombie in botnet:
             zombie = str(zombie)
-            t = urlparse(zombie)
-            name_zombie = t.netloc
-            reply = str(self.connect_zombie(zombie))
-            if reply == "200" or reply == "302" or reply == "301" or reply == "401" or reply == "403" or reply == "405" or reply == '500':
-                status = "ONLINE!"
-                zombies_online = zombies_online + 1
-            else:
-                status = "NOT Working!"
-                zombies_offline = zombies_offline + 1
             if zombie in zombies: # set zombie type (this way because cannot be same zombie with different type)
                 zombie_type = 'Zombie'
             elif zombie in rpcs:
@@ -2392,6 +2384,18 @@ class UFONet(object):
                 zombie_type = 'Droid'
             elif zombie in ucavs:
                 zombie_type = 'UCAV'
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            if zombie_type == 'Alien': # 'Aliens' are made with keyword ;$POST;
+                sep = ';$POST;'
+                zombie = zombie.split(sep, 1)[0]
+            reply = str(self.connect_zombie(zombie))
+            if reply == "200" or reply == "302" or reply == "301" or reply == "401" or reply == "403" or reply == "405" or reply == '500':
+                status = "ONLINE!"
+                zombies_online = zombies_online + 1
+            else:
+                status = "NOT Working!"
+                zombies_offline = zombies_offline + 1
             print "\nName:", name_zombie
             print "Type: [", zombie_type, "]"
             print "Vector:", zombie
@@ -2464,8 +2468,7 @@ class UFONet(object):
             f.write("")
         else:
             for z in m:
-                f.write(z)
-
+                f.write(z+os.linesep)
         return disc_zombies
 
     def testing_rpcs(self, rpcs):
