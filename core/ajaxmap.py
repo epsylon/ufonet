@@ -48,8 +48,8 @@ class AjaxMap(object):
                 f=open("maps.downloadmsg","wb")
                 f.write("")
                 f.close()
-                print "[Webgui] GeoIP data download started"
-                print "[Webgui] if this error message persists : remove maps.downloading and maps folder, then restart ufonet"
+                print "[Info] GUI: GeoIP data download started..."
+                print "[Info] GUI: If this message persists: remove 'maps.downloading' and 'maps' folder, then restart ufonet...\n"
             self._geoipstatus='downloading'
         elif os.path.isdir('maps'):
             if self._geoip == None :

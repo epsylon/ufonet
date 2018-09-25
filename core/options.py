@@ -1,7 +1,7 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-"
 """
-UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -23,19 +23,23 @@ class UFONetOptions(optparse.OptionParser):
         self.ucavs = int(self.extract_ucavs())
         self.rpcs = int(self.extract_rpcs())
         self.dorks = int(self.extract_dorks())
+        self.mods = self.extract_mods()
+        self.tools = self.extract_tools()
         self.total_botnet = str(self.zombies+self.aliens+self.droids+self.ucavs+self.rpcs)
         optparse.OptionParser.__init__(self, 
-                           description='\nUFONet - (DDoS botnet + DoS tool) via Web Abuse - by psy',
+                           description='\nUFONet - Denial of Service Toolkit - by psy',
                            prog='./ufonet',
-                           version='\nCode: v1.0 - TachY0n!\n')
+                           version='\nCode: v1.1 - Quantum Hydra!\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
+        self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
         self.add_option("--update", action="store_true", dest="update", help="check for latest stable version")
         self.add_option("--check-tor", action="store_true", dest="checktor", help="check to see if Tor is used properly")
-        #self.add_option("--force-ssl", action="store_true", dest="forcessl", help="force usage of SSL/HTTPS requests")
+        self.add_option("--force-ssl", action="store_true", dest="forcessl", help="force usage of SSL/HTTPS requests")
         self.add_option("--force-yes", action="store_true", dest="forceyes", help="set 'YES' to all questions")
         self.add_option("--gui", action="store_true", dest="web", help="run GUI (UFONet Web Interface)")
         group8 = optparse.OptionGroup(self, "*Tools*")
-        group8.add_option("--crypter", action="store_true", dest="cryptomsg", help="Encrypt/Decrypt messages using AES256+HMAC-SHA1")
+        group8.add_option("--crypter", action="store_true", dest="cryptomsg", help="Crypt/Decrypt messages using AES256+HMAC-SHA1")
+        group8.add_option("--network", action="store_true", dest="shownet", help="Show info about your network (MAC, IPs)")
         self.add_option_group(group8)
         group1 = optparse.OptionGroup(self, "*Configure Request(s)*")
         group1.add_option("--proxy", action="store", dest="proxy", help="Use proxy server (tor: 'http://127.0.0.1:8118')")
@@ -61,7 +65,7 @@ class UFONetOptions(optparse.OptionParser):
         group3.add_option("--test-offline", action="store_true", dest="testoffline", help="Fast check to discard offline bots")
         group3.add_option("--test-all", action="store_true", dest="testall", help="Update ALL botnet status (may take time!)")
         group3.add_option("-t", action="store", dest="test", help="Update 'zombies' status (ex: -t 'botnet/zombies.txt')")
-        group3.add_option("--test-rpc", action="store_true", dest="testrpc", help="Update 'xml-rpc' reflectors status")
+        group3.add_option("--test-rpc", action="store_true", dest="testrpc", help="Update 'reflectors' status (ex: --test-rpc)")
         group3.add_option("--attack-me", action="store_true", dest="attackme", help="Order 'zombies' to attack you (NAT required!)")
         self.add_option_group(group3)
         group4 = optparse.OptionGroup(self, "*Community*")
@@ -76,9 +80,10 @@ class UFONetOptions(optparse.OptionParser):
         group5.add_option("-x", action="store", dest="abduction", help="Examine webserver configuration (+CVE, +WAF detection)")
         self.add_option_group(group5)
         group7 = optparse.OptionGroup(self, "*Extra Attack(s)*")
-        group7.add_option("--db", action="store", dest="dbstress", help="Set db stress input point (ex: --db 'search.php?q=')")
-        group7.add_option("--loic", action="store", dest="loic", help="Start 'DoS' Web LOIC attack (ex: --loic 100)")
-        group7.add_option("--slow", action="store", dest="slow", help="Start 'DoS' Slow HTTP requests attack (ex: --slow 100)")
+        group7.add_option("--db", action="store", dest="dbstress", help="Start 'DB Stress' attack (ex: --db 'search.php?q=')")
+        group7.add_option("--loic", action="store", dest="loic", help="Start 'DoS Web LOIC' attack (ex: --loic 100)")
+        group7.add_option("--loris", action="store", dest="loris", help="Start 'DoS Slow HTTP' attack (ex: --loris 101)")
+        group7.add_option("--ufosyn", action="store", dest="ufosyn", help="Start 'DoS TCP-SYN flood' attack (ex: --ufosyn 100)")
         self.add_option_group(group7)
         group6 = optparse.OptionGroup(self, "*Configure Attack(s)*")
         group6.add_option("--no-head", action="store_true", dest="disablehead", help="Disable status check: 'Is target up?'")
@@ -90,6 +95,14 @@ class UFONetOptions(optparse.OptionParser):
         group6.add_option("-b", action="store", dest="place", help="Set place to attack (ex: -b '/path/big.jpg')")
         group6.add_option("-a", action="store", dest="target", help="Start 'DDoS' attack (ex: -a 'http(s)://target.com')")
         self.add_option_group(group6)
+
+    def extract_mods(self):
+        mods = "3 [ LOIC + LORIS + UFOSYN ]" # hardcoded mods ;-)
+        return mods       
+
+    def extract_tools(self):
+        tools = "2" # hardcoded tools
+        return tools
 
     def extract_zombies(self):
         try:
@@ -147,7 +160,7 @@ class UFONetOptions(optparse.OptionParser):
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
-        if (not options.test and not options.testrpc and not options.target and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.upload and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.cryptomsg and not options.autosearch and not options.testoffline and not options.testall):
+        if (not options.test and not options.testrpc and not options.target and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.upload and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.cryptomsg and not options.shownet and not options.timeline and not options.autosearch and not options.testoffline and not options.testall):
             print '='*75, "\n"
             print "888     888 8888888888 .d88888b.  888b    888          888    "   
             print "888     888 888        d88P" "Y888b  8888b   888          888    "
@@ -159,10 +172,11 @@ class UFONetOptions(optparse.OptionParser):
             print " 'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888"                                 
             print self.description, "\n"
             print '='*75 + "\n"
-            print 'Bots:', self.total_botnet, "= [ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + U:" + str(self.ucavs) + " + R:" + str(self.rpcs) + " ] - Dorks:", self.dorks, "\n"
+            print '-> Bots:', self.total_botnet, "[ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + U:" + str(self.ucavs) + " + R:" + str(self.rpcs) + " ] | Dorks:", self.dorks, "\n"
+            print '-> Mods:', str(self.mods) + " | Tools:", self.tools, "\n"
             print '='*75, "\n"
-            print "-> For HELP use: -h or --help"
-            print "\n-> For WEB interface use: --gui\n"
+            print "-> For HELP use: -h or --help\n"
+            print "-> For WEB interface use: --gui\n"
             print '='*75, "\n"
             return False
         return options
