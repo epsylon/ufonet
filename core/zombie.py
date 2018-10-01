@@ -45,7 +45,7 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
-            external_service = "http://www.downforeveryoneorjustme.com/" # external check
+            external_service = "https://www.downforeveryoneorjustme.com/" # external check
             if options.target.startswith('https://'): # fixing url prefix
                 options.target = options.target.replace('https://','')
             if options.target.startswith('http://'): # fixing url prefix

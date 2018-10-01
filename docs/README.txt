@@ -37,8 +37,7 @@ Welcome to UFONet [ DDoS+DoS ] Botnet/C&C/Darknet ;-)
 # Summary
 ###############################
 
-UFONet - is a tool designed to launch Layer 7 (HTTP/Web Abuse) DDoS & DoS attacks,
-using 'Open Redirect' vectors on third part web applications (a botnet).
+UFONet - is a toolkit designed to launch DDoS and DoS attacks.
 
 See these links for more info:
 
@@ -59,6 +58,7 @@ UFONet runs on many platforms. It requires Python (>2.7.9) and the following lib
      python-whois  - Python module for retrieving WHOIS information - Python 2
      python-crypto - Cryptographic algorithms and protocols for Python
      python-requests - elegant and simple HTTP library for Python2, built for human beings
+     python-scapy - Packet generator/sniffer and network scanner/discovery
 
 You can automatically get all required libraries using:
 
@@ -66,7 +66,7 @@ You can automatically get all required libraries using:
 
 For manual installation on Debian-based systems (ex: Ubuntu), run: 
 
-     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
+     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
 
 On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
@@ -82,6 +82,8 @@ Source libs:
      * PyWhois: https://pypi.python.org/pypi/whois
      * PyCrypto: https://pypi.python.org/pypi/pycrypto
      * PyRequests: https://pypi.python.org/pypi/requests
+     * PyScapy: https://pypi.org/project/scapy/
+     * Leaflet: http://leafletjs.com/ (provided)
 
 ###############################
 # Searching for 'zombies'
@@ -110,8 +112,8 @@ By default UFONet will use a search engine called 'Yahoo'. But you can choose a 
 
 This is the list of available search engines with last time that they were working:
 
-        - bing [06/03/2018: OK!]
-        - yahoo [06/03/2018: OK!]
+        - bing [26/09/2018: OK!]
+        - yahoo [26/09/2018: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -327,19 +329,25 @@ You can test your list of 'XML-RPCs zombies' launching:
 
      ./ufonet --test-rpc
 
-At same time, you can connect a LOIC (with proxy support), to make a determinate number of recursive requests 
+At same time, you can connect LOIC (with proxy support), to make a determinate number of recursive requests 
 directly to your target:
 
      ./ufonet -a http://target.com --loic 100
 
-You can connect a LORIS to make requests leave open threads on the target too, making the web server 
+You can connect LORIS to make requests leave open threads on the target too, making the web server 
 work slower:
 
-     ./ufonet -a http://target.com --slow 100
+     ./ufonet -a http://target.com --loris 100
 
-Both ways could be combined, so UFONet can attack DDoS and DoS at the same time:
+And you can connect UFOSYN (it requires 'root' access) to start a powerful TCP/SYN flood attack:
 
-     ./ufonet -a http://target.com --loic 100 --slow 100
+     sudo python ufonet -a http://target.com --ufosyn 100
+
+Both ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
+
+     ./python ufonet -a http://target.com --loic 100 --loris 100
+
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100
 
 ###############################
 # Updating
@@ -347,7 +355,7 @@ Both ways could be combined, so UFONet can attack DDoS and DoS at the same time:
 
 UFONet has implemented an option to update the tool to the latest stable version.
 
-This feature can be used only if you have cloned it from GitHub respository.
+This feature can be used only if you have cloned it from a git respository.
 
 To check your version you should launch:
 
@@ -397,11 +405,15 @@ This will open a tab on your default browser with all features of the tool and s
  - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
  - WARPS: Allows to interact with a "mothership" to download/upload "zombies"
  - GLOBAL GRID: Allows to review statistics from other "spaceships"
- - WARGAMES: Allows to propose and interact with some real "wargames"
+ - WARGAMES: Allows to propose and join some real "wargames"
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+26.09.2018 : v.1.1
+--------------------------
 
 --------------------------
 08.03.2018 : v.1.0

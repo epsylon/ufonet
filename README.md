@@ -1,4 +1,4 @@
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-main_visor_small.png "UFONet Botnet Control Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-welcome_small.png "UFONet Welcome")
 
 ----------
 
@@ -10,8 +10,7 @@
 
 ----------
 
-  UFONet - is a tool designed to launch Layer 7 (HTTP/Web Abuse) DDoS & DoS attacks,
-  using 'Open Redirect' vectors on third part web applications (a botnet).
+  UFONet - is a toolkit designed to launch DDoS and DoS attacks.
 
   See these links for more info:
 
@@ -34,6 +33,7 @@
        python-whois  - Python module for retrieving WHOIS information - Python 2
        python-crypto - Cryptographic algorithms and protocols for Python
        python-requests - elegant and simple HTTP library for Python2, built for human beings
+       python-scapy - Packet generator/sniffer and network scanner/discovery
 
   You can automatically get all required libraries using:
 
@@ -41,7 +41,7 @@
 
   For manual installation, on Debian-based systems (ex: Ubuntu), run: 
 
-       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
+       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
@@ -57,6 +57,7 @@
    * PyWhois: https://pypi.python.org/pypi/whois
    * PyCrypto: https://pypi.python.org/pypi/pycrypto
    * PyRequests: https://pypi.python.org/pypi/requests
+   * PyScapy: https://pypi.org/project/scapy/
    * Leaflet: http://leafletjs.com/ (provided)
 
 ----------
@@ -70,26 +71,28 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-shell-gui_small.png "UFONet Botnet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-shell1_small.png "UFONet Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-grid_small.png "UFONet Botnet Grid")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-shell2_small.png "UFONet GUI Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-grid-stats_small.png "UFONet Botnet Grid Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-welcome_small.png "UFONet GUI Welcome")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-stats_small.png "UFONet Botnet General Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-main_small.png "UFONet GUI Main Panel")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-board_small.png "UFONet Botnet Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-botnet_small.png "UFONet GUI Botnet")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet Botnet GeoMap (deploying)")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-stats_small.png "UFONet GUI General Stats")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-attack_visor_small.png "UFONet Attack Visor")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-board_small.png "UFONet GUI Board/Forum")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet Botnet GeoMap (attacking)")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-grid_small.png "UFONet GUI Grid")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-missions_small.png "UFONet Botnet Missions")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-grid2_small.png "UFONet GUI Grid Stats")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-abduction_small.png "UFONet Botnet Abduction")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-wargames_small.png "UFONet GUI Wargames")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-warp_small.png "UFONet Botnet Warp")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-attack_small.png "UFONet GUI Attack")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-tachyon-help_small.png "UFONet Botnet Help")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet GeoMap /attacking/")

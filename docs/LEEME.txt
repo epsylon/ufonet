@@ -37,8 +37,7 @@ Bienvenida a UFONet [ DDoS+DoS ] Botnet/C&C/Darknet ;-)
 # Introducción
 ###############################
 
-UFONet - es una herramienta diseñada para lanzar ataques DDoS y DoS en la capa 7 (HTTP/Web Abuse),
-utilizando vectores 'Open Redirect' en aplicaciones web de terceros (una botnet).
+UFONet - es un conjunto de herramientas diseñado para lanzar ataques DDoS y DoS.
 
 En los siguientes enlaces tienes más información:
 
@@ -54,11 +53,12 @@ En los siguientes enlaces tienes más información:
 
 UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
 
-       python-pycurl - Python bindings to libcurl
-       python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
-       python-whois  - Python module for retrieving WHOIS information - Python 2
-       python-crypto - Cryptographic algorithms and protocols for Python
-       python-requests - elegant and simple HTTP library for Python2, built for human beings
+     python-pycurl - Python bindings to libcurl
+     python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
+     python-whois  - Python module for retrieving WHOIS information - Python 2
+     python-crypto - Cryptographic algorithms and protocols for Python
+     python-requests - elegant and simple HTTP library for Python2, built for human beings
+     python-scapy - Packet generator/sniffer and network scanner/discovery
 
 Puedes obtener todas las librerías requeridas automáticamente usando:
 
@@ -66,22 +66,24 @@ Puedes obtener todas las librerías requeridas automáticamente usando:
 
 Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
 
-     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests
+     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
 
 En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 
-       pip install geoip 
-       pip install requests
-       pip install pycrypto
+     pip install geoip 
+     pip install requests
+     pip install pycrypto
 
 Paquetes fuente de las librerías:
 
-       * Python: https://www.python.org/downloads/
-       * PyCurl: http://pycurl.sourceforge.net/
-       * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
-       * PyWhois: https://pypi.python.org/pypi/whois
-       * PyCrypto: https://pypi.python.org/pypi/pycrypto
-       * PyRequests: https://pypi.python.org/pypi/requests
+     * Python: https://www.python.org/downloads/
+     * PyCurl: http://pycurl.sourceforge.net/
+     * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
+     * PyWhois: https://pypi.python.org/pypi/whois
+     * PyCrypto: https://pypi.python.org/pypi/pycrypto
+     * PyRequests: https://pypi.python.org/pypi/requests
+     * PyScapy: https://pypi.org/project/scapy/
+     * Leaflet: http://leafletjs.com/ (provided)
 
 ###############################
 # Buscando 'zombies'
@@ -111,8 +113,8 @@ Por defecto, UFONet utiliza un motor de búsqueda que se llama 'Yahoo'. Pero pue
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - bing [06/03/2018: OK!]
-        - yahoo [06/03/2018: OK!]
+        - bing [26/09/2018: OK!]
+        - yahoo [26/09/2018: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -331,19 +333,25 @@ Puedes probar tu lista de zombies "X-RPCs" lanzando:
 
      ./ufonet --test-rpc
 
-Al mismo tiempo, puedes conectar un LOIC (con soporte para proxy), para hacer un número determinado de peticiones 
+Al mismo tiempo, puedes conectar LOIC (con soporte para proxy), para hacer un número determinado de peticiones 
 recursivas directamente sobre tu objetivo:
 
      ./ufonet -a http://target.com --loic 100
 
-Puedes conectar un LORIS para hacer peticiones que dejen hilos abiertos en tu objetivo, haciendo que el servidor web 
+Puedes conectar LORIS para hacer peticiones que dejen hilos abiertos en tu objetivo, haciendo que el servidor web 
 se vuelva lento:
 
-     ./ufonet -a http://target.com --slow 100
+     ./ufonet -a http://target.com --loris 100
 
-Ambos ataques pueden ser combinados, haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
+Y también puedes conectar UFOSYN (requiere acceso mediante 'root') para comenzar un poderoso ataque de inundación TCP/SYN:
 
-     ./ufonet -a http://target.com --loic 100 --slow 100
+     sudo python ufonet -a http://target.com --ufosyn 100
+
+Ambos ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
+
+     ./python ufonet -a http://target.com --loic 100 --loris 100
+
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100
 
 ###############################
 # Actualizando
@@ -402,11 +410,15 @@ más algunas "extra":
  - BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
  - WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
  - GLOBAL GRID: Permite revisar las estadísticas de otras "naves"
- - WARGAMES: Permite proponer e interactuar en algunos "juegos de guerra" reales
+ - WARGAMES: Permite proponer y participar en algunos "juegos de guerra" reales
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+26.09.2018 : v.1.1
+--------------------------
 
 --------------------------
 08.03.2018 : v.1.0
