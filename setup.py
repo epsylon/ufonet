@@ -6,6 +6,11 @@ if sys.version_info[0] != 2:
     
 from setuptools import setup, find_packages
 
+def metadata():
+	print "UFONet by epsylon."
+	print "this is designed to launch DDoS and DoS attacks."
+	print "to install run python setup.py install"
+
 setup(
     name='ufonet',
     version='1.1',
