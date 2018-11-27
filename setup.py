@@ -11,7 +11,7 @@ def metadata():
 	print "this is designed to launch DDoS and DoS attacks."
 
 def dependencies(option):
-		"""to install run python setup.py install"""
+	"""to install run python setup.py install"""
 
 setup(
     name='ufonet',
