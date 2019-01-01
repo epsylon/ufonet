@@ -7,10 +7,10 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import socket, threading, logging, datetime
-import zombie
-import sys, os, re
+import socket, threading, logging, datetime, sys, os, re, time
 from urlparse import urlparse
+
+import zombie
 
 # zombie tracking class
 class Herd(object):
@@ -47,7 +47,7 @@ class Herd(object):
         except:
             pass
 
-    # got a new one !
+    # got a new one!
     def new_zombie(self, zombie):
         self.total_connections+=1
         if zombie not in self.stats:
@@ -85,11 +85,9 @@ class Herd(object):
         options = self.ufonet.options
         if options.verbose == True:
             if ac>self.living:
-                print "[Control] Active zombies:", ac-self.living, ", waiting for them to return..."
-            else:
-                print "="*41
-                print "\n[Control] All zombies returned to the master ;-)"
-                print "-"*21
+                if ac-self.living not in self.ufonet.ac_control:
+                    print "[Info] [AI] [Control] Active [ARMY] returning from the combat front: "+ str(ac-self.living)
+                    self.ufonet.ac_control.append(ac-self.living)
         with self.lock:
             return ac==self.living
 
@@ -114,8 +112,11 @@ class Herd(object):
         buf=""
         out=self.get_stat()
         if os.path.exists("/tmp/ufonet.html.tmp"):
-            print 'tmp file found, html output abort !!!'
-            return
+            try:
+                self.cleanup()
+            except:
+                print '[Info] Previous tmp file found... html content will not be updated.'
+                pass
         buf += "<div>" + os.linesep
         if out['err'] is not None:
             buf += "<div>Errors : <br/>"+str(out['err'])+'</div>'+os.linesep
@@ -144,23 +145,26 @@ class Herd(object):
         buf += "<div><h3>Troops: </h3></div>"+os.linesep
         buf += "<div>Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)+"</div>" + os.linesep
         buf += "<div>Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)+"</div>" + os.linesep
+        buf += "<div>X-RPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)+"</div>" + os.linesep
         buf += "<div>UCAVs: " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail)+"</div>" + os.linesep
-        buf += "<div>XRPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)+"</div>" + os.linesep
         f = open("/tmp/ufonet.html.tmp", "w") 
         f.write(buf)
         if(final):
             f.write("<script>hdone=true</script>")
         f.close()
-        os.rename("/tmp/ufonet.html.tmp","/tmp/ufonet.html")
+        try:
+            os.rename("/tmp/ufonet.html.tmp","/tmp/ufonet.html")
+        except:
+            pass
 
     # generate statistics for stdout
     def format(self, out):
+        if len(out['data'])==0:
+            print "[Info] Not any feedback data to show. Exiting..."
+            return
         print '='*42
         print "Herd statistics"
         print "="*42
-        if len(out['data'])==0:
-            print "\n[Error] Something wrong retrieving data feedback. Executing evasion routine!"
-            return
         for zo in out['data']:
             z=out['data'][zo]
             print 'Zombie :', z['name'], " | ", z['hits'], " hits ", z['fails'] ," fails ", z['retries'], " retries "
@@ -174,7 +178,7 @@ class Herd(object):
             print "="*80
             print "Worst zombie: ", out['max_failz'], " with ", out['max_fails'], " fails"
         print "="*80
-        print "Total invocations:", self.total_connections,"| Zombies:", len(self.stats),"| Hits:", self.total_hits,"| Fails:", self.total_fails
+        print "Total invocations:", self.total_connections,"| Zombies:", str(self.ufonet.total_zombie),"| Hits:", self.total_hits,"| Fails:", self.total_fails
         print "Total time:", out['total_time'], "| Avg time:", out['avg_time']
         print "Total size:", out['total_size'],"| Avg size:", out['avg_size']
         print "-"*21
@@ -183,8 +187,8 @@ class Herd(object):
         print "="*42
         print "Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)
         print "Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)
+        print "X-RPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)
         print "UCAVs : " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail)
-        print "XRPCs : " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)
         print "-"*21
         print "\n" # gui related
         print '='*21
@@ -194,13 +198,13 @@ class Herd(object):
         data={}
         out={'err':None,"header":"","data":{},"total":{},"footer":"",'max_fails':0,'max_failz':"",'max_hits':0,'max_hitz':""}
         if os.path.exists("html.tmp"):
-            out['err']= "tmp file found"
+            out['err']= "\n[Info] Previous tmp file found... html content will not be updated."
             return out
         if self.total_connections==0:
-            out['err']= "No herd without zombies"
+            out['err']= "\n[Error] No herd without zombies..."
             return out
         if len(self.stats)==0:
-            out['err']=  "No statistics available"
+            out['err']=  "\n[Error] No statistics available..."
             return out
         self.zero_fails = 0
         for zombie_stat in self.stats:
@@ -208,7 +212,7 @@ class Herd(object):
             try:
                 entry={'name':zombie_stat,"hits":0,"fails":0,"retries":0,"time":0,"max_time":0,"min_time":zs[0][1],"avg_time":0,"size":0,"max_size":0,"min_size":zs[0][2],"avg_size":0}
             except:
-                out['err']=  "No statistics available\n"
+                out['err']=  "\n[Error] No statistics available...\n"
                 return out
             if len(zs)==0:
                 continue
@@ -217,8 +221,11 @@ class Herd(object):
                     entry['hits']+=1
                 else:
                     entry['fails']+=1
-                if self.connection[zombie_stat]:
-                    entry['retries']+=1
+                try:
+                    if self.connection[zombie_stat]:
+                        entry['retries']+=1
+                except:
+                    entry['retries']=entry['retries'] # black magic!
                 entry['time']+=line[1]
                 if line[1]>entry['max_time']: 
                     entry['max_time']=line[1]
@@ -260,8 +267,6 @@ class Herd(object):
     # wrapper
     def dump(self):
         out=self.get_stat()
-        if out['err'] is not None:
-            print "[Error] "+out['err']
         self.format(out)
 
     def list_fails(self):
@@ -272,7 +277,7 @@ class Herd(object):
             return
         if not options.forceyes:
             print '-'*25
-            update_reply = raw_input("Want to update your army (Y/n)")
+            update_reply = raw_input("Do you want to update your army (Y/n)")
             print '-'*25
         else:
             update_reply = "Y"

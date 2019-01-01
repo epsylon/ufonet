@@ -7,14 +7,7 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import socket
-import re
-import time
-import string
-import sys
-import urlparse
-import os
-import traceback
+import socket, re, time, string, sys, urlparse, os, traceback
 from threading import *
 
 class Paster(Thread):

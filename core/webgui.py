@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2019 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -17,7 +17,7 @@ from base64 import b64decode
 from decimal import Decimal
 from options import UFONetOptions
 from main import UFONet
-from abductor import Abductor
+from core.tools.abductor import Abductor
 
 host = "0.0.0.0"
 port = 9999
@@ -58,7 +58,10 @@ class Pages():
         return i + 1
 
     def html_army_map(self,target=None):
-        target_js="total_zombies = "+str( int(self.file_len(self.zombies_file))+int(self.file_len(self.aliens_file))+int(self.file_len(self.droids_file))+int(self.file_len(self.ucavs_file))+int(self.file_len(self.rpcs_file)) )+"\ninitMap()\n\n"
+        try:
+            target_js="total_zombies = "+str( int(self.file_len(self.zombies_file))+int(self.file_len(self.aliens_file))+int(self.file_len(self.droids_file))+int(self.file_len(self.ucavs_file))+int(self.file_len(self.rpcs_file)) )+"\ninitMap()\n\n"
+        except:
+            target_js="not any zombie available\n\n"
         if target is not None:
             target_js += "$('#ufomsg').load('/js/ajax.js?doll="+target+"')\n"
         return self.pages["/header"] + """
@@ -99,10 +102,10 @@ window.setTimeout(window.close,1234)
                 data = json.load(data_file)
         except:
             if os.path.exists(self.mothership_webcfg_file) == True:
-                print '\n[Error] - Cannot open: "core/json/webcfg.json"...\n'
-                sys.exit(2)
+                print '[Error] [AI] Cannot open: "core/json/webcfg.json" -> [Aborting!]\n'
+                return
             else: # generate default requests configuration file
-                print '\n[Info] - Cannot found: "core/json/webcfg.json". Generating...\n'
+                print '[Info] [AI] Cannot found: "core/json/webcfg.json" -> [Generating!]'
                 with open(self.mothership_webcfg_file, "w") as f:
                     json.dump({"rproxy": "NONE", "ruseragent": "RANDOM", "rreferer": "RANDOM", "rhost": "NONE", "rxforw": "on", "rxclient": "on", "rtimeout": "10", "rretries": "1", "rdelay": "0", "threads": "5", "rssl": "off"}, f, indent=4)
         # set values of requests configuration from json file to html form
@@ -242,10 +245,10 @@ window.setTimeout(window.close,1234)
                 data = json.load(data_file)
         except:
             if os.path.exists(self.mothership_boardcfg_file) == True:
-                print '[Error] - Cannot open: "core/json/boardcfg.json"...\n'
-                sys.exit(2)
+                print '[Error] [AI] Cannot open: "core/json/boardcfg.json" -> [Aborting!]\n'
+                return
             else: 
-                print '[Info] - Cannot found: "core/json/boardcfg.json". Generating...\n'
+                print '[Info] [AI] Cannot found: "core/json/boardcfg.json" -> [Generating!]'
                 with open(self.mothership_boardcfg_file, "w") as f:
                     json.dump({"profile_token": "NONE", "profile_icon": "NONE", "profile_nick": "Anonymous"}, f, indent=4)
                 f.close()
@@ -286,10 +289,10 @@ function BoardProfile() {
                 data = json.load(data_file)
         except:
             if os.path.exists(self.mothership_gridcfg_file) == True:
-                print '[Error] - Cannot open: "core/json/gridcfg.json"...\n'
-                sys.exit(2)
+                print '[Error] [AI] Cannot open: "core/json/gridcfg.json" -> [Aborting!]\n'
+                return
             else: 
-                print '[Info] - Cannot found: "core/json/gridcfg.json". Generating...\n'
+                print '[Info] [AI] Cannot found: "core/json/gridcfg.json" -> [Generating!]'
                 with open(self.mothership_gridcfg_file, "w") as f:
                     json.dump({"grid_token": "NONE", "grid_contact": "UNKNOWN!", "grid_nick": "Anonymous"}, f, indent=4)
                 f.close()                
@@ -348,6 +351,18 @@ window.setTimeout(window.close,1234)
 <center>Grid profile updated. Re-enter to see changes..."""+self.pages["/footer"]
 
     def html_stats(self):
+        if self.ranking == "Rookie": # Rookie
+            your_ranking = "<font color='white'>Rookie [*]</font>"
+        elif self.ranking == "Mercenary": # Mercenary
+            your_ranking = "<font color='cyan'>Mercenary [**]</font>"
+        elif self.ranking == "Bandit": # Bandit 
+            your_ranking = "<font color='blueviolet'>Bandit [***]</font>"
+        elif self.ranking == "UFOmmander!": # UFOmmander!
+            your_ranking = "<font color='blue'>UFOmmander! [****]</font>"
+        elif self.ranking == "UFOl33t!": # UFOl33t!
+            your_ranking = "<font color='red'>UFOl33t! [&#x25BC;]</font>"
+        else:
+            your_ranking = "<font color='yellow' size='4'>[-]</font> ( no0b! )" # no0b hacking attempt! ;-)
         return self.pages["/header"] + """<script language="javascript"> 
 function Grid() {
         var win_grid = window.open("grid","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
@@ -358,19 +373,27 @@ function Grid() {
 <table cellpadding="5" cellspacing="5"><tr>
 <td><img src="/images/mothership.png"></td>
 <td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button></td>
-</tr</table>
-<br>
-
+</tr></table>
 <table border="0" cellpadding="5" cellspacing="10"><tr><td>
-
 <table border="1" cellpadding="5" cellspacing="10"><tr>
 <td><b><u>General:</u></b></td></tr>
 <tr>
-<td>Flying (times):</td><td align='right'><font color='red'>""" + str(self.aflying) + """</font></td></tr>
+<td>RANKING:</td><td align='right'>""" + str(your_ranking) + """</td></tr>
+<tr><td>Flying (times):</td><td align='right'><font color='red'>""" + str(self.aflying) + """</font></td></tr>
 </table>
-
+<br>
+<table border="1" cellpadding="5" cellspacing="10"><tr>
+<td><b><u>Missions:</u></b></td></tr>
+<tr>
+<td>Created (launched):</td><td align='right'><font color='red'>""" + str(self.amissions) + """</font></td></tr>
+<tr>
+<td>Attacks (completed):</td><td align='right'><font color='blue'>""" + str(self.acompleted) + """</font></td></tr>
+<tr>
+<td>Targets (crashed):</td><td align='right'><font color='green'>""" + str(self.tcrashed) + """</font></td></tr>
+<tr>
+<td>Crashing (T*100/A=C%):</td><td align='right'><font color='orange'>""" + str(round(self.mothership_acc, 2)) + """%</font></td></tr>
+</table>
 </td><td>
-
 <table border="1" cellpadding="5" cellspacing="10"><tr>
 <td><b><u>Botnet:</u></b></td></tr>
 <tr>
@@ -384,25 +407,18 @@ function Grid() {
 <tr>
 <td>Max. Chargo (always): </td><td align='right'><font color='orange'>""" + str(self.amax_chargo) + """</font></td></tr>
 </table>
-
-</td><td>
-
+<br>
 <table border="1" cellpadding="5" cellspacing="10"><tr>
-<td><b><u>Missions:</u></b></td></tr>
+<td><b><u>Weapons (use):</u></b></td></tr>
 <tr>
-<td>Created (launched):</td><td align='right'><font color='red'>""" + str(self.amissions) + """</font></td></tr>
+<td>LOIC:</td><td align='right'><font color='cyan'>""" + str(self.aloic) + """</font></td>
+<td>LORIS:</td><td align='right'><font color='cyan'>""" + str(self.aloris) + """</font></td></tr>
 <tr>
-<td>Attacks (completed):</td><td align='right'><font color='blue'>""" + str(self.acompleted) + """</font></td></tr>
+<td>UFOSYN:</td><td align='right'><font color='cyan'>""" + str(self.aufosyn) + """</font></td>
+<td>SPRAY:</td><td align='right'><font color='cyan'>""" + str(self.aspray) + """</font></td></tr>
 <tr>
-<td>LOIC (used):</td><td align='right'><font color='cyan'>""" + str(self.aloic) + """</font></td></tr>
-<tr>
-<td>LORIS (used):</td><td align='right'><font color='cyan'>""" + str(self.aloris) + """</font></td></tr>
-<tr>
-<td>UFOSYN (used):</td><td align='right'><font color='cyan'>""" + str(self.aufosyn) + """</font></td></tr>
-<tr>
-<td>Targets (crashed):</td><td align='right'><font color='green'>""" + str(self.tcrashed) + """</font></td></tr>
-<tr>
-<td>Crashing (T*100/A=C%):</td><td align='right'><font color='orange'>""" + str(round(self.mothership_acc, 2)) + """%</font></td></tr>
+<td>SMURF:</td><td align='right'><font color='cyan'>""" + str(self.asmurf) + """</font></td>
+<td>XMAS:</td><td align='right'><font color='cyan'>""" + str(self.axmas) + """</font></td></tr>
 </table>
 </td></tr></table>
 <br><hr>
@@ -493,7 +509,7 @@ function RefreshNews(){
 </tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshNews()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search News...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Psihiz says: """ + self.ranking + """... Welcome to the Crypto-News!...');"><img src="/images/aliens/alien1.png"></a></td><td>
+<td><a href="javascript:alert('Psihiz says: """ + self.ranking + """... Welcome to CryptoNews!...');"><img src="/images/aliens/alien1.png"></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>
 <form method='GET'>
 Your key: <input type="text" name="news_key" id="news_key" size="20" value='"""+str(self.crypto_key)+"""'>
@@ -545,7 +561,7 @@ function RefreshMissions(){
 </tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshMissions()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search missions...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Mnahät says: """ + self.ranking + """... Welcome to the Crypto-Missions!...');"><img src="/images/aliens/alien2.png"></a></td><td>
+<td><a href="javascript:alert('Mnahät says: """ + self.ranking + """... Welcome to CryptoMissions!...');"><img src="/images/aliens/alien2.png"></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>
 <form method='GET'>
 Your key: <input type="text" name="missions_key" id="missions_key" size="20" value='"""+str(self.crypto_key)+"""'>
@@ -708,10 +724,10 @@ function SendMessage() {
                 line = line.strip()
             f.close()
             mothership_members = 0 # mothership_members stats bonus
-            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANKING:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
-            for m in self.list_grid: # msg = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, contact, ID
+            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANKING:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>SPRAY:</u></td><td align='center'><u>SMURF:</u></td><td align='center'><u>XMAS:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
+            for m in self.list_grid: # msg = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, contact, ID
                 if grid_msg_sep in m:
-                    version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1)
+                    version = m.count(grid_msg_sep) # check UFONet stream version (made for compatibility with old motherships)
                     m = m.split(grid_msg_sep)
                     grid_nickname = m[0][0:12]
                     grid_nickname = ''.join(random.sample(grid_nickname,len(grid_nickname))) # nickname (obfuscation+str12)
@@ -732,11 +748,36 @@ function SendMessage() {
                     grid_attacks = ''.join(random.sample(grid_attacks,len(grid_attacks))) # attacks (obfuscation)
                     grid_loic = m[8][0:4] # loic
                     grid_loic = ''.join(random.sample(grid_loic,len(grid_loic))) # loic (obfuscation)
+                    if version > 12: # v1.2
+                        grid_loris = m[9][0:4] # loris
+                        grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
+                        grid_ufosyn =  m[10][0:4] # ufosyn
+                        grid_ufosyn = ''.join(random.sample(grid_ufosyn,len(grid_ufosyn))) # ufosyn (obfuscation)
+                        grid_spray =  m[11][0:4] # spray
+                        grid_spray = ''.join(random.sample(grid_spray,len(grid_spray))) # spray (obfuscation)
+                        grid_smurf =  m[12][0:4] # smurf
+                        grid_smurf = ''.join(random.sample(grid_smurf,len(grid_smurf))) # smurf (obfuscation)
+                        grid_xmas =  m[13][0:4] # xmas
+                        grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
+                        try:
+                            grid_contact = "<a href=javascript:alert('"+str(m[14][0:12])+"');>View</a>" # js contact view (obfuscation)
+                        except:
+                            grid_contact= "invalid"
+                        try:
+                            grid_id = m[15] # id (plain id)
+                        except:
+                            grid_id = "invalid!"
                     if version == 12: # v1.1
                         grid_loris = m[9][0:4] # loris
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
                         grid_ufosyn =  m[10][0:4] # ufosyn
                         grid_ufosyn = ''.join(random.sample(grid_ufosyn,len(grid_ufosyn))) # ufosyn (obfuscation)
+                        grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not spray present
+                        grid_spray = ''.join(random.sample(grid_spray,len(grid_spray))) # spray (obfuscation)
+                        grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not smurf present
+                        grid_smurf = ''.join(random.sample(grid_smurf,len(grid_smurf))) # smurf (obfuscation)
+                        grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not xmas present
+                        grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[11][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[12] # id (plain id)
@@ -747,6 +788,12 @@ function SendMessage() {
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
                         grid_ufosyn = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not ufosyn present
                         grid_ufosyn = ''.join(random.sample(grid_ufosyn,len(grid_ufosyn))) # ufosyn (obfuscation)
+                        grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not spray present
+                        grid_spray = ''.join(random.sample(grid_spray,len(grid_spray))) # spray (obfuscation)
+                        grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not smurf present
+                        grid_smurf = ''.join(random.sample(grid_smurf,len(grid_smurf))) # smurf (obfuscation)
+                        grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not xmas present
+                        grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[10][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[11] # id (plain id)
@@ -757,6 +804,12 @@ function SendMessage() {
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
                         grid_ufosyn = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not ufosyn present
                         grid_ufosyn = ''.join(random.sample(grid_ufosyn,len(grid_ufosyn))) # ufosyn (obfuscation)
+                        grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not spray present
+                        grid_spray = ''.join(random.sample(grid_spray,len(grid_spray))) # spray (obfuscation)
+                        grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not smurf present
+                        grid_smurf = ''.join(random.sample(grid_smurf,len(grid_smurf))) # smurf (obfuscation)
+                        grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not xmas present
+                        grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[9][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[10] # id (plain id)
@@ -764,18 +817,30 @@ function SendMessage() {
                             grid_id = "invalid!"
                     else: # no valid version
                         pass
-                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                 else: # not valid stream data
                     pass
             grid_table += "</table>"
             if mothership_members == 0:
                 mothership_members = "¿?"
             l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>MEMBERS:</td><td align='right'>"+str(mothership_members)+"</td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td></tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>LOIC:</td><td>¿?</td><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td></tr><tr><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td></tr></table><br><hr><br>"
+            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td><font color='red'>¿?</font></td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td></tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>TRANSF:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td></tr><tr><td>LOIC:</td><td>¿?</td><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td><td>SPRAY:</td><td>¿?</td><td>SMURF:</td><td>¿?</td><td>XMAS:</td><td>¿?</td></tr></table><br><hr><br>"
             grid_table = mother_grid + grid_table + "</div>"
             return grid_table
 
     def html_grid(self):
+        if self.ranking == "Rookie": # Rookie
+            your_ranking = "<font color='white'>Rookie [*]</font>"
+        elif self.ranking == "Mercenary": # Mercenary
+            your_ranking = "<font color='cyan'>Mercenary [**]</font>"
+        elif self.ranking == "Bandit": # Bandit 
+            your_ranking = "<font color='blueviolet'>Bandit [***]</font>"
+        elif self.ranking == "UFOmmander!": # UFOmmander!
+            your_ranking = "<font color='blue'>UFOmmander! [****]</font>"
+        elif self.ranking == "UFOl33t!": # UFOl33t!
+            your_ranking = "<font color='red'>UFOl33t! [&#x25BC;]</font>"
+        else:
+            your_ranking = "<font color='yellow' size='4'>[-]</font> ( no0b! )" # no0b hacking attempt! ;-)
         if '"grid_token": "NONE"' in open(self.mothership_gridcfg_file).read():
             device_state = "OFF"
             device = "Grid device: <font color='red'>OFF</font><br>"
@@ -789,16 +854,6 @@ function SendMessage() {
             grid_contact.encode('utf-8')
             grid_nick = data["grid_nick"]
             grid_nick.encode('utf-8')
-            if self.ranking == "Rookie": # Rookie
-                your_ranking = "<font color='white' size='4'>*</font> (Rookie)"
-            elif self.ranking == "Mercenary": # Mercenary
-                your_ranking = "<font color='cyan' size='4'>**</font> (Mercenary)"
-            elif self.ranking == "Bandit": # Bandit 
-                your_ranking = "<font color='blueviolet' size='4'>***</font> (Bandit)"
-            elif self.ranking == "UFOmmander!": # UFOmmander!
-                your_ranking = "<font color='blue' size='4'>****</font> (UFOmmander!)"
-            else:
-                your_ranking = "<font color='yellow' size='4'>*</font> (no0b!)" # no0b hacking attempt! ;-)
             device = "<table cellpadding='5'><tr><td> -CONTACT: "+grid_contact.encode('utf-8')+"</td></tr><tr><td> -NICKNAME: "+grid_nick.encode('utf-8')+"</td></tr><tr><td> -RANKING: "+str(your_ranking)+"</td></tr><tr><td> -ID: "+str(grid_token)+"</td></tr></table>"
         if device_state == "OFF":
             grid_panel = ""
@@ -1015,14 +1070,20 @@ function EditSupply(){
           document.getElementById("supply_loic").readOnly = false;
           document.getElementById("supply_loris").readOnly = false;
           document.getElementById("supply_ufosyn").readOnly = false;
+          document.getElementById("supply_spray").readOnly = false;
+          document.getElementById("supply_smurf").readOnly = false;
+          document.getElementById("supply_xmas").readOnly = false;
           document.getElementById("supply_edit").title = "Set global army supply..."
           document.getElementById("supply_edit").value = "SET"
-	  document.getElementById("supply_edit").innerHTML = "SET!"
+          document.getElementById("supply_edit").innerHTML = "SET!"
         }else{
           supply_botnet=document.getElementById("supply_botnet").value
           supply_loic=document.getElementById("supply_loic").value
           supply_loris=document.getElementById("supply_loris").value
           supply_ufosyn=document.getElementById("supply_ufosyn").value
+          supply_spray=document.getElementById("supply_spray").value
+          supply_smurf=document.getElementById("supply_smurf").value
+          supply_xmas=document.getElementById("supply_xmas").value
           if(isNaN(parseFloat(supply_botnet)) || parseFloat(supply_botnet) < 0) {
             window.alert("You need to enter a valid BOTNET supply number (int>=0)");
             return
@@ -1038,22 +1099,40 @@ function EditSupply(){
                   if(isNaN(parseFloat(supply_ufosyn)) || parseFloat(supply_ufosyn) < 0) {
                   window.alert("You need to enter a valid UFOSYN supply number (int>=0)");
                   return
-                  }else{
-	            document.getElementById("supply_botnet").readOnly = true;
-          	    document.getElementById("supply_loic").readOnly = true;
-	            document.getElementById("supply_loris").readOnly = true;
-	            document.getElementById("supply_ufosyn").readOnly = true;
-	            document.getElementById("supply_edit").title = "Edit global army supply..."
-	            document.getElementById("supply_edit").value = "EDIT"
-	            document.getElementById("supply_edit").innerHTML = "EDIT"
-                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)
+		 }else{
+                     if(isNaN(parseFloat(supply_spray)) || parseFloat(supply_spray) < 0) {
+                     window.alert("You need to enter a valid SPRAY supply number (int>=0)");
+                     return
+                   }else{
+                      if(isNaN(parseFloat(supply_smurf)) || parseFloat(supply_smurf) < 0) {
+                      window.alert("You need to enter a valid SMURF supply number (int>=0)");
+                      return
+                     }else{
+                       if(isNaN(parseFloat(supply_xmas)) || parseFloat(supply_xmas) < 0) {
+                       window.alert("You need to enter a valid XMAS supply number (int>=0)");
+                       return
+                    }else{
+	                document.getElementById("supply_botnet").readOnly = true;
+          	        document.getElementById("supply_loic").readOnly = true;
+	                document.getElementById("supply_loris").readOnly = true;
+	                document.getElementById("supply_ufosyn").readOnly = true;
+                        document.getElementById("supply_spray").readOnly = true;
+                        document.getElementById("supply_smurf").readOnly = true;
+                        document.getElementById("supply_xmas").readOnly = true;
+	                document.getElementById("supply_edit").title = "Edit global army supply..."
+	                document.getElementById("supply_edit").value = "EDIT"
+	                document.getElementById("supply_edit").innerHTML = "EDIT"
+                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)+"&spray="+escape(supply_spray)+"&smurf="+escape(supply_smurf)+"&xmas="+escape(supply_xmas)
                     runCommandX("cmd_edit_supply",params)
                     setTimeout("Decrypt_wargames()", 2000)
+                  }
+                }
               }
             }
          }
        }
     }
+  }
 }
 </script>
 </head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
@@ -1082,9 +1161,8 @@ function Start(){
         }
         if(target.startsWith("http")){
         params="target="+escape(target)
-
         }else{
-          window.alert("You need to enter a valid url: http(s)://target.com");
+          window.alert("Target url not valid! -> It should starts with 'http(s)://'");
           return
         }
         runCommandX("cmd_abduction",params)
@@ -1194,33 +1272,44 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                         with open(self.mothership_supplycfg_file) as data_file:
                             data = json.load(data_file)
                     except:
-                        print '[Info] - Cannot found: "core/json/supplycfg.json". Generating...'
+                        print '[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]'
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0}, f, indent=4)
                     with open(self.mothership_supplycfg_file) as data_file:
                         data = json.load(data_file)
                     self.supply_botnet = data["botnet"]
                     self.supply_loic = data["loic"]
                     self.supply_loris = data["loris"]
                     self.supply_ufosyn = data["ufosyn"]
+                    self.supply_spray = data["spray"]
+                    self.supply_smurf = data["smurf"]
+                    self.supply_xmas = data["xmas"]
                     job_estimated_dec = strftime("%d-%m-%Y %H:%M:%S", job_estimated_dec)
                     print "[Info] [Wargames] Time is over: [" + str(job_estimated_dec) + "] -> Engaging target: " + str(job_target_dec)
-                    if int(self.supply_ufosyn) > 0: # ufosyn: root required!
-                        if int(self.supply_loris) > 0:
-                            if int(self.supply_loic) > 0:
-                                runcmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" --loic "+str(self.supply_loic)+" --loris "+str(self.supply_loris)+" --ufosyn "+str(self.supply_ufosyn)+ " "
-                            else:
-                                runcmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" --loris "+str(self.supply_loris)+" --ufosyn "+str(self.supply_ufosyn)+ " "
-                        else:
-                            runcmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" --ufosyn "+str(self.supply_ufosyn)+ " "
-                    else:
-                        if int(self.supply_loris) > 0:
-                            if int(self.supply_loic) > 0:
-                                runcmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" --loic "+str(self.supply_loic)+" --loris "+str(self.supply_loris)+ " "
-                            else:
-                                runcmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" --loris "+str(self.supply_loris)+ " "
-                        else:
-                            runcmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+ " "
+                    cmd = ""
+                    nonroot_cmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
+                    root_cmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
+                    if int(self.supply_xmas) > 0: 
+                        cmd += "--xmas " +str(self.supply_xmas)+ " "
+                        flag_xmas = True
+                    if int(self.supply_smurf) > 0:
+                        cmd += "--smurf " +str(self.supply_smurf)+ " "
+                        flag_smurf = True
+                    if int(self.supply_spray) > 0:
+                        cmd += "--spray " +str(self.supply_spray)+ " "
+                        flag_spray = True
+                    if int(self.supply_ufosyn) > 0:
+                        cmd += "--ufosyn " +str(self.supply_ufosyn)+ " "
+                        flag_ufosyn = True
+                    if int(self.supply_loris) > 0:
+                        cmd += "--loris " +str(self.supply_loris)+ " "
+                    if int(self.supply_loic) > 0:
+                        cmd += "--loic " +str(self.supply_loic)+ " "
+                    if not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
+                        cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
+                    if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True:
+                        cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS)                     
+                    runcmd = cmd + " "
                     runcmd = runcmd + "--force-yes &" # no raw_input allowed on webgui (+run it as daemon!)
                     print "[Info] [Wargames] Running command:", runcmd, "\n"
                     os.system(runcmd) # launch it!
@@ -1359,6 +1448,9 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.aloic = data["loic"]
         self.aloris = data["loris"]
         self.aufosyn = data["ufosyn"]
+        self.aspray = data["spray"]
+        self.asmurf = data["smurf"]
+        self.axmas = data["xmas"]
         self.tcrashed = data["crashed"]
         if int(self.acompleted) > 0: # check for attacks completed
             self.mothership_acc = Decimal((int(self.tcrashed) * 100) / int(self.acompleted)) # decimal rate: crashed*100/completed
@@ -1368,10 +1460,12 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
             self.ranking = "Rookie"
         elif int(self.acompleted) > 4 and int(self.tcrashed) < 1: # add first ranking step on 5 complete attacks
             self.ranking = "Mercenary"
-        elif int(self.tcrashed) > 1 and int(self.tcrashed) < 5: # second ranking step with almost 1 crashed
+        elif int(self.tcrashed) > 0 and int(self.tcrashed) < 2: # second ranking step with almost 1 crashed
             self.ranking = "Bandit"
-        elif int(self.tcrashed) > 5: # third ranking value is only for real "crashers" ;-)
+        elif int (self.acompleted) < 50 and int(self.tcrashed) > 4: # third ranking value is only for real "crashers" ;-)
             self.ranking = "UFOmmander!"
+        elif int(self.acompleted) > 49 and int(self.tcrashed) > 4: # this people is trying to build a Global Federated Network >-)
+            self.ranking = "UFOl33t!"
         f = open(self.zombies_file)
         self.zombies = f.readlines()
         self.zombies = [zombie.replace('\n', '') for zombie in self.zombies]
@@ -1379,6 +1473,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         for zombie in self.zombies:
             t = urlparse(zombie)
             name_zombie = t.netloc
+            if "www." in name_zombie:
+                name_zombie = name_zombie.replace("www.","")
             self.list_zombies.append(name_zombie)
         self.num_zombies = str(len(self.zombies))
         f.close()
@@ -1389,6 +1485,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         for alien in self.aliens:
             t = urlparse(alien)
             name_alien = t.netloc
+            if "www." in name_alien:
+                name_alien = name_alien.replace("www.","")
             self.list_aliens.append(name_alien)
         self.num_aliens = str(len(self.aliens))
         f.close()
@@ -1399,6 +1497,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         for droid in self.droids:
             t = urlparse(droid)
             name_droid = t.netloc
+            if "www." in name_droid:
+                name_droid = name_droid.replace("www.","")
             self.list_droids.append(name_droid)
         self.num_droids = str(len(self.droids))
         f.close()
@@ -1409,6 +1509,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         for ucav in self.ucavs:
             t = urlparse(ucav)
             name_ucav = t.netloc
+            if "www." in name_ucav:
+                name_ucav = name_ucav.replace("www.","")
             self.list_ucavs.append(name_ucav)
         self.num_ucavs = str(len(self.ucavs))
         f.close()
@@ -1419,6 +1521,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         for rpc in self.rpcs:
             t = urlparse(rpc)
             name_rpc = t.netloc
+            if "www." in name_rpc:
+                name_rpc = name_rpc.replace("www.","")
             self.list_rpcs.append(name_rpc)
         self.num_rpcs = str(len(self.rpcs))
         f.close()
@@ -1449,7 +1553,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
 <meta name="author" content="psy">
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="content-type" content="text/xml; charset=utf-8" /> 
-<title>UFONet - Denial of Service Toolkit</title>
+<title>UFONet - [ C&C/DarkNet ]</title>
 <script language="javascript" src="/lib.js"></script>
 <script language="javascript" src="js/stars.js"></script>
 <style>
@@ -1571,13 +1675,13 @@ startTyping(text, 80, "tt");
 <table border="1" bgcolor="black" cellpadding="24" cellspacing="25">
 <tr>
 <td>
-<pre>Welcome to <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">#UFONet</a> [C&C/DarkNet] ;-)
+<pre>Welcome to: <a href="https://ufonet.03c8.net/" target="_blank">UFONet</a> | <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">FAQ</a> - <a href="/help" target="_parent">Help</a> |
 
 ----------------------------------
 """ + self.options.version + """ 
  - Rel: """ + self.release_date + """ - Dep: """ + time.ctime(os.path.getctime('ufonet')) + """ 
 
- | <a href='javascript:runCommandX("cmd_check_tool")'>Auto-update</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">Source</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">Mirror</a> |
+ | <a href='javascript:runCommandX("cmd_check_tool")'>Auto-update</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">Code</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">Mirror</a> |
 
 -----------------------------------
 
@@ -1765,12 +1869,18 @@ function ShowPanel() {
                document.getElementById("loic").value = "";
                document.getElementById("loris").value = "";
                document.getElementById("ufosyn").value = "";
+               document.getElementById("spray").value = "";
+               document.getElementById("smurf").value = "";
+               document.getElementById("xmas").value = "";
                document.getElementById("dbstress").value = "";
              } else {
                document.getElementById("extra_panel").style.display = "none";
                document.getElementById("loic").value = "";
                document.getElementById("loris").value = "";
                document.getElementById("ufosyn").value = "";
+               document.getElementById("spray").value = "";
+               document.getElementById("smurf").value = "";
+               document.getElementById("xmas").value = "";
                document.getElementById("dbstress").value = "";
              }
       }
@@ -1779,6 +1889,8 @@ function Maps() {
          win_map.resizeTo(screen.width,screen.height);
       }
 function Start(){
+        document.getElementById("attack_button").text = "STOP!"
+        document.getElementById("attack_button").style = "color:red; height:40px; width:240px; font-weight:bold; background-color:yellow; border: 2px solid red;"
 	target=document.getElementById("target").value
         String.prototype.startsWith = function(prefix){
         return this.indexOf(prefix) === 0;
@@ -1790,10 +1902,13 @@ function Start(){
              loic=document.getElementById("loic").value
              loris=document.getElementById("loris").value
              ufosyn=document.getElementById("ufosyn").value
-             if(ufosyn){ // root required!
-                 window.alert("You need 'root' access to use UFOSYN, so your shell is waiting for you to enter a password. Check it!");
-	     }
-             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)
+             spray=document.getElementById("spray").value
+             smurf=document.getElementById("smurf").value
+             xmas=document.getElementById("xmas").value
+             if(ufosyn || spray || smurf || xmas){ // root required!
+               window.alert("You need 'root' access!. Check shell and enter your password.");
+             }
+             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)+"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&xmas="+escape(xmas)
              if (document.getElementById("visual_attack").checked){
                 document.getElementById("visual_attack").value = "on";
              } else {
@@ -1840,15 +1955,18 @@ function Start(){
   <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button> | <input type="checkbox" name="visual_attack" id="visual_attack"> Generate map! | <input type="checkbox" name="extra_attack" id="extra_attack" onclick='javascript:ShowPanel();'> Extra(s)
 
 <hr><div id="extra_panel" style="display:none;">
-  * Number of <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a> requests:   <input type="text" name="loic" id="loic" size="4" placeholder="100">
-  * Number of <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a> requests:  <input type="text" name="loris" id="loris" size="4" placeholder="101">
-  * Number of <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a> requests: <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100">
-
+<table bgcolor="black" cellpadding="4" cellspacing="5" border="1"><tr>
+<td>* <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a>:   <input type="text" name="loic" id="loic" size="4" placeholder="100"></td>
+<td>* <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a>:  <input type="text" name="loris" id="loris" size="4" placeholder="101"></td>
+<td>* <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>: <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td></tr><tr>
+<td>* <a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
+<td>* <a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
+<td>* <a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td></tr></table>
 <hr>
   * Set db stress parameter:   <input type="text" name="dbstress" id="dbstress" size="22" placeholder="search.php?q=">
 
 <hr></div>
-  <button title="Start to attack your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">ATTACK!</button> | Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></pre>
+  <button title="Start to attack your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" id="attack_button">ATTACK!</button> | Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></pre>
 </td><td>
 <table><tr><td><img src="/images/aliens/alien6.png" onclick="Grid()"></td></tr><tr><td><img src="/images/aliens/alien8.png" onclick="Wargames()"></td></tr></table>
 </td></tr></table>
@@ -1907,15 +2025,15 @@ function show(one) {
       - a place; to efficiently hit your target</div> <div><a id="mH4" href="javascript:show('nb4');" style="text-decoration: none;" >+ Updating</a></div><div class="nb" id="nb4" style="display: none;">
   This feature can be used <u>ONLY</u> if you have cloned UFONet.
 
-       - <i>git clone <a href="https://github.com/epsylon/ufonet" target="_blank">https://github.com/epsylon/ufonet</a></i>       
        - <i>git clone <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">https://code.03c8.net/epsylon/ufonet</a></i>
+       - <i>git clone <a href="https://github.com/epsylon/ufonet" target="_blank">https://github.com/epsylon/ufonet</a></i>
 </div><div>
 <a id="mH5" href="javascript:show('nb5');" style="text-decoration: none;" >+ FAQ/Issues?</a></div><div class="nb" id="nb5" style="display: none;">
   If you have problems with UFONet, try to solve them following next links:
 
       - <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">Website FAQ</a> section
       - UFONet <a href="https://github.com/epsylon/ufonet/issues" target="_blank">issues</a></div>
-<div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none;" >+ How can I help?</a></div> <div class="nb" id="nb6" style="display: none;">      - Testing; use the tool and search for possible bugs and new ideas
+<div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none;" >+ How can help?</a></div> <div class="nb" id="nb6" style="display: none;">      - Testing; use the tool and search for possible bugs and new ideas
       - Coding; you can try to develop more features
       - Promoting; talk about UFONet on the internet, events, hacklabs, etc
       - Donating; <a href="https://blockchain.info/address/19aXfJtoYJUoXEZtjNwsah2JKN9CK5Pcjw" target="_blank">bitcoin</a>, objects, support, love ;-)</div> <div><a id="mH7" href="javascript:show('nb7');" style="text-decoration: none" >+ Contact methods</a></div> <div class="nb" id="nb7" style="display: none;">  You can contact using:
@@ -1965,8 +2083,8 @@ function Start(){
 </div>
  </td>
  <td>
-<table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
-<tr>
+	<table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
+	<tr>
 <td>
 <pre>
   This feature will provide you the biggest file on target. 
@@ -2035,16 +2153,15 @@ function runCommandX(cmd,params) {
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
-								  xmlhttp.responseText.match(/Botnet updated/) ||
+								  xmlhttp.responseText.match(/Generating random exit/) ||
  								  xmlhttp.responseText.match(/Biggest File/) ||
                                                                   xmlhttp.responseText.match(/Abduction finished/) ||
 								  xmlhttp.responseText.match(/Not any zombie active/) ||
-     								  xmlhttp.responseText.match(/Your target looks OFFLINE/) ||
+     								  xmlhttp.responseText.match(/Target looks OFFLINE/) ||
                                                                   xmlhttp.responseText.match(/Unable to connect to target/) ||
                                                                   xmlhttp.responseText.match(/Something wrong/) ||
                                                                   xmlhttp.responseText.match(/Target url not valid/) ||
-                                                                  xmlhttp.responseText.match(/Attack completed/) ||
-                                                                  xmlhttp.responseText.match(/You are updated/) ||
+                                                                  xmlhttp.responseText.match(/updated/) ||
                                                                   xmlhttp.responseText.match(/For HELP use:/) ||
                                                                   xmlhttp.responseText.match(/Not any .git repository found/) ||
                                                                   xmlhttp.responseText.match(/End of /) ||
@@ -2295,37 +2412,37 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_test_rpcs_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_attack":
             self.pages["/cmd_attack"] = "<pre>Waiting for attacking results...</pre>"
-            if pGet["dbstress"]: # Set db stress input point
-                if pGet["loic"]: # Set LOIC
-                    if pGet["loris"]: # Set LORIS
-                        if pGet["ufosyn"]: # Set UFOSYN (executed as root!)
-                            runcmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loic '"+pGet["loic"]+"' "+ " --loris '"+pGet["loris"]+"' "+ " --ufosyn '"+pGet["ufosyn"]+"' "+cmd_options + "|tee /tmp/out) &"
-                        else: # not ufosyn
-                            runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loic '"+pGet["loic"]+"' "+ " --loris '"+pGet["loris"]+"' "+cmd_options + "|tee /tmp/out) &"
-                    else: # not loris
-                        if pGet["ufosyn"]: # executed as root!
-                            runcmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loic '"+pGet["loic"]+"' "+ " --ufosyn '"+pGet["ufosyn"]+"' "+cmd_options + "|tee /tmp/out) &"
-                        else: # not ufosyn
-                            runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loic '"+pGet["loic"]+"' "+ cmd_options + "|tee /tmp/out) &"
-                else: # not loic
-                    if pGet["loris"]:
-                        if pGet["ufosyn"]: # executed as root!
-                            runcmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loris '"+pGet["loris"]+"' "+ " --ufosyn '"+pGet["ufosyn"]+"' "+cmd_options + "|tee /tmp/out) &"
-                        else: # not ufosyn
-                            runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+ " --loris '"+pGet["loris"]+"' "+ cmd_options + "|tee /tmp/out) &"
-                    else: # not loris
-                        runcmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --db '"+pGet["dbstress"]+"' "+cmd_options + "|tee /tmp/out) &"
-            else:# not dbstress
-                if pGet["loic"]:
-                    if pGet["loris"]:
-                        if pGet["ufosyn"]: # executed as root!
-                            runcmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --loic '"+pGet["loic"]+"' "+ " --loris '"+pGet["loris"]+"' "+ " --ufosyn '"+pGet["ufosyn"]+"' "+cmd_options + "|tee /tmp/out) &"
-                        else: # not ufosyn
-                            runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --loic '"+pGet["loic"]+"' "+ " --loris '"+pGet["loris"]+"' "+cmd_options + "|tee /tmp/out) &"
-                    else: # not loris
-                        runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' --loic '"+pGet["loic"]+"' "+ cmd_options + "|tee /tmp/out) &"
-                else: # not loic (normal attack)
-                    runcmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "+cmd_options + "|tee /tmp/out) &"
+            cmd = ""
+            flag_ufosyn = None
+            flag_spray = None
+            flag_smurf = None
+            flag_xmas = None
+            nonroot_cmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            root_cmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            end_cmd = ""+cmd_options + "|tee /tmp/out) &"
+            if pGet["dbstress"]:
+                cmd += "--db '" +str(pGet["dbstress"])+ "' "
+            if pGet["loic"]:
+                cmd += "--loic '" +str(pGet["loic"])+ "' "
+            if pGet["loris"]:
+                cmd += "--loris '" +str(pGet["loris"])+ "' "
+            if pGet["ufosyn"]:
+                cmd += "--ufosyn '" +str(pGet["ufosyn"])+ "' "
+                flag_ufosyn = True
+            if pGet["spray"]:
+                cmd += "--spray '" +str(pGet["spray"])+ "' "
+                flag_spray = True
+            if pGet["smurf"]:
+                cmd += "--smurf '" +str(pGet["smurf"])+ "' "
+                flag_smurf = True
+            if pGet["xmas"]:
+                cmd += "--xmas '" +str(pGet["xmas"])+ "' "
+                flag_xmas = True           
+            if not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
+                cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
+            if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True:
+                cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS)                             
+            runcmd = cmd + end_cmd
         if page == "/cmd_attack_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close() 
@@ -2382,8 +2499,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.blackholes_text = blackholes
             except:
-                blackholes = "[Mothership/Error] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Mothership/Info] End of blackholes list (nodes.dat). Refreshing..."
+                blackholes = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of blackholes list (nodes.dat). -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(blackholes))
             f.write(end_mark)
@@ -2404,8 +2521,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.news_text = news
             except:
-                news = "[Mothership/Error] Something wrong downloading. Try it again or using another source....\n"
-            end_mark = "\n[Mothership/Info] End of news feed. Refreshing..."
+                news = "[Error] [AI] Something wrong downloading. Try it again or using another source....\n"
+            end_mark = "\n[Info] [AI] End of news feed. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(news))
             f.write(end_mark)
@@ -2426,8 +2543,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.wargames_text = wargames
             except:
-                wargames = "[Mothership/Error] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing wargames..."
+                wargames = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(wargames))
             f.write(end_mark)
@@ -2450,8 +2567,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.missions_text = missions
             except:
-                missions = "[Mothership/Error] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Mothership/Info] End of missions feed. Refreshing..."
+                missions = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of missions feed. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(missions))
             f.write(end_mark)
@@ -2472,8 +2589,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.grid_text = grid
             except:
-                grid = "[Mothership/Error] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing grid..."
+                grid = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(grid))
             f.write(end_mark)
@@ -2554,13 +2671,19 @@ function runCommandX(cmd,params) {
                 supply_loic = pGet["loic"]
                 supply_loris = pGet["loris"]
                 supply_ufosyn = pGet["ufosyn"]
+                supply_spray = pGet["spray"]
+                supply_smurf = pGet["smurf"]
+                supply_xmas = pGet["xmas"]
             except: # default global supply army
                 supply_botnet = 1
                 supply_loic = 0
                 supply_loris = 0
                 supply_ufosyn = 0
+                supply_spray = 0
+                supply_smurf = 0
+                supply_xmas = 0
             with open(self.mothership_supplycfg_file, "w") as f:
-                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn}, f, indent=4)
+                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn, "spray": supply_spray, "smurf": supply_smurf, "xmas": supply_xmas}, f, indent=4)
         if page == "/cmd_job_add":
             self.pages["/cmd_job_add"] = "<pre>Adding wargame to your list...</pre>"
             try:
@@ -2782,7 +2905,7 @@ function runCommandX(cmd,params) {
                 f = open(self.grid_file,"w")
                 for j in ls:
                     if grid_msg_sep in j:
-                        version = j.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1)
+                        version = j.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1|13->1.2)
                         m = j.split(grid_msg_sep)
                         grid_nickname = m[0] # nickname
                         self.decrypt(grid_key, grid_nickname)
@@ -2870,6 +2993,65 @@ function runCommandX(cmd,params) {
                                 grid_loic = nodec_num
                         else:
                             grid_loic = nodec_num
+                        if version > 12: # v1.2
+                            grid_loris = m[9] # loris
+                            self.decrypt(grid_key, grid_loris)
+                            if self.decryptedtext:
+                                try:
+                                    grid_loris = int(self.decryptedtext)
+                                except:
+                                    grid_loris = nodec_num
+                            else:
+                                grid_loris = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_ufosyn = m[10] # ufosyn
+                            self.decrypt(grid_key, grid_ufosyn)
+                            if self.decryptedtext:
+                                try:
+                                    grid_ufosyn = int(self.decryptedtext)
+                                except:
+                                    grid_ufosyn = nodec_num
+                            else:
+                                grid_ufosyn = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_spray = m[11] # spray
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                try:
+                                    grid_spray = int(self.decryptedtext)
+                                except:
+                                    grid_spray = nodec_num
+                            else:
+                                grid_spray = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_smurf = m[12] # smurf
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                try:
+                                    grid_smurf = int(self.decryptedtext)
+                                except:
+                                    grid_smurf = nodec_num
+                            else:
+                                grid_smurf = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_xmas = m[13] # xmas
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                try:
+                                    grid_xmas = int(self.decryptedtext)
+                                except:
+                                    grid_xmas = nodec_num
+                            else:
+                                grid_xmas = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_contact = m[14] # contact
+                            self.decrypt(grid_key, grid_contact)
+                            if self.decryptedtext:
+                                grid_contact = self.decryptedtext
+                            else:
+                                grid_contact = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer      
+                            grid_id = m[15] # id 
                         if version == 12: # v1.1
                             grid_loris = m[9] # loris
                             self.decrypt(grid_key, grid_loris)
@@ -2890,6 +3072,36 @@ function runCommandX(cmd,params) {
                                     grid_ufosyn = nodec_num
                             else:
                                 grid_ufosyn = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                try:
+                                    grid_spray = int(self.decryptedtext)
+                                except:
+                                    grid_spray = nodec_num
+                            else:
+                                grid_spray = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                try:
+                                    grid_smurf = int(self.decryptedtext)
+                                except:
+                                    grid_smurf = nodec_num
+                            else:
+                                grid_smurf = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                try:
+                                    grid_xmas = int(self.decryptedtext)
+                                except:
+                                    grid_xmas = nodec_num
+                            else:
+                                grid_xmas = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[11] # contact
                             self.decrypt(grid_key, grid_contact)
@@ -2920,6 +3132,36 @@ function runCommandX(cmd,params) {
                             else:
                                 grid_ufosyn = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                try:
+                                    grid_spray = int(self.decryptedtext)
+                                except:
+                                    grid_spray = nodec_num
+                            else:
+                                grid_spray = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                try:
+                                    grid_smurf = int(self.decryptedtext)
+                                except:
+                                    grid_smurf = nodec_num
+                            else:
+                                grid_smurf = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                try:
+                                    grid_xmas = int(self.decryptedtext)
+                                except:
+                                    grid_xmas = nodec_num
+                            else:
+                                grid_xmas = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[10] # contact
                             self.decrypt(grid_key, grid_contact)
                             if self.decryptedtext:
@@ -2948,7 +3190,37 @@ function runCommandX(cmd,params) {
                                     grid_ufosyn = nodec_num
                             else:
                                 grid_ufosyn = nodec_num
-                            self.decryptedtext = "" # clean decryptedtext buffer                      
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                try:
+                                    grid_spray = int(self.decryptedtext)
+                                except:
+                                    grid_spray = nodec_num
+                            else:
+                                grid_spray = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                try:
+                                    grid_smurf = int(self.decryptedtext)
+                                except:
+                                    grid_smurf = nodec_num
+                            else:
+                                grid_smurf = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                try:
+                                    grid_xmas = int(self.decryptedtext)
+                                except:
+                                    grid_xmas = nodec_num
+                            else:
+                                grid_xmas = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[9] # contact
                             self.decrypt(grid_key, grid_contact)
                             if self.decryptedtext:
@@ -2959,7 +3231,7 @@ function runCommandX(cmd,params) {
                             grid_id = m[10] # id    
                         else: # no valid version
                             pass
-                        grid_items.append([str(grid_nickname),int(grid_ranking),int(grid_totalchargo),int(grid_dorking),int(grid_transferred),int(grid_maxchargo),int(grid_missions),int(grid_attacks),int(grid_loic),int(grid_loris),int(grid_ufosyn),str(grid_contact),str(grid_id)])
+                        grid_items.append([str(grid_nickname),int(grid_ranking),int(grid_totalchargo),int(grid_dorking),int(grid_transferred),int(grid_maxchargo),int(grid_missions),int(grid_attacks),int(grid_loic),int(grid_loris),int(grid_ufosyn),int(grid_spray),int(grid_smurf),int(grid_xmas),str(grid_contact),str(grid_id)])
                 if grid_filter == "nickname":
                     grid_items=sorted(grid_items,key=lambda x:x[0]) # sorted by nickname
                 elif grid_filter == "ranking": 
@@ -2982,8 +3254,14 @@ function runCommandX(cmd,params) {
                     grid_items=sorted(grid_items,key=lambda x:x[9]) # sorted by loris
                 elif grid_filter == "ufosyn":
                     grid_items=sorted(grid_items,key=lambda x:x[10]) # sorted by ufosyn
+                elif grid_filter == "spray":
+                    grid_items=sorted(grid_items,key=lambda x:x[11]) # sorted by spray
+                elif grid_filter == "smurf":
+                    grid_items=sorted(grid_items,key=lambda x:x[12]) # sorted by smurf
+                elif grid_filter == "xmas":
+                    grid_items=sorted(grid_items,key=lambda x:x[13]) # sorted by xmas
                 elif grid_filter == "contact":
-                    grid_items=sorted(grid_items,key=lambda x:x[11]) # sorted by contact
+                    grid_items=sorted(grid_items,key=lambda x:x[14]) # sorted by contact
                 else:
                     grid_items=sorted(grid_items,key=lambda x:x[6]) # sorted by missions (default)
                 for i in grid_items:
@@ -3042,13 +3320,28 @@ function runCommandX(cmd,params) {
                     if self.encryptedtext:
                         grid_ufosyn = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
-                    grid_contact = str(i[11])
+                    grid_spray = str(i[11])
+                    self.encrypt(grid_key, grid_spray)
+                    if self.encryptedtext:
+                        grid_spray = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    grid_smurf = str(i[12])
+                    self.encrypt(grid_key, grid_smurf)
+                    if self.encryptedtext:
+                        grid_smurf = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    grid_xmas = str(i[13])
+                    self.encrypt(grid_key, grid_xmas)
+                    if self.encryptedtext:
+                        grid_xmas = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    grid_contact = str(i[14])
                     self.encrypt(grid_key, grid_contact)
                     if self.encryptedtext:
                         grid_contact = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
-                    grid_id = str(i[12]) # id (plain id)
-                    l = str(grid_nickname) + "#?#" + str(grid_ranking) + "#?#" + str(grid_totalchargo) + "#?#" + str(grid_dorking) + "#?#" + str(grid_transferred) + "#?#" + str(grid_maxchargo) + "#?#" + str(grid_missions) + "#?#" + str(grid_attacks) + "#?#" + str(grid_loic) + "#?#" + str(grid_loris) + "#?#" + str(grid_ufosyn) + "#?#" + str(grid_contact) + "#?#" + str(grid_id)
+                    grid_id = str(i[15]) # id (plain id)
+                    l = str(grid_nickname) + "#?#" + str(grid_ranking) + "#?#" + str(grid_totalchargo) + "#?#" + str(grid_dorking) + "#?#" + str(grid_transferred) + "#?#" + str(grid_maxchargo) + "#?#" + str(grid_missions) + "#?#" + str(grid_attacks) + "#?#" + str(grid_loic) + "#?#" + str(grid_loris) + "#?#" + str(grid_ufosyn) + "#?#" + str(grid_spray) + "#?#" + str(grid_smurf)+ "#?#" + str(grid_xmas) + "#?#" + str(grid_contact) + "#?#" + str(grid_id)
                     f.write(l)
                 f.close()
             except:
@@ -3066,7 +3359,7 @@ function runCommandX(cmd,params) {
                 grid_key = pGet["grid_key"]
             except:
                 grid_key = ""
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing grid..."
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             if grid_key is not "": # stream creation + encryption + package send
                 try:
                     grid_json_file = open(self.mothership_gridcfg_file, "r") # extract grid profile conf
@@ -3088,7 +3381,9 @@ function runCommandX(cmd,params) {
                     elif ranking == "Bandit":
                         ranking = 3
                     elif ranking == "UFOmmander!":
-                        ranking = 4           
+                        ranking = 4
+                    elif ranking == "UFOl33t!":
+                        ranking = 5      
                     else:
                         ranking = 1
                     self.encrypt(grid_key, str(ranking))
@@ -3139,6 +3434,21 @@ function runCommandX(cmd,params) {
                     self.encrypt(grid_key, str(ufosyn))
                     if self.encryptedtext:
                         ufosyn = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    spray = stats_data["spray"]
+                    self.encrypt(grid_key, str(spray))
+                    if self.encryptedtext:
+                        spray = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    smurf = stats_data["smurf"]
+                    self.encrypt(grid_key, str(smurf))
+                    if self.encryptedtext:
+                        smurf = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer  
+                    xmas = stats_data["xmas"]
+                    self.encrypt(grid_key, str(xmas))
+                    if self.encryptedtext:
+                        xmas = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer  
                     contact = grid_data["grid_contact"].encode('utf-8')
                     self.encrypt(grid_key, str(contact))
@@ -3146,7 +3456,7 @@ function runCommandX(cmd,params) {
                         contact = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer  
                     id = grid_data["grid_token"] #  plain text
-                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
+                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(spray)+grid_msg_sep+str(smurf)+grid_msg_sep+str(xmas)+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
                     try: 
                         host = blackhole_ip
                         cport = 9992 # port used by mothership grider (server side script)
@@ -3162,12 +3472,12 @@ function runCommandX(cmd,params) {
                             f.close()
                         except:
                             pass
-                        grid_trans = "[Mothership/Info] Congratulations. Statistics successfully transferred...\n"
+                        grid_trans = "[Info] [AI] Statistics transferred! -> [OK!]\n"
                     except:
-                        grid_trans = "[Mothership/Error] Something wrong when uploading statistics to this grid. Try it again...\n"
+                        grid_trans = "[Error] [AI] Something wrong uploading statistics. Try it again...\n"
                 except:
-                    grid_trans = "[Mothership/Error] Something wrong when uploading statistics to this grid. Try it again...\n"
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing grid..."
+                    grid_trans = "[Error] [AI] Something wrong uploading statistics. Try it again...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(grid_trans)
             f.write(end_mark)
@@ -3191,7 +3501,7 @@ function runCommandX(cmd,params) {
                 t = urlparse(str(wargames_target))
                 wargames_target = t.netloc
             else:
-                wargames_trans = "[Mothership/Error] Proposed target is not using a correct format!. Try it again...\n"
+                wargames_trans = "[Error] [AI] Proposed target hasn't a correct format!. Try it again...\n"
                 wargames_enckey = ""
             if wargames_target.startswith("www."):
                 wargames_target = wargames_target.replace("www.","")
@@ -3200,12 +3510,12 @@ function runCommandX(cmd,params) {
                 wargames_creation = strptime(wargames_creation, "%d-%m-%Y %H:%M:%S")
                 wargames_estimated = strptime(wargames_estimated, "%d-%m-%Y %H:%M:%S")
                 if (wargames_creation > wargames_estimated) == True: # parse bad dates
-                    wargames_trans = "[Mothership/Error] Date time should be major than creation time. Try it again...\n"
+                    wargames_trans = "[Error] [AI] Date time should be major than creation time. Try it again...\n"
                     wargames_enckey = ""
             except:
-                wargames_trans = "[Mothership/Error] Date time is not using a correct format!. Try it again...\n"
+                wargames_trans = "[Error] [AI] Date time is not using a correct format!. Try it again...\n"
                 wargames_enckey = ""
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing wargames..."
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             if wargames_enckey is not "": # stream creation + encryption + package send
                 wargames_creation = strftime("%d-%m-%Y %H:%M:%S", wargames_creation)
                 wargames_estimated = strftime("%d-%m-%Y %H:%M:%S", wargames_estimated)
@@ -3238,12 +3548,12 @@ function runCommandX(cmd,params) {
                             f.close()
                         except:
                             pass
-                        wargames_trans = "[Mothership/Info] Congratulations. Wargame successfully transferred...\n"
+                        wargames_trans = "[Info] [AI] Wargame transferred! -> [OK!]\n"
                     except:
-                        wargames_trans = "[Mothership/Error] Something wrong when uploading wargame. Try it again...\n"
+                        wargames_trans = "[Error] [AI] Something wrong uploading wargame. Try it again...\n"
                 except:
-                    wargames_trans = "[Mothership/Error] Something wrong when uploading wargame. Try it again...\n"
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing wargames..."
+                    wargames_trans = "[Error] [AI] Something wrong uploading wargame. Try it again...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(wargames_trans)
             f.write(end_mark)
@@ -3264,8 +3574,8 @@ function runCommandX(cmd,params) {
                 f.close()
                 self.board_text = board
             except:
-                board = "[Mothership/Error] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing board..."
+                board = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(board))
             f.write(end_mark)
@@ -3293,7 +3603,7 @@ function runCommandX(cmd,params) {
                 board_message = pGet["stream_txt"]
             except:
                 board_message = ""
-            end_mark = "\n[Mothership/Info] End of transmission. Refreshing board..."
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             if board_key is not "" or board_topic is not "" or board_message is not "": # stream creation (topic | icon | nick | id | comment) + encryption (board_key) + package send (default blackhole)
                 try:  
                     board_json_file = open(self.mothership_boardcfg_file, "r") # extract board profile conf
@@ -3339,11 +3649,11 @@ function runCommandX(cmd,params) {
                             f.close()
                         except:
                             pass
-                        board_trans = "[Mothership/Info] Congratulations. The message has been sent successfully...\n"
+                        board_trans = "[Info] [AI] The message has been sent! -> [OK!]\n"
                     except:
-                        board_trans = "[Mothership/Error] Something wrong sending your message to the board. Try it again...\n"
+                        board_trans = "[Error] [AI] Something wrong sending message to the board. Try it again...\n"
                 except:
-                    board_trans = "[Mothership/Error] Something wrong sending your message to the board. Try it again...\n"
+                    board_trans = "[Error] [AI] Something wrong sending message to the board. Try it again...\n"
             f = open("/tmp/out", "w")
             f.write(board_trans)
             f.write(end_mark)
@@ -3363,7 +3673,7 @@ function runCommandX(cmd,params) {
                 missions_key = pGet["missions_key"]
             except:
                 missions_key = ""
-            end_mark = "\n[Mothership/Info] End of decryption."
+            end_mark = "\n[Info] [AI] End of decryption."
             if news_key is not "": # news decryption
                 self.decrypted_news = []
                 nodec_text = "*** [This message cannot be solved with that key...]"
@@ -3474,7 +3784,7 @@ function runCommandX(cmd,params) {
                 filter = pGet["filter"]
             except:
                 filter = ""
-            end_mark = "\n[Mothership/Info] End of decryption."
+            end_mark = "\n[Info] [AI] End of decryption."
             if board_key is not "": # board decryption
                 nodec_text = "***[ENCRYPTED WITH OTHER KEY]"
                 f = open("/tmp/out", "w")
@@ -3542,7 +3852,7 @@ function runCommandX(cmd,params) {
                 grid_key = pGet["grid_key"]
             except:
                 grid_key = ""
-            end_mark = "[Mothership/Info] End of decryption."
+            end_mark = "[Info] [AI] End of decryption."
             if grid_key is not "": # grid decryption
                 # Mothership stats counters
                 mothership_members = 0
@@ -3550,23 +3860,27 @@ function runCommandX(cmd,params) {
                 member_2 = 0 # Mercenary
                 member_3 = 0 # Bandit
                 member_4 = 0 # UFOmmander!
+                member_5 = 0 # UFOl33t!
                 mothership_missions = 0
                 mothership_transferred = 0
                 mothership_attacks = 0
                 mothership_loic = 0
                 mothership_loris = 0
                 mothership_ufosyn = 0
+                mothership_spray = 0
+                mothership_smurf = 0
+                mothership_xmas = 0
                 mothership_chargo = 0
                 mothership_dorking = 0
                 mothership_maxchargo = 0
                 nodec_text = "KEY?"
-                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICKNAME:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANKING:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
+                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICKNAME:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANKING:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_spray' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('spray','"+str(grid_key)+"')>SPRAY:</a></td><td align='center'><a id='filter_smurf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('smurf','"+str(grid_key)+"')>SMURF:</a></td><td align='center'><a id='filter_xmas' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('xmas','"+str(grid_key)+"')>XMAS:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
                 grid_key = pGet["grid_key"]
                 f = open("/tmp/out", "w")
                 self.list_grid_rev = reversed(self.list_grid) # order by DESC
-                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, contact, ID
+                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, contact, ID
                     if grid_msg_sep in m:
-                        version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1)
+                        version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1|13->1.2)
                         m = m.split(grid_msg_sep)
                         grid_nickname = m[0] # nickname
                         self.decrypt(grid_key, grid_nickname)
@@ -3602,6 +3916,9 @@ function runCommandX(cmd,params) {
                         elif grid_ranking == 4: # UFOmmander!
                             grid_ranking = "<font color='blue' size='4'>****</font>"
                             member_4 = member_4 + 1
+                        elif grid_ranking == 5: # UFOl33t!
+                            grid_ranking = "<font color='red' size='4'>&#x25BC;</font>"
+                            member_5 = member_5 + 1
                         else:
                             grid_ranking = nodec_text
                         grid_totalchargo = m[2] # total chargo
@@ -3688,6 +4005,90 @@ function runCommandX(cmd,params) {
                             mothership_loic = mothership_loic + grid_loic
                         except:
                             grid_loic = nodec_text
+                        if version > 13: # v1.2
+                            grid_loris = m[9] # loris
+                            self.decrypt(grid_key, grid_loris)
+                            if self.decryptedtext:
+                                grid_loris = self.decryptedtext
+                            else:
+                                grid_loris = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_loris = int(grid_loris)
+                                mothership_loris = mothership_loris + grid_loris
+                            except:
+                                grid_loris = nodec_text
+                            grid_ufosyn = m[10] # ufosyn
+                            self.decrypt(grid_key, grid_ufosyn)
+                            if self.decryptedtext:
+                                grid_ufosyn = self.decryptedtext
+                            else:
+                                grid_ufosyn = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_ufosyn = int(grid_ufosyn)
+                                mothership_ufosyn = mothership_ufosyn + grid_ufosyn
+                            except:
+                                grid_ufosyn = nodec_text
+                            grid_spray = m[11] # spray
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                grid_spray = self.decryptedtext
+                            else:
+                                grid_spray = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_spray = int(grid_spray)
+                                mothership_spray = mothership_spray + grid_spray
+                            except:
+                                grid_spray = nodec_text
+                            grid_smurf = m[12] # smurf
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                grid_smurf = self.decryptedtext
+                            else:
+                                grid_smurf = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_smurf = int(grid_smurf)
+                                mothership_smurf = mothership_smurf + grid_smurf
+                            except:
+                                grid_smurf = nodec_text
+                            grid_xmas = m[13] # xmas
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                grid_xmas = self.decryptedtext
+                            else:
+                                grid_xmas = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_xmas = int(grid_xmas)
+                                mothership_xmas = mothership_xmas + grid_xmas
+                            except:
+                                grid_xmas = nodec_text
+                            try: # decrypt + parse contact len + correct js view (without blank spaces)
+                                grid_contact = m[14] # contact
+                                self.decrypt(grid_key, grid_contact)
+                                if self.decryptedtext:
+                                    grid_contact = self.decryptedtext
+                                else:
+                                    grid_contact = nodec_text
+                                self.decryptedtext = "" # clean decryptedtext buffer
+                                if len(grid_contact) > 120 or len(grid_contact) < 3: # m[14] = grid_contact (>str3<str120)
+                                    grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>" # js error contact view
+                                else:
+                                    try:
+                                        if " " in grid_contact: # m[14] = grid_contact
+                                            grid_contact = grid_contact.replace(" ","")
+                                        grid_contact = "<a href=javascript:alert('"+str(grid_contact)+"');>View</a>" # js contact view
+                                    except:
+                                        grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>" # js error contact view
+                            except:
+                                pass
+                            try:            
+                                grid_id = m[15] # id
+                            except:
+                                pass     
                         if version == 12: # v1.1
                             grid_loris = m[9] # loris
                             self.decrypt(grid_key, grid_loris)
@@ -3713,6 +4114,42 @@ function runCommandX(cmd,params) {
                                 mothership_ufosyn = mothership_ufosyn + grid_ufosyn
                             except:
                                 grid_ufosyn = nodec_text
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                grid_spray = self.decryptedtext
+                            else:
+                                grid_spray = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_spray = int(grid_spray)
+                                mothership_spray = mothership_spray + grid_spray
+                            except:
+                                grid_spray = nodec_text
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                grid_smurf = self.decryptedtext
+                            else:
+                                grid_smurf = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_smurf = int(grid_smurf)
+                                mothership_smurf = mothership_smurf + grid_smurf
+                            except:
+                                grid_smurf = nodec_text
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                grid_xmas = self.decryptedtext
+                            else:
+                                grid_xmas = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_xmas = int(grid_xmas)
+                                mothership_xmas = mothership_xmas + grid_xmas
+                            except:
+                                grid_xmas = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[11] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -3761,6 +4198,42 @@ function runCommandX(cmd,params) {
                                 mothership_ufosyn = mothership_ufosyn + grid_ufosyn
                             except:
                                 grid_ufosyn = nodec_text
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                grid_spray = self.decryptedtext
+                            else:
+                                grid_spray = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_spray = int(grid_spray)
+                                mothership_spray = mothership_spray + grid_spray
+                            except:
+                                grid_spray = nodec_text
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                grid_smurf = self.decryptedtext
+                            else:
+                                grid_smurf = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_smurf = int(grid_smurf)
+                                mothership_smurf = mothership_smurf + grid_smurf
+                            except:
+                                grid_smurf = nodec_text
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                grid_xmas = self.decryptedtext
+                            else:
+                                grid_xmas = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_xmas = int(grid_xmas)
+                                mothership_xmas = mothership_xmas + grid_xmas
+                            except:
+                                grid_xmas = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[10] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -3809,6 +4282,42 @@ function runCommandX(cmd,params) {
                                 mothership_ufosyn = mothership_ufosyn + grid_ufosyn
                             except:
                                 grid_ufosyn = nodec_text
+                            grid_spray = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not spray present
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                grid_spray = self.decryptedtext
+                            else:
+                                grid_spray = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_spray = int(grid_spray)
+                                mothership_spray = mothership_spray + grid_spray
+                            except:
+                                grid_spray = nodec_text
+                            grid_smurf = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not smurf present
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                grid_smurf = self.decryptedtext
+                            else:
+                                grid_smurf = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_smurf = int(grid_smurf)
+                                mothership_smurf = mothership_smurf + grid_smurf
+                            except:
+                                grid_smurf = nodec_text
+                            grid_xmas = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not xmas present
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                grid_xmas = self.decryptedtext
+                            else:
+                                grid_xmas = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_xmas = int(grid_xmas)
+                                mothership_xmas = mothership_xmas + grid_xmas
+                            except:
+                                grid_xmas = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[9] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -3836,12 +4345,12 @@ function runCommandX(cmd,params) {
                             pass
                     try: # parsing for valid stream struct
                         grid_nickname = str(grid_nickname)
-                        grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                        grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                     except:
-                        grid_table += "<tr><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td><td align='center'>INVALID!</td></tr>"
+                        grid_table += "<tr><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td></tr>"
                 grid_table += "</table><br>"
                 l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>MEMBERS:</td><td align='right'>"+str(mothership_members)+"</td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td></tr><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td></tr><tr><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td></tr></table><br><hr><br>"
+                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td align='right'><font color='red' size='4'>"+str(member_5)+"</font></td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td></tr><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>TRANSF:</td><td align='right'>"+str(mothership_transferred)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td></tr><tr><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td><td>SPRAY:</td><td align='right'>"+str(mothership_spray)+"</td><td>SMURF:</td><td align='right'>"+str(mothership_smurf)+"</td><td>XMAS:</td><td align='right'>"+str(mothership_xmas)+"</td></tr></table><br><hr><br>"
                 f.write(mother_table)
                 f.write(grid_table)
                 f.write(end_mark)
@@ -3860,7 +4369,7 @@ function runCommandX(cmd,params) {
                 wargames_deckey = pGet["wargames_deckey"]
             except:
                 wargames_deckey = ""
-            end_mark = "[Mothership/Info] End of decryption."
+            end_mark = "[Info] [AI] End of decryption."
             if wargames_deckey is not "": # wargames decryption
                 nodec_text = "KEY?"
                 try: # read global army supply from configuration file (json)
@@ -3868,24 +4377,27 @@ function runCommandX(cmd,params) {
                         data = json.load(data_file)
                 except:
                     if os.path.exists(self.mothership_supplycfg_file) == True:
-                        print '[Error] - Cannot open: "core/json/supplycfg.json"...\n'
-                        sys.exit(2)
+                        print '[Error] [AI] Cannot open: "core/json/supplycfg.json" -> [Aborting!]\n'
+                        return
                     else: # generate default global army supply configuration file
-                        print '[Info] - Cannot found: "core/json/supplycfg.json". Generating...\n'
+                        print '[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]'
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0}, f, indent=4)
                 with open(self.mothership_supplycfg_file) as data_file:
                     data = json.load(data_file)
                 self.supply_botnet = data["botnet"]
                 self.supply_loic = data["loic"]
                 self.supply_loris = data["loris"]
                 self.supply_ufosyn = data["ufosyn"]
+                self.supply_spray = data["spray"]
+                self.supply_smurf = data["smurf"]
+                self.supply_xmas = data["xmas"]
                 f = open(self.wargames_file,"r")
                 ls = f.readlines()
                 f.close()
                 if ls:
                     wargames_autopanel = "<u>MASSIVE ACTION</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><button title='Remove ALL: -CLOSED-' onclick=JobRemoveAll('"+str(wargames_deckey)+"')>-PURGE-</button></td><td align='center'><button style='background-color:cyan;height:50px;width:120px' title='Engage ALL: -ONGOING-' onclick=JobAddAll()>ENGAGE ALL!</button></td><td align='center'><button style='background-color:red;height:50px;width:120px' title='Cancel ALL: JOINED!' onclick=JobCancelAll()>PANIC!!!</button></td></tr></table><br><br>"
-                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td></tr><tr><td align='center'><input type='number' min='1' max='20' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td><td><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td></tr></table><br><br>"
+                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td></tr><tr><td align='center'><input type='number' min='1' max='20' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SPRAY:</td><td align='center'>SMURF:</td><td align='center'>XMAS:</td></tr><tr><td align='center'><input type='number' min='0' max='20' required id='supply_spray' value='"+str(self.supply_spray)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_smurf' value='"+str(self.supply_smurf)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_xmas' value='"+str(self.supply_xmas)+"' style='text-align: center;' readonly></td><td align='center'><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td></tr></table><br><br>" 
                 else:
                     wargames_autopanel = ""
                     wargames_supply = ""

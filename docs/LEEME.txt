@@ -42,7 +42,7 @@ UFONet - es un conjunto de herramientas diseñado para lanzar ataques DDoS y DoS
 En los siguientes enlaces tienes más información:
 
    - CWE-601:Open Redirect: 
-     http://cwe.mitre.org/data/definitions/601.html
+     https://cwe.mitre.org/data/definitions/601.html
 
    - OWASP:URL Redirector Abuse: 
      https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
@@ -113,8 +113,8 @@ Por defecto, UFONet utiliza un motor de búsqueda que se llama 'Yahoo'. Pero pue
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - bing [26/09/2018: OK!]
-        - yahoo [26/09/2018: OK!]
+        - bing  [30/12/2018: OK!]
+        - yahoo [30/12/2018: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -132,12 +132,12 @@ O puedes hacer que la herramienta búsque de manera autómatica el mayor número
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
 
-       Want to check if they are valid zombies? (Y/n)
+      Do you want to check if the NEW possible zombies are valid? (Y/n)
 
-También serás preguntado por si quieres actualizar tu lista de 'zombies' añadiendo solamente 
+Después serás preguntado por si quieres actualizar tu lista de 'zombies' añadiendo solamente 
 aquellas aplicaciones web que sean vulnerables.
 
-       Want to update your list? (Y/n)
+      Do you want to update your army? (Y/n)
 
 Si respondes 'Y', tus nuevos 'zombies' se sumarán al fichero: zombies.txt
 
@@ -181,7 +181,12 @@ Finalmente, puedes ordenar a tus 'zombies' que te ataquen a ti mismo, para ver c
 Al final del proceso, serás preguntado por si quieres hacer un chequeo, de la lista que has recibido, 
 para ver si las urls son vulnerables.
 
-       Want to check if they are valid zombies? (Y/n)
+       Do you want to check if the NEW possible zombies are valid? (Y/n)
+
+Después serás preguntado por si quieres actualizar tu lista de 'zombies' añadiendo solamente
+aquellas aplicaciones web que sean vulnerables.
+
+      Do you want to update your army? (Y/n)
 
 Si respondes 'Y', tu fichero: "botnet/zombies.txt" será actualizado.
 
@@ -347,11 +352,23 @@ Y también puedes conectar UFOSYN (requiere acceso mediante 'root') para comenza
 
      sudo python ufonet -a http://target.com --ufosyn 100
 
-Ambos ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
+O hacer un ataque SPRAY ('root' requerido) para lanzar una Denegación de Servicio Distribuída y Reflejada (DrDoS):
 
-     ./python ufonet -a http://target.com --loic 100 --loris 100
+     sudo python ufonet -a http://target.com --spray 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100
+Un ataque SMURF ('root' requerido) para enviar paquetes de 'Propagación' ICMP de manera distribuída:
+
+     sudo python ufonet -a http://target.com --smurf 101
+
+O un ataque XMAS ('root' requerido) que inundará tu objetivo con paquetes 'Árbol de Navidad':
+
+     sudo python ufonet -a http://target.com --xmas 101
+
+Todos los ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
+
+     python ufonet -a http://target.com --loic 100 --loris 100
+
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101
 
 ###############################
 # Actualizando
@@ -415,6 +432,10 @@ más algunas "extra":
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+31.12.2018 : v.1.2
+--------------------------
 
 --------------------------
 26.09.2018 : v.1.1

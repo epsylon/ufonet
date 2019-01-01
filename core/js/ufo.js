@@ -1,5 +1,5 @@
 /*
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -352,7 +352,7 @@ function ufowatch(){
 		    label=total_zombies -dead_zombies.length
 		    $('.ufo_error_div').html('<div id="ufo_error_div">To be discarded : <br/><ul>'
 					     +dead_zombies.join("<li> -")+'</ul></div>')
-		    error = "<a href='#' onclick='show_error()'> + "+dead_zombies.length+" to be discarded...</a>"
+		    error = "<a href='#' onclick='show_error()'> + "+dead_zombies.length+" not listed...</a>"
 		}
 	    }
 	$(".ufo_title_div").html('<div id="status"><center><h2><font color="red">Zombies:</font></h2><h3><font color="green" size="9px"><b>'+label+'</b></font></h3>'+error+'</center></div>');
@@ -390,7 +390,7 @@ function initMap (targetdoll=false) {
     new L.Control.Zoom({position: 'topright'}).addTo(map)
     map.scrollWheelZoom.disable()
     map.addControl(new UfoControlClass())
-    $('.ufo_msg_div').html("<h2 style='text-align:right'>Map Console <a href=\"#\" id='showMsg'>[+]</a> <a href=\"#\" id='hideMsg'>[-]</a></h2><div id='ufomsg'>[Info] Locating zombies. Please wait...<br/><br/></div><div id='ufomsg_last'>[Info] Locating zombies. Please wait...<br/></div>")
+    $('.ufo_msg_div').html("<h2 style='text-align:right'>Map Console <a href=\"#\" id='showMsg'>[+]</a> <a href=\"#\" id='hideMsg'>[-]</a></h2><div id='ufomsg'>[Info] [AI] [Control] Locating zombies... -> [Waiting!]<br/><br/></div><div id='ufomsg_last'>[Info] [AI] [Control] Locating zombies.... -> [Waiting!]<br/></div>")
     map.addControl(new UfoTitleClass())
     $(".ufo_title_div").html('<div id="status"><h2><font color="red">Zombies:</font></h2><center><h3><font color="green" size="9px"><b>'+total_zombies+'</b></font></h3></center></div>');
     map.addControl(new UfoErrorClass())

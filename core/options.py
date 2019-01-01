@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -27,39 +27,41 @@ class UFONetOptions(optparse.OptionParser):
         self.tools = self.extract_tools()
         self.total_botnet = str(self.zombies+self.aliens+self.droids+self.ucavs+self.rpcs)
         optparse.OptionParser.__init__(self, 
-                           description='\nUFONet - Denial of Service Toolkit - by psy',
+                           description='\nUFONet - Denial of Service Toolkit - by psy (https://03c8.net)',
                            prog='./ufonet',
-                           version='\nCode: v1.1 - Quantum Hydra!\n')
+                           version='\nCode: v1.2 - Armageddon!\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
         self.add_option("--update", action="store_true", dest="update", help="check for latest stable version")
         self.add_option("--check-tor", action="store_true", dest="checktor", help="check to see if Tor is used properly")
         self.add_option("--force-ssl", action="store_true", dest="forcessl", help="force usage of SSL/HTTPS requests")
         self.add_option("--force-yes", action="store_true", dest="forceyes", help="set 'YES' to all questions")
-        self.add_option("--gui", action="store_true", dest="web", help="run GUI (UFONet Web Interface)")
+        self.add_option("--gui", action="store_true", dest="web", help="start GUI (UFONet Web Interface)")
         group8 = optparse.OptionGroup(self, "*Tools*")
         group8.add_option("--crypter", action="store_true", dest="cryptomsg", help="Crypt/Decrypt messages using AES256+HMAC-SHA1")
         group8.add_option("--network", action="store_true", dest="shownet", help="Show info about your network (MAC, IPs)")
+        group8.add_option("--xray", action="store", dest="xray", help="Fast port scanner (ex: --xray 'http(s)://target.com')")
+        group8.add_option("--xray-ps", action="store", dest="xrayps", help="Set range of ports to scan (ex: --xray-ps '1-1024')")
         self.add_option_group(group8)
         group1 = optparse.OptionGroup(self, "*Configure Request(s)*")
-        group1.add_option("--proxy", action="store", dest="proxy", help="Use proxy server (tor: 'http://127.0.0.1:8118')")
+        group1.add_option("--proxy", action="store", dest="proxy", help="Use proxy server (ex: --proxy 'http://127.0.0.1:8118')")
         group1.add_option("--user-agent", action="store", dest="agent", help="Use another HTTP User-Agent header (default SPOOFED)")
         group1.add_option("--referer", action="store", dest="referer", help="Use another HTTP Referer header (default SPOOFED)")
         group1.add_option("--host", action="store", dest="host", help="Use another HTTP Host header (default NONE)")
         group1.add_option("--xforw", action="store_true", dest="xforw", help="Set your HTTP X-Forwarded-For with random IP values")
         group1.add_option("--xclient", action="store_true", dest="xclient", help="Set your HTTP X-Client-IP with random IP values")
-        group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 10)")
-        group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 1)")
+        group1.add_option("--timeout", action="store", dest="timeout", type="int", help="Select your timeout (default 1)")
+        group1.add_option("--retries", action="store", dest="retries", type="int", help="Retries when the connection timeouts (default 0)")
         group1.add_option("--threads", action="store", dest="threads", type="int", help="Maximum number of concurrent HTTP requests (default 5)") 
         group1.add_option("--delay", action="store", dest="delay", type="int", help="Delay in seconds between each HTTP request (default 0)")
         self.add_option_group(group1)
         group2 = optparse.OptionGroup(self, "*Search for 'Zombies'*")
+        group2.add_option("--auto-search", action="store_true", dest="autosearch", help="Search automatically for 'zombies' (may take time!)")
         group2.add_option("-s", action="store", dest="search", help="Search from a 'dork' (ex: -s 'proxy.php?url=')")
         group2.add_option("--sd", action="store", dest="dorks", help="Search from 'dorks' file (ex: --sd 'botnet/dorks.txt')")
         group2.add_option("--sn", action="store", dest="num_results", help="Set max number of results for engine (default 10)")
         group2.add_option("--se", action="store", dest="engine", help="Search engine to use for 'dorking' (default Yahoo)")
         group2.add_option("--sa", action="store_true", dest="allengines", help="Search massively using all search engines")
-        group2.add_option("--auto-search", action="store_true", dest="autosearch", help="Search automatically for 'zombies' (may take time!)")
         self.add_option_group(group2)
         group3 = optparse.OptionGroup(self, "*Test Botnet*")
         group3.add_option("--test-offline", action="store_true", dest="testoffline", help="Fast check to discard offline bots")
@@ -69,39 +71,48 @@ class UFONetOptions(optparse.OptionParser):
         group3.add_option("--attack-me", action="store_true", dest="attackme", help="Order 'zombies' to attack you (NAT required!)")
         self.add_option_group(group3)
         group4 = optparse.OptionGroup(self, "*Community*")
+        group4.add_option("--blackhole", action="store_true", dest="blackhole", help="Create a 'blackhole' to share 'zombies'")
+        group4.add_option("--up-to", action="store", dest="upip", help="Upload 'zombies' to IP (ex: --up-to '<IP>')")
+        group4.add_option("--down-from", action="store", dest="dip", help="Download 'zombies' from IP (ex: --down-from '<IP>')")
+        group4.add_option("--upload-zombies", action="store_true", dest="upload", help="Upload 'zombies' to Community server")
         group4.add_option("--download-zombies", action="store_true", dest="download", help="Download 'zombies' from Community server")
-        group4.add_option("--upload-zombies", action="store_true", dest="upload", help="Upload your 'zombies' to Community server")
-        group4.add_option("--blackhole", action="store_true", dest="blackhole", help="Create a 'blackhole' to share your 'zombies'")
-        group4.add_option("--up-to", action="store", dest="upip", help="Upload your 'zombies' to a 'blackhole'")
-        group4.add_option("--down-from", action="store", dest="dip", help="Download your 'zombies' from a 'blackhole'")
         self.add_option_group(group4)
         group5 = optparse.OptionGroup(self, "*Research Target*")
         group5.add_option("-i", action="store", dest="inspect", help="Search biggest file (ex: -i 'http(s)://target.com')")
         group5.add_option("-x", action="store", dest="abduction", help="Examine webserver configuration (+CVE, +WAF detection)")
         self.add_option_group(group5)
-        group7 = optparse.OptionGroup(self, "*Extra Attack(s)*")
-        group7.add_option("--db", action="store", dest="dbstress", help="Start 'DB Stress' attack (ex: --db 'search.php?q=')")
-        group7.add_option("--loic", action="store", dest="loic", help="Start 'DoS Web LOIC' attack (ex: --loic 100)")
-        group7.add_option("--loris", action="store", dest="loris", help="Start 'DoS Slow HTTP' attack (ex: --loris 101)")
-        group7.add_option("--ufosyn", action="store", dest="ufosyn", help="Start 'DoS TCP-SYN flood' attack (ex: --ufosyn 100)")
-        self.add_option_group(group7)
         group6 = optparse.OptionGroup(self, "*Configure Attack(s)*")
-        group6.add_option("--no-head", action="store_true", dest="disablehead", help="Disable status check: 'Is target up?'")
-        group6.add_option("--no-aliens", action="store_true", dest="disablealiens", help="Disable 'aliens' web abuse")
-        group6.add_option("--no-droids", action="store_true", dest="disabledroids", help="Disable 'droids' redirectors")
-        group6.add_option("--no-ucavs", action="store_true", dest="disableisup", help="Disable 'ucavs' checkers")
-        group6.add_option("--no-rpcs", action="store_true", dest="disablerpcs", help="Disable 'xml-rpcs' reflectors")
-        group6.add_option("-r", action="store", dest="rounds", help="Set number of rounds (default 1)")
+        group6.add_option("-a", action="store", dest="target", help="[DDoS] attack an URL (ex: -a 'http(s)://target.com')")
+        group6.add_option("-f", action="store", dest="target_list", help="[DDoS] attack a list of targets (ex: -f 'targets.txt')")
         group6.add_option("-b", action="store", dest="place", help="Set place to attack (ex: -b '/path/big.jpg')")
-        group6.add_option("-a", action="store", dest="target", help="Start 'DDoS' attack (ex: -a 'http(s)://target.com')")
+        group6.add_option("-r", action="store", dest="rounds", help="Set number of rounds (ex: -r '1000') (default 1)")
         self.add_option_group(group6)
+	group7 = optparse.OptionGroup(self, "*Extra Configuration(s)*")
+        group7.add_option("--no-aliens", action="store_true", dest="disablealiens", help="Disable 'aliens' web abuse")
+        group7.add_option("--no-droids", action="store_true", dest="disabledroids", help="Disable 'droids' redirectors")
+        group7.add_option("--no-rpcs", action="store_true", dest="disablerpcs", help="Disable 'xml-rpcs' reflectors")
+        group7.add_option("--no-ucavs", action="store_true", dest="disableucavs", help="Disable 'ucavs' checkers")
+        group7.add_option("--no-head", action="store_true", dest="disablehead", help="Disable 'Is target up?' starting check")
+        group7.add_option("--no-scan", action="store_true", dest="disablescanner", help="Disable 'Scan shields' round check")
+        group7.add_option("--no-purge", action="store_true", dest="disablepurge", help="Disable 'Zombies purge' round check")
+        group7.add_option("--expire", action="store", dest="expire", help="Set expire time for 'Zombies purge' (default 30)")
+        self.add_option_group(group7)
+	group8 = optparse.OptionGroup(self, "*Extra Attack(s)*")
+        group8.add_option("--db", action="store", dest="dbstress", help="[DDoS] 'HTTP DB' attack (ex: --db 'search.php?q=')")
+        group8.add_option("--spray", action="store", dest="spray", help="[DDoS] 'TCP-SYN reflection' attack (ex: --spray 100)")
+        group8.add_option("--smurf", action="store", dest="smurf", help="[DDoS] 'ICMP broadcast' attack (ex: --smurf 101)")
+        group8.add_option("--loic", action="store", dest="loic", help="[ DoS] 'HTTP fast' attack (ex: --loic 100)")
+        group8.add_option("--loris", action="store", dest="loris", help="[ DoS] 'HTTP slow' attack (ex: --loris 101)")
+        group8.add_option("--ufosyn", action="store", dest="ufosyn", help="[ DoS] 'TCP-SYN flood' attack (ex: --ufosyn 100)")
+        group8.add_option("--xmas", action="store", dest="xmas", help="[ DoS] 'TCP-XMAS flood' attack (ex: --xmas 101)")
+        self.add_option_group(group8)
 
     def extract_mods(self):
-        mods = "3 [ LOIC + LORIS + UFOSYN ]" # hardcoded mods ;-)
+        mods = "6 [ LOIC + LORIS + UFOSYN + SPRAY + SMURF + XMAS ]" # hardcoded mods ;-)
         return mods       
 
     def extract_tools(self):
-        tools = "2" # hardcoded tools
+        tools = "3" # hardcoded tools
         return tools
 
     def extract_zombies(self):
@@ -160,7 +171,7 @@ class UFONetOptions(optparse.OptionParser):
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
-        if (not options.test and not options.testrpc and not options.target and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.upload and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.cryptomsg and not options.shownet and not options.timeline and not options.autosearch and not options.testoffline and not options.testall):
+        if (not options.test and not options.testrpc and not options.target and not options.target_list and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.upload and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.cryptomsg and not options.shownet and not options.xray and not options.timeline and not options.autosearch and not options.testoffline and not options.testall):
             print '='*75, "\n"
             print "888     888 8888888888 .d88888b.  888b    888          888    "   
             print "888     888 888        d88P" "Y888b  8888b   888          888    "
@@ -172,8 +183,9 @@ class UFONetOptions(optparse.OptionParser):
             print " 'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888"                                 
             print self.description, "\n"
             print '='*75 + "\n"
-            print '-> Bots:', self.total_botnet, "[ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + U:" + str(self.ucavs) + " + R:" + str(self.rpcs) + " ] | Dorks:", self.dorks, "\n"
-            print '-> Mods:', str(self.mods) + " | Tools:", self.tools, "\n"
+            print '-> Mods:', str(self.mods), '| Tools: [', self.tools, "]\n"
+            print '='*75, "\n"
+            print '-> Bots:', self.total_botnet, "[ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + R:" + str(self.rpcs) + " + U:" + str(self.ucavs) + " ] | Dorks:[", self.dorks, "]\n"
             print '='*75, "\n"
             print "-> For HELP use: -h or --help\n"
             print "-> For WEB interface use: --gui\n"

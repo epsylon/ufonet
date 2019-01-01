@@ -48,6 +48,7 @@
        pip install geoip 
        pip install requests
        pip install pycrypto
+       pip install scapy
 
 ####  Source libs:
 
@@ -71,28 +72,29 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-shell1_small.png "UFONet Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-shell1_small.png "UFONet Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-shell2_small.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-shell2_small.png "UFONet GUI Shell")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-welcome_small.png "UFONet GUI Welcome")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-main_small.png "UFONet GUI Main Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-main_small.png "UFONet GUI Main Panel")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-botnet_small.png "UFONet GUI Botnet")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-stats_small.png "UFONet GUI General Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-stats_small.png "UFONet GUI General Stats")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-board_small.png "UFONet GUI Board/Forum")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-grid_small.png "UFONet GUI Grid")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-grid_small.png "UFONet GUI Grid")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-grid2_small.png "UFONet GUI Grid Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-grid2_small.png "UFONet GUI Grid Stats")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-wargames_small.png "UFONet GUI Wargames")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-wargames_small.png "UFONet GUI Wargames")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-attack_small.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-armageddon-attack_small.png "UFONet GUI Attack")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui4_small.png "UFONet GeoMap /attacking/")
+

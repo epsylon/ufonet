@@ -1,1 +1,1 @@
-https://api.loadimpact.com/v3/anonymous-test-runs;$POST;url
+https://gtmetrix.com/analyze.html;$POST;url
