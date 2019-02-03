@@ -3676,9 +3676,9 @@ class UFONet(object):
                 try:
                     self.options.nuke = int(nuke)
                 except:
-                    self.options.nuke = 100 # default NUKE requests
+                    self.options.nuke = 10000 # default NUKE requests
                 if self.options.nuke < 1:
-                    self.options.nuke = 100
+                    self.options.nuke = 10000
                 self.instance = NUKE() # instance main class for NUKE operations
                 t = threading.Thread(target=self.instance.attacking, args=(target, self.options.nuke)) # NUKE using threads
                 t.daemon = True # extra weapons are threaded as daemons
