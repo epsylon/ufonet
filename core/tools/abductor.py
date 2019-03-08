@@ -30,7 +30,7 @@ class Abductor(object):
     def establish_connection(self, target):
         if target.endswith(""):
             target.replace("", "/")
-        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
         try:
             req = urllib2.Request(target, None, headers)
@@ -95,7 +95,7 @@ class Abductor(object):
         data = urllib.urlencode(query_string)
         target = url + data
         try:
-            self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+            self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
             req = urllib2.Request(target, None, headers)
             if self.ufonet.options.proxy: # set proxy

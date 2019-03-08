@@ -56,7 +56,7 @@ def synize(ip, port, rounds):
 
 class UFOSYN(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] TCP SYN Flooder (UFOSYN) is ready to fire: [" , rounds, "quantum hooks ]\n"
+        print "[Info] [AI] TCP SYN Flooder (UFOSYN) is ready to fire: [" , rounds, "quantum hooks ]"
         if target.startswith('http://'):
             target = target.replace('http://','')
             port = 80

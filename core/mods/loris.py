@@ -92,7 +92,7 @@ class LORIS(object):
         self.methods = ['GET', 'POST', 'X-METHOD'] # supported HTTP requests methods
 
     def attacking(self, target, requests):
-        print "\n[Info] [AI] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]\n"
+        print "[Info] [AI] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]"
         try:
             ip = socket.gethostbyname(target)
         except:

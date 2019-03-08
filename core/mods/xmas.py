@@ -56,7 +56,7 @@ def xmasize(ip, sport, rounds):
 
 class XMAS(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] TCP 'Christmas Tree' (XMAS) is ready to fire: [" , rounds, "ionized quartzs ]\n"
+        print "[Info] [AI] TCP 'Christmas Tree' (XMAS) is ready to fire: [" , rounds, "ionized quartzs ]"
         if target.startswith('http://'):
             target = target.replace('http://','')
             sport = 80

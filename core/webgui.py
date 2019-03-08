@@ -15,18 +15,21 @@ from hashlib import sha1, sha256
 from urlparse import urlparse
 from base64 import b64decode
 from decimal import Decimal
+from random import shuffle
 from options import UFONetOptions
 from main import UFONet
 from core.tools.abductor import Abductor
 
 host = "0.0.0.0"
 port = 9999
-default_blackhole = '176.28.23.46' # default blackhole
+#######SET-YOUR-BLACKHOLE-CONF-HERE###############################D
+default_blackhole = '176.28.23.46' # default blackhole            #
+crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
+###################################################################
 blackhole_sep = "|" # blackhole stream separator
 board_msg_sep = "#!#" # board stream separator
 grid_msg_sep = "#?#" # grid stream seperator
 wargames_msg_sep = "#-#" # wargames stream seperator
-crypto_key = "U-NATi0n!" # default encryption/decryption (+moderator board) key
 
 class ClientThread(threading.Thread):
     def __init__(self, ip, port, socket):
@@ -364,6 +367,9 @@ window.setTimeout(window.close,1234)
         else:
             your_ranking = "<font color='yellow' size='4'>[-]</font> ( no0b! )" # no0b hacking attempt! ;-)
         return self.pages["/header"] + """<script language="javascript"> 
+function Ranking() {
+        var win_grid = window.open("ranking","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
 function Grid() {
         var win_grid = window.open("grid","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
@@ -372,7 +378,7 @@ function Grid() {
 <center>
 <table cellpadding="5" cellspacing="5"><tr>
 <td><img src="/images/mothership.png"></td>
-<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button></td>
+<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button></td>
 </tr></table>
 <table border="0" cellpadding="5" cellspacing="10"><tr><td>
 <table border="1" cellpadding="5" cellspacing="10"><tr>
@@ -420,7 +426,8 @@ function Grid() {
 <td>SMURF:</td><td align='right'><font color='cyan'>""" + str(self.asmurf) + """</font></td>
 <td>XMAS:</td><td align='right'><font color='cyan'>""" + str(self.axmas) + """</font></td></tr>
 <tr>
-<td>NUKE:</td><td align='right'><font color='cyan'>""" + str(self.anuke) + """</font></td></tr>
+<td>NUKE:</td><td align='right'><font color='cyan'>""" + str(self.anuke) + """</font></td>
+<td>TACHYON:</td><td align='right'><font color='cyan'>""" + str(self.atachyon) + """</font></td></tr>
 </tr>
 </table>
 </td></tr></table>
@@ -727,14 +734,15 @@ function SendMessage() {
                 line = line.strip()
             f.close()
             mothership_members = 0 # mothership_members stats bonus
-            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANKING:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>SPRAY:</u></td><td align='center'><u>SMURF:</u></td><td align='center'><u>XMAS:</u></td><td align='center'><u>NUKE:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
-            for m in self.list_grid: # msg = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, contact, ID
+            unknown_members = 0 # unknown (or non decrypted) mothership members
+            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANK:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>SPRAY:</u></td><td align='center'><u>SMURF:</u></td><td align='center'><u>XMAS:</u></td><td align='center'><u>NUKE:</u></td><td align='center'><u>TACHYON:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
+            for m in self.list_grid: # msg = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, contact, ID
                 if grid_msg_sep in m:
                     version = m.count(grid_msg_sep) # check UFONet stream version (made for compatibility with old motherships)
                     m = m.split(grid_msg_sep)
+                    mothership_members = mothership_members + 1
                     grid_nickname = m[0][0:12]
                     grid_nickname = ''.join(random.sample(grid_nickname,len(grid_nickname))) # nickname (obfuscation+str12)
-                    mothership_members = mothership_members + 1
                     grid_ranking = m[1][0:4] # ranking (is parsed later using a symbol)
                     grid_ranking = ''.join(random.sample(grid_ranking,len(grid_ranking))) # ranking (obfuscation)
                     grid_totalchargo = m[2][0:4] # total chargo
@@ -751,7 +759,7 @@ function SendMessage() {
                     grid_attacks = ''.join(random.sample(grid_attacks,len(grid_attacks))) # attacks (obfuscation)
                     grid_loic = m[8][0:4] # loic
                     grid_loic = ''.join(random.sample(grid_loic,len(grid_loic))) # loic (obfuscation)
-                    if version > 15: # v1.2.1
+                    if version > 16: # v1.3
                         grid_loris = m[9][0:4] # loris
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
                         grid_ufosyn =  m[10][0:4] # ufosyn
@@ -764,6 +772,31 @@ function SendMessage() {
                         grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_nuke =  m[14][0:4] # nuke
                         grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon =  m[15][0:4] # tachyon
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
+                        try:
+                            grid_contact = "<a href=javascript:alert('"+str(m[16][0:12])+"');>View</a>" # js contact view (obfuscation)
+                        except:
+                            grid_contact= "invalid"
+                        try:
+                            grid_id = m[17] # id (plain id)
+                        except:
+                            grid_id = "invalid!"
+                    elif version == 16: # v1.2.1
+                        grid_loris = m[9][0:4] # loris
+                        grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
+                        grid_ufosyn =  m[10][0:4] # ufosyn
+                        grid_ufosyn = ''.join(random.sample(grid_ufosyn,len(grid_ufosyn))) # ufosyn (obfuscation)
+                        grid_spray =  m[11][0:4] # spray
+                        grid_spray = ''.join(random.sample(grid_spray,len(grid_spray))) # spray (obfuscation)
+                        grid_smurf =  m[12][0:4] # smurf
+                        grid_smurf = ''.join(random.sample(grid_smurf,len(grid_smurf))) # smurf (obfuscation)
+                        grid_xmas =  m[13][0:4] # xmas
+                        grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
+                        grid_nuke =  m[14][0:4] # nuke
+                        grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not tachyon present
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
                         try:
                             grid_contact = "<a href=javascript:alert('"+str(m[15][0:12])+"');>View</a>" # js contact view (obfuscation)
                         except:
@@ -785,6 +818,8 @@ function SendMessage() {
                         grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_nuke = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not nuke present
                         grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not tachyon present
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
                         try:
                             grid_contact = "<a href=javascript:alert('"+str(m[14][0:12])+"');>View</a>" # js contact view (obfuscation)
                         except:
@@ -806,6 +841,8 @@ function SendMessage() {
                         grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_nuke = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not nuke present
                         grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not tachyon present
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[11][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[12] # id (plain id)
@@ -824,6 +861,8 @@ function SendMessage() {
                         grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_nuke = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not nuke present
                         grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not tachyon present
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[10][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[11] # id (plain id)
@@ -842,6 +881,8 @@ function SendMessage() {
                         grid_xmas = ''.join(random.sample(grid_xmas,len(grid_xmas))) # xmas (obfuscation)
                         grid_nuke = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not nuke present
                         grid_nuke = ''.join(random.sample(grid_nuke,len(grid_nuke))) # nuke (obfuscation)
+                        grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==")[0:4] # not tachyon present
+                        grid_tachyon = ''.join(random.sample(grid_tachyon,len(grid_tachyon))) # tachyon (obfuscation)
                         grid_contact = "<a href=javascript:alert('"+str(m[9][0:12])+"');>View</a>" # js contact view (obfuscation)
                         try:
                             grid_id = m[10] # id (plain id)
@@ -849,14 +890,16 @@ function SendMessage() {
                             grid_id = "invalid!"
                     else: # no valid version
                         pass
-                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                 else: # not valid stream data
                     pass
             grid_table += "</table>"
             if mothership_members == 0:
                 mothership_members = "¿?"
+            if unknown_members == 0:
+                unknown_members = "¿?"
             l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td><font color='red'>¿?</font></td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td></tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>TRANSF:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td></tr><tr><td>LOIC:</td><td>¿?</td><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td><td>SPRAY:</td><td>¿?</td><td>SMURF:</td><td>¿?</td><td>XMAS:</td><td>¿?</td></tr><tr><td>NUKE:</td><td>¿?</td></tr></table><br><hr><br>"
+            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td><font color='orange'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td><font color='red'>¿?</font></td></tr><tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>TRANSF:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td><td>LOIC:</td><td>¿?</td></tr><tr><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td><td>SPRAY:</td><td>¿?</td><td>SMURF:</td><td>¿?</td><td>XMAS:</td><td>¿?</td><td>NUKE:</td><td>¿?</td><td>TACHYON:</td><td>¿?</td></tr></table><br><hr><br>"
             grid_table = mother_grid + grid_table + "</div>"
             return grid_table
 
@@ -1106,6 +1149,7 @@ function EditSupply(){
           document.getElementById("supply_smurf").readOnly = false;
           document.getElementById("supply_xmas").readOnly = false;
           document.getElementById("supply_nuke").readOnly = false;
+          document.getElementById("supply_tachyon").readOnly = false;
           document.getElementById("supply_edit").title = "Set global army supply..."
           document.getElementById("supply_edit").value = "SET"
           document.getElementById("supply_edit").innerHTML = "SET!"
@@ -1118,6 +1162,7 @@ function EditSupply(){
           supply_smurf=document.getElementById("supply_smurf").value
           supply_xmas=document.getElementById("supply_xmas").value
           supply_nuke=document.getElementById("supply_nuke").value
+          supply_tachyon=document.getElementById("supply_tachyon").value
           if(isNaN(parseFloat(supply_botnet)) || parseFloat(supply_botnet) < 0) {
             window.alert("You need to enter a valid BOTNET supply number (int>=0)");
             return
@@ -1149,6 +1194,10 @@ function EditSupply(){
                        if(isNaN(parseFloat(supply_nuke)) || parseFloat(supply_nuke) < 0) {
                        window.alert("You need to enter a valid NUKE supply number (int>=0)");
                        return
+                       }else{
+                        if(isNaN(parseFloat(supply_tachyon)) || parseFloat(supply_tachyon) < 0) {
+                        window.alert("You need to enter a valid TACHYON supply number (int>=0)");
+                        return
                     }else{
 	                document.getElementById("supply_botnet").readOnly = true;
           	        document.getElementById("supply_loic").readOnly = true;
@@ -1158,12 +1207,14 @@ function EditSupply(){
                         document.getElementById("supply_smurf").readOnly = true;
                         document.getElementById("supply_xmas").readOnly = true;
                         document.getElementById("supply_nuke").readOnly = true;
+                        document.getElementById("supply_tachyon").readOnly = true;
 	                document.getElementById("supply_edit").title = "Edit global army supply..."
 	                document.getElementById("supply_edit").value = "EDIT"
 	                document.getElementById("supply_edit").innerHTML = "EDIT"
-                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)+"&spray="+escape(supply_spray)+"&smurf="+escape(supply_smurf)+"&xmas="+escape(supply_xmas)+"&nuke="+escape(supply_nuke)
+                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)+"&spray="+escape(supply_spray)+"&smurf="+escape(supply_smurf)+"&xmas="+escape(supply_xmas)+"&nuke="+escape(supply_nuke)+"&tachyon="+escape(supply_tachyon)
                     runCommandX("cmd_edit_supply",params)
                     setTimeout("Decrypt_wargames()", 2000)
+                     }
                     }
                   }
                 }
@@ -1314,7 +1365,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                     except:
                         print '[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]'
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0}, f, indent=4)
                     with open(self.mothership_supplycfg_file) as data_file:
                         data = json.load(data_file)
                     self.supply_botnet = data["botnet"]
@@ -1325,11 +1376,15 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                     self.supply_smurf = data["smurf"]
                     self.supply_xmas = data["xmas"]
                     self.supply_nuke = data["nuke"]
+                    self.supply_tachyon = data["tachyon"]
                     job_estimated_dec = strftime("%d-%m-%Y %H:%M:%S", job_estimated_dec)
                     print "[Info] [Wargames] Time is over: [" + str(job_estimated_dec) + "] -> Engaging target: " + str(job_target_dec)
                     cmd = ""
                     nonroot_cmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
                     root_cmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
+                    if int(self.supply_tachyon) > 0: 
+                        cmd += "--tachyon " +str(self.supply_tachyon)+ " "
+                        flag_tachyon = True
                     if int(self.supply_nuke) > 0: 
                         cmd += "--nuke " +str(self.supply_nuke)+ " "
                         flag_nuke = True
@@ -1349,10 +1404,10 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                         cmd += "--loris " +str(self.supply_loris)+ " "
                     if int(self.supply_loic) > 0:
                         cmd += "--loic " +str(self.supply_loic)+ " "
-                    if not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
+                    if not flag_tachyon and not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
                         cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
-                    if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True:
-                        cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS, NUKE)                     
+                    if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True or flag_tachyon == True:
+                        cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS, NUKE, TACHYON)                     
                     runcmd = cmd + " "
                     runcmd = runcmd + "--force-yes &" # no raw_input allowed on webgui (+run it as daemon!)
                     print "[Info] [Wargames] Running command:", runcmd, "\n"
@@ -1369,7 +1424,110 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                                 job = re.sub('[!!!]', '', job)
                                 f.write(job)
                         f.close()
-                    
+
+    def extract_ranking_table(self):
+        f = open(self.grid_file,"r") # ranking data extracted from grid.txt
+        ls = f.readlines()
+        f.close()
+        if not ls: # not data on grid.txt
+            return
+        ranking_items={}
+        ranking_key = crypto_key
+        nodec_text = "Anonymous"
+        nodec_num = 0
+        self.ranking_grid_total = 0
+        try:
+            for j in ls:
+                if grid_msg_sep in j:
+                    self.ranking_grid_total = self.ranking_grid_total + 1
+                    m = j.split(grid_msg_sep)
+                    ranking_nickname = m[0] # nickname
+                    self.decrypt(ranking_key, ranking_nickname)
+                    if self.decryptedtext:
+                        ranking_nickname = str(self.decryptedtext)
+                    else:
+                        ranking_nickname = nodec_text
+                    if ranking_nickname == "Anonymous":
+                        ranking_nickname = ranking_nickname + str(self.ranking_grid_total*3) # add pseudo-rand as end to evade similars
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    ranking_ranking = m[1] # ranking
+                    self.decrypt(ranking_key, ranking_ranking)
+                    if self.decryptedtext:
+                        try:
+                            ranking_ranking = int(self.decryptedtext)
+                        except:
+                            ranking_ranking = nodec_num
+                    else:
+                        ranking_ranking = nodec_num
+                ranking_items[ranking_nickname] = ranking_ranking
+        except:
+            ranking_nickname = "Anonymous"
+            ranking_ranking = 0
+            ranking_items[ranking_nickname] = ranking_ranking
+        self.top_rookie = []
+        self.top_mercenary = []
+        self.top_bandit = []
+        self.top_ufommander = []
+        self.top_ufoleet = []
+        for k, v in ranking_items.iteritems():
+            if v is 0: # not any data (or decryption allowed) on grid so discard
+                pass
+            if v is 1: # add this player as a rookie
+                self.ranking_grid_rookie = self.ranking_grid_rookie + 1
+                self.top_rookie.append(k)
+            elif v is 2: # add this player as a mercenary
+                self.ranking_grid_mercenary = self.ranking_grid_mercenary + 1
+                self.top_mercenary.append(k)
+            elif v is 3: # add this player as a bandit
+                self.ranking_grid_bandit = self.ranking_grid_bandit + 1
+                self.top_bandit.append(k)
+            elif v is 4: # add this player as a ufommander
+                self.ranking_grid_ufommander = self.ranking_grid_ufommander + 1
+                self.top_ufommander.append(k)
+            elif v is 5: # add this player as a ufoleet
+                self.ranking_grid_ufoleet = self.ranking_grid_ufoleet + 1
+                self.top_ufoleet.append(k)
+            else: # add this player as unknown
+                self.ranking_grid_unknown = self.ranking_grid_unknown + 1
+        top5 = sorted(ranking_items, key=ranking_items.get, reverse=True)[:5]
+        for p in top5: # extract best players
+            if self.ranking_top5_player1 == "Anonymous":
+                 self.ranking_top5_player1 = p
+            elif self.ranking_top5_player2 == "Anonymous":
+                 self.ranking_top5_player2 = p
+            elif self.ranking_top5_player3 == "Anonymous":
+                 self.ranking_top5_player3 = p
+            elif self.ranking_top5_player4 == "Anonymous":
+                 self.ranking_top5_player4 = p
+            elif self.ranking_top5_player5 == "Anonymous":
+                 self.ranking_top5_player5 = p
+        if self.ranking == "Rookie":
+            shuffle(self.top_rookie) # shuffle for different results
+            top3 = self.top_rookie[:3]
+        elif self.ranking == "Mercenary":
+            shuffle(self.top_mercenary)
+            top3 = self.top_mercenary[:3]
+        elif self.ranking == "Bandit":
+            shuffle(self.top_bandit)
+            top3 = self.top_bandit[:3]
+        elif self.ranking == "UFOmmander!":
+            shuffle(self.top_ufommander)
+            top3 = self.top_ufommander[:3]
+        elif self.ranking == "UFOl33t!":
+            shuffle(self.top_ufoleet)
+            top3 = self.top_ufoleet[:3]
+        for p in top3: # extract similar player 
+            if self.ranking_similar_player1 == "Anonymous":
+                self.ranking_similar_player1 = p
+            elif self.ranking_similar_player2 == "Anonymous":
+                self.ranking_similar_player2 = p
+            elif self.ranking_similar_player3 == "Anonymous":
+                self.ranking_similar_player3 = p
+        top1 = sorted(ranking_items, key=ranking_items.get, reverse=True)
+        shuffle(top1) # shuffle for different results
+        top1 = random.choice(top1).strip() # extract random player 
+        self.ranking_top1_player1 = top1      
+           
     def __init__(self):
         self.crypto_key = crypto_key # set default symmetric crypto key
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
@@ -1400,6 +1558,22 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.blackholes_status_color = "red" # set default status color for blackholes
         self.referer = 'http://127.0.0.1/'
         self.mothershipname = "core/txt/shipname.txt"
+        self.ranking_grid_total = 0
+        self.ranking_grid_rookie = 0
+        self.ranking_grid_mercenary = 0
+        self.ranking_grid_bandit = 0
+        self.ranking_grid_ufommander = 0
+        self.ranking_grid_ufoleet = 0
+        self.ranking_grid_unknown = 0
+        self.ranking_top5_player1 = "Anonymous"
+        self.ranking_top5_player2 = "Anonymous"
+        self.ranking_top5_player3 = "Anonymous"
+        self.ranking_top5_player4 = "Anonymous"
+        self.ranking_top5_player5 = "Anonymous"
+        self.ranking_similar_player1 = "Anonymous"
+        self.ranking_similar_player2 = "Anonymous"
+        self.ranking_similar_player3 = "Anonymous"
+        self.ranking_top1_player1 = "Anonymous"
         f = open(self.mothershipname) # extract ship name
         self.mothership_id = f.read()
         self.mothership_id = self.mothership_id[:25] # truncating anti-formats ;-)
@@ -1449,6 +1623,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
             self.list_moderator.append(n) 
         f = open(self.grid_file) # double grid board
         self.grid_text = f.read()
+        self.ranking_text = f.read() # ranking data is extracted from grid
         f.close()
         f = open(self.grid_file)
         self.grid_block = f.readlines()
@@ -1456,6 +1631,11 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.list_grid = []
         for n in self.grid_block:
             self.list_grid.append(n)
+        self.ranking_datetime = time.ctime(os.path.getctime('server/grid.txt')) # extract grid.txt datetime for ranking calcs
+        if self.ranking_datetime == self.release_date_file: # never connected to feeds
+            self.ranking_status_color = "red" # set status color for ranking to 'red'
+        else:
+            self.ranking_status_color = "green" # set status color for ranking to 'green'
         f = open(self.wargames_file) # double wargames board
         self.wargames_text = f.read()
         f.close()
@@ -1496,6 +1676,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.asmurf = data["smurf"]
         self.axmas = data["xmas"]
         self.anuke = data["nuke"]
+        self.atachyon = data["tachyon"]
         self.tcrashed = data["crashed"]
         if int(self.acompleted) > 0: # check for attacks completed
             self.mothership_acc = Decimal((int(self.tcrashed) * 100) / int(self.acompleted)) # decimal rate: crashed*100/completed
@@ -1672,6 +1853,9 @@ function startTyping(textParam, delayParam, destinationParam)
                         <li><a href="javascript:alert('From one, learn all...');"><span></span>'ab uno disce omnes'</a></li>
                         <li><a href="javascript:alert('One for all, all for one...');"><span></span>'unus pro omnibus, omnes pro uno'</a></li>
                         <li><a href="javascript:alert('Do what you are doing...');"><span></span>'age quod agis'</a></li>
+                        <li><a href="javascript:alert('Make your move...');"><span></span>'fac et excusa'</a></li>
+                        <li><a href="javascript:alert('Divide and conquer...');"><span></span>'divide et impera'</a></li>
+                        <li><a href="javascript:alert('If you did it, deny it...');"><span></span>'si fecisti nega'</a></li>
 		</ul>
 	</div>
 </td></tr></table><br>
@@ -1731,7 +1915,7 @@ startTyping(text, 80, "tt");
 -----------------------------------
 
 Mothership ID: <b>""" + str(self.mothership_id) + """</b>
- - Your ranking is: <b>""" + str(self.ranking) + """</b>
+ - Your ranking is: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</a></b>
 """+str(self.current_tasks)+"""</td>
 <td>
 <table>
@@ -1863,7 +2047,8 @@ function HideAll()
   * Search using a dork: <input type="text" name="dork" id="dork" size="20" placeholder="proxy.php?url="></div><div id="list_pattern" style="display:block;">  
   * Search using a list (from: botnet/dorks.txt): <input type="checkbox" id="dork_list" onchange="showHide()"></div><div id="s_engine" name="s_engine" style="display:block;">  
   * Search using this search engine: <select id="engines_list">
-<!-- <option value="duck" selected>duck</option> [09/08/2016: deprecated! -> duck has removed 'inurl' operator]-->
+  <option value="startpage" selected>startpage</option>
+  <option value="duck">duck</option>
   <option value="bing">bing</option>
   <option value="yahoo">yahoo</option>
 <!--  <option value="google">google (no TOR!)</option>-->
@@ -1918,6 +2103,7 @@ function ShowPanel() {
                document.getElementById("smurf").value = "";
                document.getElementById("xmas").value = "";
                document.getElementById("nuke").value = "";
+               document.getElementById("tachyon").value = "";
                document.getElementById("dbstress").value = "";
              } else {
                document.getElementById("extra_panel").style.display = "none";
@@ -1928,6 +2114,7 @@ function ShowPanel() {
                document.getElementById("smurf").value = "";
                document.getElementById("xmas").value = "";
                document.getElementById("nuke").value = "";
+               document.getElementById("tachyon").value = "";
                document.getElementById("dbstress").value = "";
              }
       }
@@ -1953,10 +2140,11 @@ function Start(){
              smurf=document.getElementById("smurf").value
              xmas=document.getElementById("xmas").value
              nuke=document.getElementById("nuke").value
-             if(ufosyn || spray || smurf || xmas || nuke){ // root required!
+             tachyon=document.getElementById("tachyon").value
+             if(ufosyn || spray || smurf || xmas || nuke || tachyon){ // root required!
                window.alert("You need 'root' access!. Check shell and enter your password.");
              }
-             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)+"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&xmas="+escape(xmas)+"&nuke="+escape(nuke)
+             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)+"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&xmas="+escape(xmas)+"&nuke="+escape(nuke)+"&tachyon="+escape(tachyon)
              if (document.getElementById("visual_attack").checked){
                 document.getElementById("visual_attack").value = "on";
              } else {
@@ -2004,14 +2192,14 @@ function Start(){
 
 <hr><div id="extra_panel" style="display:none;">
 <table bgcolor="black" cellpadding="4" cellspacing="5" border="1"><tr>
-<td>* <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a>:   <input type="text" name="loic" id="loic" size="4" placeholder="100"></td>
-<td>* <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a>:  <input type="text" name="loris" id="loris" size="4" placeholder="101"></td>
-<td>* <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>: <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td></tr><tr>
-<td>* <a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
-<td>* <a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
-<td>* <a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td></tr>
-<tr>
-<td>* <a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a>:   <input type="text" name="nuke" id="nuke" size="4" placeholder="10000"></td></tr>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a>:</td><td align="right">   <input type="text" name="loic" id="loic" size="4" placeholder="100"></td>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a>:</td><td align="right">  <input type="text" name="loris" id="loris" size="4" placeholder="101"></td>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>:</td><td align="right"> <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td></tr><tr>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:</td><td align="right">  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:</td><td align="right">  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
+<td align="left">* <a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:</td><td align="right">   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td></tr><tr>
+<td align="left">* <a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a>:</td><td align="right">   <input type="text" name="nuke" id="nuke" size="4" placeholder="10000"></td>
+<td align="left">* <a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a>:</td><td align="right">   <input type="text" name="tachyon" id="tachyon" size="4" placeholder="1000"></td></tr>
 </table>
 <hr>
   * Set db stress parameter:   <input type="text" name="dbstress" id="dbstress" size="22" placeholder="search.php?q=">
@@ -2155,6 +2343,130 @@ function Start(){
 </table>
 <hr>
 <div id="cmdOut"></div>
+""" + self.pages["/footer"]
+
+        self.pages["/ranking"] = self.pages["/header"] + """<script language="javascript">
+function Grid() {
+        var win_requests = window.open("grid","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Stats() {
+        var win_requests = window.open("stats","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Sync_ranking(){
+    ranking_source=document.getElementById("ranking_source").value
+    if(ranking_source == "") {
+        window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+        return
+    }else{
+        params="ranking_source="+escape(ranking_source)
+        runCommandX("cmd_refresh_ranking",params)
+         document.getElementById("nb1").style.display = "none";
+         document.getElementById("nb1").style.display = "block";
+        setTimeout("location.reload()", 10000)
+    }
+  }
+</script></head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Commander DPR says: I love new blood!! """ + self.ranking + """, in the Ranking section you can see information about how to raise your grade, meet the best UFOMasters, be close to those who are like you and try to find partners to dominate the multi-verse... Until then: Dont be evil!');"><img src="/images/commander.png"></a></td>
+  <td>GRADUATION/CLANS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit your own stats..." onclick="Stats()">VISIT STATS!</button></td>
+</tr></table>
+<table cellpadding="5" cellspacing="10">
+<tr>
+<td align="center">
+ Your ranking is: <b>""" + str(self.ranking) + """</b>
+ </td>
+ </tr>
+ <tr>
+ <td>
+<table border="1" cellpadding="10" cellspacing="10">
+<tr>
+ <td align="center"><b><u>GRADE:</u></b></td><td align="center"><b><u>RANKING:</u></b></td><td align="center"><b><u>REQUIRED:</u></b></td></tr>
+<tr>
+    <td align="center"><font color='orange' size='4'>-</font></td><td align="center"><font color='orange'>Unknown</font></td><td align='center'><a style="text-decoration:none" href="javascript:alert('You havent a correct key set on your configuration to unmask this Motherships!');">KEY?</a></td></tr>
+ <tr>
+ <td align="center"><font color='white' size='4'>*</font></td><td align="center"><font color='white'>Rookie</font></td><td align='center'><font color='white'>missions<4</font></td></tr>
+ <tr>
+ <td align="center"><font color='cyan' size='4'>**</font></td><td align="center"><font color='cyan'>Mercenary</font></td><td align='center'><font color='cyan'>missions>4</font></td></tr>
+ <tr>
+  <td align="center"><font color='blueviolet' size='4'>***</font></td><td align="center"><font color='blueviolet'>Bandit</font></td><td align='center'><font color='blueviolet'>crashed=1</font></td></tr>
+ <tr>
+   <td align="center"><font color='blue' size='4'>****</font></td><td align="center"><font color='blue'>UFOmmander!</font></td><td align='center'><font color='blue'>crashed>1<4</font></td></tr>
+ <tr>
+    <td align="center"><font color='red' size='4'>&#x25BC;</font></td><td align="center"><font color='red'>UFOl33t!</font></td><td align='center'><font color='red'><a style="text-decoration:none" href="javascript:alert('Secret Achievement!');">???</a></font></td></tr>
+ </table>
+ </td>
+ </tr></table>
+<br>
+<table cellpadding="5" cellspacing="10">
+ <tr>
+<td>Blackhole/IP:</td>
+<td><input type="text" name="ranking_source" id="ranking_source" size="20" value='"""+default_blackhole+"""'></td>
+<td><button title="Syncronize data from a blackhole with your device..." onclick="Sync_ranking()">DOWNLOAD!</button></td>
+</tr></table>
+<br>
+<div id="nb2" style="display: none;">"""+str(self.extract_ranking_table())+"""</div>
+Last update: <font color='"""+ self.ranking_status_color + """'>"""+ self.ranking_datetime + """</font><br><br>
+<div id="cmdOut"></div>
+<div id="nb1" style="display: block;">"""+self.ranking_text+"""</div>
+<table bgcolor="black" cellpadding="5" cellspacing="10" border="0"><tr>
+ <td>
+</td><td>
+<table border="1" cellpadding="5" cellspacing="10">
+<tr>
+ <td align="center"><b><u>TOTAL_ON_GRID:</u></b></td><td align="center"><b><u>"""+str(self.ranking_grid_total)+"""</u></b></td></tr>
+ <tr>
+ <td align="center"><font color='orange'>Unknown</font></td><td align='center'><font color='orange'>"""+str(self.ranking_grid_unknown)+"""</font></td></tr>
+  <tr>
+ <td align="center"><font color='white'>Rookie</font></td><td align='center'><font color='white'>"""+str(self.ranking_grid_rookie)+"""</font></td></tr>
+  <tr>
+ <td align="center"><font color='cyan'>Mercenary</font></td><td align='center'><font color='cyan'>"""+str(self.ranking_grid_mercenary)+"""</font></td></tr>
+  <tr>
+ <td align="center"><font color='blueviolet'>Bandit</font></td><td align='center'><font color='blueviolet'>"""+str(self.ranking_grid_bandit)+"""</font></td></tr>
+  <tr>
+ <td align="center"><font color='blue'>UFOmmander!</font></td><td align='center'><font color='blue'>"""+str(self.ranking_grid_ufommander)+"""</font></td></tr>
+  <tr>
+ <td align="center"><font color='red'>UFOl33t!</font></td><td align='center'><font color='red'>"""+str(self.ranking_grid_ufoleet)+"""</font></td></tr>
+</table>
+</td><td>
+<table border="1" cellpadding="5" cellspacing="10">
+<tr>
+ <td><b><u>TOP_5_MOTHERSHIPS:</u></b></td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_top5_player1)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_top5_player2)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_top5_player3)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_top5_player4)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_top5_player5)+"""</td></tr>
+</table>
+</td><td>
+<table border="1" cellpadding="5" cellspacing="10">
+<tr>
+ <td><b><u>RANDOM_SIMILAR:</u></b></td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_similar_player1)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_similar_player2)+"""</td></tr>
+<tr>
+<td align='center'>"""+str(self.ranking_similar_player3)+"""</td></tr>
+</table>
+</td><td>
+<table border="1" cellpadding="5" cellspacing="10">
+<tr>
+ <td><b><u>AI_SUGGESTION:</u></b></td></tr>
+<tr>
+ <td align='center'>"""+str(self.ranking_top1_player1)+"""</td></tr>
+</table>
+</td>
+</tr></table>
+</center>
+<hr>
 """ + self.pages["/footer"]
 
         self.pages["/lib.js"] = """function loadXMLDoc() {
@@ -2469,6 +2781,7 @@ function runCommandX(cmd,params) {
             flag_smurf = None
             flag_xmas = None
             flag_nuke = None
+            flag_tachyon = None
             nonroot_cmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
             root_cmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
             end_cmd = ""+cmd_options + "|tee /tmp/out) &"
@@ -2492,11 +2805,14 @@ function runCommandX(cmd,params) {
                 flag_xmas = True
             if pGet["nuke"]:
                 cmd += "--nuke '" +str(pGet["nuke"])+ "' "
-                flag_nuke = True           
-            if not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
+                flag_nuke = True
+            if pGet["tachyon"]:
+                cmd += "--tachyon '" +str(pGet["tachyon"])+ "' "
+                flag_tachyon = True
+            if not flag_tachyon and not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
                 cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
-            if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True:
-                cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS, NUKE)                             
+            if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True or flag_tachyon== True:
+                cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS, NUKE, TACHYON)                             
             runcmd = cmd + end_cmd
         if page == "/cmd_attack_update":
             if not os.path.exists('/tmp/out'):
@@ -2633,6 +2949,28 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_refresh_missions_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_refresh_ranking":
+            self.pages["/cmd_refresh_ranking"] = "<pre>Waiting for 'blackhole' reply...</pre>"
+            ranking_ip = pGet["ranking_source"]
+            ranking_ip = urllib.unquote(ranking_ip).decode('utf8')
+            try:
+                ranking = urllib2.urlopen('http://'+ranking_ip+'/ufonet/grid.txt').read()
+                f = open(self.grid_file, "w") # write updates to grid.txt
+                f.write(str(ranking))
+                f.close()
+                self.ranking_text = ranking
+            except:
+                ranking = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of ranking feed. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(str(ranking))
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_refresh_ranking_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_refresh_ranking_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_sync_grid":
             self.pages["/cmd_sync_grid"] = "<pre>Waiting for 'blackhole' reply...</pre>"
             blackhole_ip = pGet["grid_source"]
@@ -2730,6 +3068,7 @@ function runCommandX(cmd,params) {
                 supply_smurf = pGet["smurf"]
                 supply_xmas = pGet["xmas"]
                 supply_nuke = pGet["nuke"]
+                supply_tachyon = pGet["tachyon"]
             except: # default global supply army
                 supply_botnet = 1
                 supply_loic = 0
@@ -2739,8 +3078,9 @@ function runCommandX(cmd,params) {
                 supply_smurf = 0
                 supply_xmas = 0
                 supply_nuke = 0
+                supply_tachyon = 0
             with open(self.mothership_supplycfg_file, "w") as f:
-                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn, "spray": supply_spray, "smurf": supply_smurf, "xmas": supply_xmas, "nuke": supply_nuke}, f, indent=4)
+                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn, "spray": supply_spray, "smurf": supply_smurf, "xmas": supply_xmas, "nuke": supply_nuke, "tachyon": supply_tachyon}, f, indent=4)
         if page == "/cmd_job_add":
             self.pages["/cmd_job_add"] = "<pre>Adding wargame to your list...</pre>"
             try:
@@ -3050,7 +3390,7 @@ function runCommandX(cmd,params) {
                                 grid_loic = nodec_num
                         else:
                             grid_loic = nodec_num
-                        if version > 15: # v1.2.1
+                        if version > 16: # v1.3
                             grid_loris = m[9] # loris
                             self.decrypt(grid_key, grid_loris)
                             if self.decryptedtext:
@@ -3110,6 +3450,95 @@ function runCommandX(cmd,params) {
                                     grid_nuke = nodec_num
                             else:
                                 grid_nuke = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = m[15] # tachyon
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_contact = m[16] # contact
+                            self.decrypt(grid_key, grid_contact)
+                            if self.decryptedtext:
+                                grid_contact = self.decryptedtext
+                            else:
+                                grid_contact = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer      
+                            grid_id = m[17] # id 
+                        elif version == 16: # v1.2.1
+                            grid_loris = m[9] # loris
+                            self.decrypt(grid_key, grid_loris)
+                            if self.decryptedtext:
+                                try:
+                                    grid_loris = int(self.decryptedtext)
+                                except:
+                                    grid_loris = nodec_num
+                            else:
+                                grid_loris = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_ufosyn = m[10] # ufosyn
+                            self.decrypt(grid_key, grid_ufosyn)
+                            if self.decryptedtext:
+                                try:
+                                    grid_ufosyn = int(self.decryptedtext)
+                                except:
+                                    grid_ufosyn = nodec_num
+                            else:
+                                grid_ufosyn = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_spray = m[11] # spray
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                try:
+                                    grid_spray = int(self.decryptedtext)
+                                except:
+                                    grid_spray = nodec_num
+                            else:
+                                grid_spray = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_smurf = m[12] # smurf
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                try:
+                                    grid_smurf = int(self.decryptedtext)
+                                except:
+                                    grid_smurf = nodec_num
+                            else:
+                                grid_smurf = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_xmas = m[13] # xmas
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                try:
+                                    grid_xmas = int(self.decryptedtext)
+                                except:
+                                    grid_xmas = nodec_num
+                            else:
+                                grid_xmas = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_nuke = m[14] # nuke
+                            self.decrypt(grid_key, grid_nuke)
+                            if self.decryptedtext:
+                                try:
+                                    grid_nuke = int(self.decryptedtext)
+                                except:
+                                    grid_nuke = nodec_num
+                            else:
+                                grid_nuke = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[15] # contact
                             self.decrypt(grid_key, grid_contact)
@@ -3180,6 +3609,16 @@ function runCommandX(cmd,params) {
                             else:
                                 grid_nuke = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[14] # contact
                             self.decrypt(grid_key, grid_contact)
                             if self.decryptedtext:
@@ -3248,6 +3687,16 @@ function runCommandX(cmd,params) {
                                     grid_nuke = nodec_num
                             else:
                                 grid_nuke = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext: 
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[11] # contact
                             self.decrypt(grid_key, grid_contact)
@@ -3318,6 +3767,16 @@ function runCommandX(cmd,params) {
                             else:
                                 grid_nuke = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext: 
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[10] # contact
                             self.decrypt(grid_key, grid_contact)
                             if self.decryptedtext:
@@ -3387,6 +3846,16 @@ function runCommandX(cmd,params) {
                             else:
                                 grid_nuke = nodec_num
                             self.decryptedtext = "" # clean decryptedtext buffer
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext: 
+                                try:
+                                    grid_tachyon = int(self.decryptedtext)
+                                except:
+                                    grid_tachyon = nodec_num
+                            else:
+                                grid_tachyon = nodec_num
+                            self.decryptedtext = "" # clean decryptedtext buffer
                             grid_contact = m[9] # contact
                             self.decrypt(grid_key, grid_contact)
                             if self.decryptedtext:
@@ -3397,7 +3866,7 @@ function runCommandX(cmd,params) {
                             grid_id = m[10] # id    
                         else: # no valid version
                             pass
-                        grid_items.append([str(grid_nickname),int(grid_ranking),int(grid_totalchargo),int(grid_dorking),int(grid_transferred),int(grid_maxchargo),int(grid_missions),int(grid_attacks),int(grid_loic),int(grid_loris),int(grid_ufosyn),int(grid_spray),int(grid_smurf),int(grid_xmas),int(grid_nuke),str(grid_contact),str(grid_id)])
+                        grid_items.append([str(grid_nickname),int(grid_ranking),int(grid_totalchargo),int(grid_dorking),int(grid_transferred),int(grid_maxchargo),int(grid_missions),int(grid_attacks),int(grid_loic),int(grid_loris),int(grid_ufosyn),int(grid_spray),int(grid_smurf),int(grid_xmas),int(grid_nuke),int(grid_tachyon),str(grid_contact),str(grid_id)])
                 if grid_filter == "nickname":
                     grid_items=sorted(grid_items,key=lambda x:x[0]) # sorted by nickname
                 elif grid_filter == "ranking": 
@@ -3428,8 +3897,10 @@ function runCommandX(cmd,params) {
                     grid_items=sorted(grid_items,key=lambda x:x[13]) # sorted by xmas
                 elif grid_filter == "nuke":
                     grid_items=sorted(grid_items,key=lambda x:x[14]) # sorted by nuke
+                elif grid_filter == "tachyon":
+                    grid_items=sorted(grid_items,key=lambda x:x[15]) # sorted by tachyon
                 elif grid_filter == "contact":
-                    grid_items=sorted(grid_items,key=lambda x:x[15]) # sorted by contact
+                    grid_items=sorted(grid_items,key=lambda x:x[16]) # sorted by contact
                 else:
                     grid_items=sorted(grid_items,key=lambda x:x[6]) # sorted by missions (default)
                 for i in grid_items:
@@ -3508,13 +3979,18 @@ function runCommandX(cmd,params) {
                     if self.encryptedtext:
                         grid_nuke = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
-                    grid_contact = str(i[15])
+                    grid_tachyon = str(i[15])
+                    self.encrypt(grid_key, grid_tachyon)
+                    if self.encryptedtext:
+                        grid_tachyon = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    grid_contact = str(i[16])
                     self.encrypt(grid_key, grid_contact)
                     if self.encryptedtext:
                         grid_contact = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
-                    grid_id = str(i[16]) # id (plain id)
-                    l = str(grid_nickname) + "#?#" + str(grid_ranking) + "#?#" + str(grid_totalchargo) + "#?#" + str(grid_dorking) + "#?#" + str(grid_transferred) + "#?#" + str(grid_maxchargo) + "#?#" + str(grid_missions) + "#?#" + str(grid_attacks) + "#?#" + str(grid_loic) + "#?#" + str(grid_loris) + "#?#" + str(grid_ufosyn) + "#?#" + str(grid_spray) + "#?#" + str(grid_smurf)+ "#?#" + str(grid_xmas) + "#?#" + str(grid_nuke) + "#?#" + str(grid_contact) + "#?#" + str(grid_id)
+                    grid_id = str(i[17]) # id (plain id)
+                    l = str(grid_nickname) + "#?#" + str(grid_ranking) + "#?#" + str(grid_totalchargo) + "#?#" + str(grid_dorking) + "#?#" + str(grid_transferred) + "#?#" + str(grid_maxchargo) + "#?#" + str(grid_missions) + "#?#" + str(grid_attacks) + "#?#" + str(grid_loic) + "#?#" + str(grid_loris) + "#?#" + str(grid_ufosyn) + "#?#" + str(grid_spray) + "#?#" + str(grid_smurf)+ "#?#" + str(grid_xmas) + "#?#" + str(grid_nuke) + "#?#" + str(grid_tachyon) + "#?#" + str(grid_contact) + "#?#" + str(grid_id)
                     f.write(l)
                 f.close()
             except:
@@ -3628,13 +4104,18 @@ function runCommandX(cmd,params) {
                     if self.encryptedtext:
                         nuke = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
+                    tachyon = stats_data["tachyon"]
+                    self.encrypt(grid_key, str(tachyon))
+                    if self.encryptedtext:
+                        tachyon = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
                     contact = grid_data["grid_contact"].encode('utf-8')
                     self.encrypt(grid_key, str(contact))
                     if self.encryptedtext:
                         contact = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer  
                     id = grid_data["grid_token"] #  plain text
-                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(spray)+grid_msg_sep+str(smurf)+grid_msg_sep+str(xmas)+grid_msg_sep+str(nuke)+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
+                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(spray)+grid_msg_sep+str(smurf)+grid_msg_sep+str(xmas)+grid_msg_sep+str(nuke)+grid_msg_sep+str(tachyon)+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
                     try: 
                         host = blackhole_ip
                         cport = 9992 # port used by mothership grider (server side script)
@@ -4034,6 +4515,7 @@ function runCommandX(cmd,params) {
             if grid_key is not "": # grid decryption
                 # Mothership stats counters
                 mothership_members = 0
+                unknown_members = 0
                 member_1 = 0 # Rookie
                 member_2 = 0 # Mercenary
                 member_3 = 0 # Bandit
@@ -4049,30 +4531,32 @@ function runCommandX(cmd,params) {
                 mothership_smurf = 0
                 mothership_xmas = 0
                 mothership_nuke = 0
+                mothership_tachyon = 0
                 mothership_chargo = 0
                 mothership_dorking = 0
                 mothership_maxchargo = 0
                 nodec_text = "KEY?"
-                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICKNAME:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANKING:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_spray' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('spray','"+str(grid_key)+"')>SPRAY:</a></td><td align='center'><a id='filter_smurf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('smurf','"+str(grid_key)+"')>SMURF:</a></td><td align='center'><a id='filter_xmas' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('xmas','"+str(grid_key)+"')>XMAS:</a></td><td align='center'><a id='filter_nuke' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nuke','"+str(grid_key)+"')>NUKE:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
+                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICK:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANK:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_spray' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('spray','"+str(grid_key)+"')>SPRAY:</a></td><td align='center'><a id='filter_smurf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('smurf','"+str(grid_key)+"')>SMURF:</a></td><td align='center'><a id='filter_xmas' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('xmas','"+str(grid_key)+"')>XMAS:</a></td><td align='center'><a id='filter_nuke' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nuke','"+str(grid_key)+"')>NUKE:</a></td><td align='center'><a id='filter_tachyon' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('tachyon','"+str(grid_key)+"')>TACHYON:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
                 grid_key = pGet["grid_key"]
                 f = open("/tmp/out", "w")
                 self.list_grid_rev = reversed(self.list_grid) # order by DESC
-                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, contact, ID
+                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, contact, ID
                     if grid_msg_sep in m:
                         version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1|13->1.2|14->1.2.1)
                         m = m.split(grid_msg_sep)
+                        mothership_members = mothership_members + 1 # add new registered member to mothership stats
                         grid_nickname = m[0] # nickname
                         self.decrypt(grid_key, grid_nickname)
                         if self.decryptedtext:
                             grid_nickname = self.decryptedtext
                         else:
                             grid_nickname = nodec_text
+                            unknown_members = unknown_members + 1 # add members as unknown
                         self.decryptedtext = "" # clean decryptedtext buffer
                         if len(grid_nickname) > 12 or len(grid_nickname) < 3: # m[0] = grid_nickname (>str3<str12)
                             grid_nickname = "Anonymous"
                         else: 
                             grid_nickname = str(grid_nickname) # nickname
-                        mothership_members = mothership_members + 1 # add new registered member to mothership stats
                         grid_ranking = m[1] # ranking
                         self.decrypt(grid_key, grid_ranking)
                         if self.decryptedtext:
@@ -4184,7 +4668,7 @@ function runCommandX(cmd,params) {
                             mothership_loic = mothership_loic + grid_loic
                         except:
                             grid_loic = nodec_text
-                        if version > 15: # v1.2.1
+                        if version > 16: # v1.3
                             grid_loris = m[9] # loris
                             self.decrypt(grid_key, grid_loris)
                             if self.decryptedtext:
@@ -4257,6 +4741,126 @@ function runCommandX(cmd,params) {
                                 mothership_nuke = mothership_nuke + grid_nuke
                             except:
                                 grid_nuke = nodec_text
+                            grid_tachyon = m[15] # nuke
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
+                            try: # decrypt + parse contact len + correct js view (without blank spaces)
+                                grid_contact = m[16] # contact
+                                self.decrypt(grid_key, grid_contact)
+                                if self.decryptedtext:
+                                    grid_contact = self.decryptedtext
+                                else:
+                                    grid_contact = nodec_text
+                                self.decryptedtext = "" # clean decryptedtext buffer
+                                if len(grid_contact) > 120 or len(grid_contact) < 3: # m[16] = grid_contact (>str3<str120)
+                                    grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>" # js error contact view
+                                else:
+                                    try:
+                                        if " " in grid_contact: # m[16] = grid_contact
+                                            grid_contact = grid_contact.replace(" ","")
+                                        grid_contact = "<a href=javascript:alert('"+str(grid_contact)+"');>View</a>" # js contact view
+                                    except:
+                                        grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>" # js error contact view
+                            except:
+                                pass
+                            try:            
+                                grid_id = m[17] # id
+                            except:
+                                pass  
+                        elif version == 16: # v1.2.1
+                            grid_loris = m[9] # loris
+                            self.decrypt(grid_key, grid_loris)
+                            if self.decryptedtext:
+                                grid_loris = self.decryptedtext
+                            else:
+                                grid_loris = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_loris = int(grid_loris)
+                                mothership_loris = mothership_loris + grid_loris
+                            except:
+                                grid_loris = nodec_text
+                            grid_ufosyn = m[10] # ufosyn
+                            self.decrypt(grid_key, grid_ufosyn)
+                            if self.decryptedtext:
+                                grid_ufosyn = self.decryptedtext
+                            else:
+                                grid_ufosyn = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_ufosyn = int(grid_ufosyn)
+                                mothership_ufosyn = mothership_ufosyn + grid_ufosyn
+                            except:
+                                grid_ufosyn = nodec_text
+                            grid_spray = m[11] # spray
+                            self.decrypt(grid_key, grid_spray)
+                            if self.decryptedtext:
+                                grid_spray = self.decryptedtext
+                            else:
+                                grid_spray = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_spray = int(grid_spray)
+                                mothership_spray = mothership_spray + grid_spray
+                            except:
+                                grid_spray = nodec_text
+                            grid_smurf = m[12] # smurf
+                            self.decrypt(grid_key, grid_smurf)
+                            if self.decryptedtext:
+                                grid_smurf = self.decryptedtext
+                            else:
+                                grid_smurf = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_smurf = int(grid_smurf)
+                                mothership_smurf = mothership_smurf + grid_smurf
+                            except:
+                                grid_smurf = nodec_text
+                            grid_xmas = m[13] # xmas
+                            self.decrypt(grid_key, grid_xmas)
+                            if self.decryptedtext:
+                                grid_xmas = self.decryptedtext
+                            else:
+                                grid_xmas = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_xmas = int(grid_xmas)
+                                mothership_xmas = mothership_xmas + grid_xmas
+                            except:
+                                grid_xmas = nodec_text
+                            grid_nuke = m[14] # nuke
+                            self.decrypt(grid_key, grid_nuke)
+                            if self.decryptedtext:
+                                grid_nuke = self.decryptedtext
+                            else:
+                                grid_nuke = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_nuke = int(grid_nuke)
+                                mothership_nuke = mothership_nuke + grid_nuke
+                            except:
+                                grid_nuke = nodec_text
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[15] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -4353,6 +4957,18 @@ function runCommandX(cmd,params) {
                                 mothership_nuke = mothership_nuke + grid_nuke
                             except:
                                 grid_nuke = nodec_text
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[14] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -4449,6 +5065,18 @@ function runCommandX(cmd,params) {
                                 mothership_nuke = mothership_nuke + grid_nuke
                             except:
                                 grid_nuke = nodec_text
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int 
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[11] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -4545,6 +5173,18 @@ function runCommandX(cmd,params) {
                                 mothership_nuke = mothership_nuke + grid_nuke
                             except:
                                 grid_nuke = nodec_text
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int 
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[10] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -4641,6 +5281,18 @@ function runCommandX(cmd,params) {
                                 mothership_nuke = mothership_nuke + grid_nuke
                             except:
                                 grid_nuke = nodec_text
+                            grid_tachyon = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not tachyon present
+                            self.decrypt(grid_key, grid_tachyon)
+                            if self.decryptedtext:
+                                grid_tachyon = self.decryptedtext
+                            else:
+                                grid_tachyon = nodec_text
+                            self.decryptedtext = "" # clean decryptedtext buffer
+                            try: # parse for int 
+                                grid_tachyon = int(grid_tachyon)
+                                mothership_tachyon = mothership_tachyon + grid_tachyon
+                            except:
+                                grid_tachyon = nodec_text
                             try: # decrypt + parse contact len + correct js view (without blank spaces)
                                 grid_contact = m[9] # contact
                                 self.decrypt(grid_key, grid_contact)
@@ -4668,12 +5320,12 @@ function runCommandX(cmd,params) {
                             pass
                     try: # parsing for valid stream struct
                         grid_nickname = str(grid_nickname)
-                        grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                        grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                     except:
-                        grid_table += "<tr><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td></tr>"
+                        grid_table += "<tr><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td></tr>"
                 grid_table += "</table><br>"
                 l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td align='right'><font color='red' size='4'>"+str(member_5)+"</font></td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td></tr><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>TRANSF:</td><td align='right'>"+str(mothership_transferred)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td></tr><tr><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td><td>SPRAY:</td><td align='right'>"+str(mothership_spray)+"</td><td>SMURF:</td><td align='right'>"+str(mothership_smurf)+"</td><td>XMAS:</td><td align='right'>"+str(mothership_xmas)+"</td></tr><tr><td>NUKE:</td><td align='right'>"+str(mothership_nuke)+"</td></tr></table><br><hr><br>"
+                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td align='right'><font color='orange' size='4'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td align='right'><font color='red' size='4'>"+str(member_5)+"</font></td></tr><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>TRANSF:</td><td align='right'>"+str(mothership_transferred)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td></tr><tr><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td><td>SPRAY:</td><td align='right'>"+str(mothership_spray)+"</td><td>SMURF:</td><td align='right'>"+str(mothership_smurf)+"</td><td>XMAS:</td><td align='right'>"+str(mothership_xmas)+"</td><td>NUKE:</td><td align='right'>"+str(mothership_nuke)+"</td><td>TACHYON:</td><td align='right'>"+str(mothership_tachyon)+"</td></tr></table><br><hr><br>"
                 f.write(mother_table)
                 f.write(grid_table)
                 f.write(end_mark)
@@ -4705,7 +5357,7 @@ function runCommandX(cmd,params) {
                     else: # generate default global army supply configuration file
                         print '[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]'
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0}, f, indent=4)
                 with open(self.mothership_supplycfg_file) as data_file:
                     data = json.load(data_file)
                 self.supply_botnet = data["botnet"]
@@ -4716,12 +5368,13 @@ function runCommandX(cmd,params) {
                 self.supply_smurf = data["smurf"]
                 self.supply_xmas = data["xmas"]
                 self.supply_nuke = data["nuke"]
+                self.supply_tachyon = data["tachyon"]
                 f = open(self.wargames_file,"r")
                 ls = f.readlines()
                 f.close()
                 if ls:
                     wargames_autopanel = "<u>MASSIVE ACTION</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><button title='Remove ALL: -CLOSED-' onclick=JobRemoveAll('"+str(wargames_deckey)+"')>-PURGE-</button></td><td align='center'><button style='background-color:cyan;height:50px;width:120px' title='Engage ALL: -ONGOING-' onclick=JobAddAll()>ENGAGE ALL!</button></td><td align='center'><button style='background-color:red;height:50px;width:120px' title='Cancel ALL: JOINED!' onclick=JobCancelAll()>PANIC!!!</button></td></tr></table><br><br>"
-                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td></tr><tr><td align='center'><input type='number' min='1' max='20' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SPRAY:</td><td align='center'>SMURF:</td><td align='center'>XMAS:</td><td align='center'>NUKE:</td></tr><tr><td align='center'><input type='number' min='0' max='20' required id='supply_spray' value='"+str(self.supply_spray)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_smurf' value='"+str(self.supply_smurf)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_xmas' value='"+str(self.supply_xmas)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='20' required id='supply_nuke' value='"+str(self.supply_nuke)+"' style='text-align: center;' readonly></td><td align='center'><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td></tr></table><br><br>" 
+                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td><td align='center'>SPRAY:</td></tr><tr><td align='center'><input type='number' min='1' max='99999' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_spray' value='"+str(self.supply_spray)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SMURF:</td><td align='center'>XMAS:</td><td align='center'>NUKE:</td><td align='center'>TACHYON:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_smurf' value='"+str(self.supply_smurf)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_xmas' value='"+str(self.supply_xmas)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_nuke' value='"+str(self.supply_nuke)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_tachyon' value='"+str(self.supply_tachyon)+"' style='text-align: center;' readonly></td><td align='center'><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td></tr></table><br><br>" 
                 else:
                     wargames_autopanel = ""
                     wargames_supply = ""

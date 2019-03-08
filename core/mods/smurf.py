@@ -22,7 +22,7 @@ def randInt():
 
 def sIP(base_stations): # extract 'base stations'
     bs = {}
-    s_zombie = random.choice(base_stations).strip() # suffle 'base stations'
+    s_zombie = random.choice(base_stations).strip() # shuffle 'base stations'
     if not s_zombie in bs:
         try:
             s_zombie_ip = socket.gethostbyname(s_zombie)
@@ -85,7 +85,7 @@ def smurfize(ip, sport, rounds):
 
 class SMURF(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] ICMP Broadcast (SMURF) is redirecting: [" , rounds, "base stations ]\n"
+        print "[Info] [AI] ICMP Broadcast (SMURF) is redirecting: [" , rounds, "base stations ]"
         if target.startswith('http://'):
             target = target.replace('http://','')
             sport = 80

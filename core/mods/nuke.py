@@ -51,7 +51,7 @@ def nukeize(ip, port, rounds):
 
 class NUKE(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] TCP Starvation (NUKE) is ready to fire: [" , rounds, "nukes ]\n"
+        print "[Info] [AI] TCP Starvation (NUKE) is ready to fire: [" , rounds, "nukes ]"
         if target.startswith('http://'):
             target = target.replace('http://','')
             port = 80

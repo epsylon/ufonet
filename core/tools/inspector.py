@@ -51,7 +51,7 @@ class Inspector(object):
         biggest_files = {}
         if target.endswith(""):
             target.replace("", "/")
-        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
         try:
             if self.ufonet.options.proxy: # set proxy
@@ -79,7 +79,7 @@ class Inspector(object):
             for img in img_links:
                 if self.ufonet.options.proxy: # set proxy
                     self.proxy_transport(self.ufonet.options.proxy)
-                self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+                self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
                 headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
                 print('+Image found: ' + img)
                 try:

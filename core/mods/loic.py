@@ -47,5 +47,5 @@ class LOIC(object):
             self.agents.append(agent)
 
     def attacking(self, target, rounds, proxy):
-        print "\n[Info] [AI] Low Orbit Ion Cannon (LOIC) is ready to fire: [" , rounds, "pulses ]"
+        print "[Info] [AI] Low Orbit Ion Cannon (LOIC) is ready to fire: [" , rounds, "pulses ]"
         ionize(self, target, rounds, proxy) # attack with LOIC using threading
