@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -51,19 +51,19 @@ class Inspector(object):
         biggest_files = {}
         if target.endswith(""):
             target.replace("", "/")
-        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
         try:
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
                 req = urllib2.Request(target, None, headers)
-                target_reply = urllib2.urlopen(req).read()
+                target_reply = urllib2.urlopen(req, context=self.ctx).read()
             else:
                 req = urllib2.Request(target, None, headers)
                 target_reply = urllib2.urlopen(req, context=self.ctx).read()
         except: 
-            print('[Error] - Unable to connect to target\n')
-            return #sys.exit(2)
+            print('[Error] [AI] Unable to connect to target -> [Exiting!]\n')
+            return
         try: # search for image files
             regex_img = []
             regex_img1 = "<img src='(.+?)'" # search on target's results using regex with simple quotation
@@ -79,7 +79,7 @@ class Inspector(object):
             for img in img_links:
                 if self.ufonet.options.proxy: # set proxy
                     self.proxy_transport(self.ufonet.options.proxy)
-                self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+                self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
                 headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
                 print('+Image found: ' + img)
                 try:
@@ -87,7 +87,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            img_file = urllib2.urlopen(req).read()
+                            img_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             img_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -99,13 +99,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + img, None, headers)
-                            img_file = urllib2.urlopen(req).read()
+                            img_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + img, None, headers)
                             img_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(img_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Image')
+                    print('[Error] [AI] Unable to retrieve info from Image -> [Discarding!]')
                     size = 0
                 imgs[img] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -134,7 +134,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            mov_file = urllib2.urlopen(req).read()
+                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             mov_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -146,13 +146,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + mov, None, headers)
-                            mov_file = urllib2.urlopen(req).read()
+                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + mov, None, headers)
                             mov_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(mov_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 movs[mov] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -181,7 +181,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            webm_file = urllib2.urlopen(req).read()
+                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             webm_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -193,13 +193,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + webm, None, headers)
-                            webm_file = urllib2.urlopen(req).read()
+                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + webm, None, headers)
                             webm_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(webm_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 webms[webm] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -228,7 +228,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            avi_file = urllib2.urlopen(req).read()
+                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             avi_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -240,13 +240,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + avi, None, headers)
-                            avi_file = urllib2.urlopen(req).read()
+                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + avi, None, headers)
                             avi_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(avi_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 avis[avi] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -275,7 +275,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            swf_file = urllib2.urlopen(req).read()
+                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             swf_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -287,13 +287,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + swf, None, headers)
-                            swf_file = urllib2.urlopen(req).read()
+                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + swf, None, headers)
                             swf_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(swf_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Flash')
+                    print('[Error] [AI] Unable to retrieve info from Flash -> [Discarding!]')
                     size = 0
                 swfs[swf] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -322,7 +322,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            mpg_file = urllib2.urlopen(req).read()
+                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             mpg_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -334,13 +334,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + mpg, None, headers)
-                            mpg_file = urllib2.urlopen(req).read()
+                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + mpg, None, headers)
                             mpg_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(mpg_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 mpgs[mpg] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -369,7 +369,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            mpeg_file = urllib2.urlopen(req).read()
+                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -381,13 +381,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + mpeg, None, headers)
-                            mpeg_file = urllib2.urlopen(req).read()
+                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + mpeg, None, headers)
                             mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(mpeg_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 mpegs[mpeg] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -416,7 +416,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            mp3_file = urllib2.urlopen(req).read()
+                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             mp3_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -428,13 +428,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + mp3, None, headers)
-                            mp3_file = urllib2.urlopen(req).read()
+                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + mp3, None, headers)
                             mp3_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(mp3_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Audio')
+                    print('[Error] [AI] Unable to retrieve info from Audio -> [Discarding!]')
                     size = 0
                 mp3s[mp3] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -463,7 +463,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            mp4_file = urllib2.urlopen(req).read()
+                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             mp4_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -475,13 +475,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + mp4, None, headers)
-                            mp4_file = urllib2.urlopen(req).read()
+                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + mp4, None, headers)
                             mp4_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(mp4_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 mp4s[mp4] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -510,7 +510,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            ogg_file = urllib2.urlopen(req).read()
+                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             ogg_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -522,13 +522,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + ogg, None, headers)
-                            ogg_file = urllib2.urlopen(req).read()
+                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + ogg, None, headers)
                             ogg_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(ogg_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Audio')
+                    print('[Error] [AI] Unable to retrieve info from Audio -> [Discarding!]')
                     size = 0
                 oggs[ogg] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -557,7 +557,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            ogv_file = urllib2.urlopen(req).read()
+                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             ogv_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -569,13 +569,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + ogv, None, headers)
-                            ogv_file = urllib2.urlopen(req).read()
+                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + ogv, None, headers)
                             ogv_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(ogv_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 ogvs[ogv] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -604,7 +604,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            wmv_file = urllib2.urlopen(req).read()
+                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             wmv_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -616,13 +616,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + wmv, None, headers)
-                            wmv_file = urllib2.urlopen(req).read()
+                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + wmv, None, headers)
                             wmv_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(wmv_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Video')
+                    print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
                 wmvs[wmv] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -651,7 +651,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            css_file = urllib2.urlopen(req).read()
+                            css_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             css_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -663,13 +663,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + css, None, headers)
-                            css_file = urllib2.urlopen(req).read()
+                            css_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + css, None, headers)
                             css_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(css_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Style')
+                    print('[Error] [AI] Unable to retrieve info from Style -> [Discarding!]')
                     size = 0
                 csss[css] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -698,7 +698,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            js_file = urllib2.urlopen(req).read()
+                            js_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             js_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -710,13 +710,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + js, None, headers)
-                            js_file = urllib2.urlopen(req).read()
+                            js_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + js, None, headers)
                             js_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(js_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Script')
+                    print('[Error] [AI] Unable to retrieve info from Script -> [Discarding!]')
                     size = 0
                 jss[js] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -745,7 +745,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            xml_file = urllib2.urlopen(req).read()
+                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             xml_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -757,13 +757,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + xml, None, headers)
-                            xml_file = urllib2.urlopen(req).read()
+                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + xml, None, headers)
                             xml_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(xml_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Script')
+                    print('[Error] [AI] Unable to retrieve info from Script -> [Discarding!]')
                     size = 0
                 xmls[xml] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -792,7 +792,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            php_file = urllib2.urlopen(req).read()
+                            php_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             php_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -804,13 +804,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + php, None, headers)
-                            php_file = urllib2.urlopen(req).read()
+                            php_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + php, None, headers)
                             php_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(php_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Webpage')
+                    print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
                 phps[php] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -839,7 +839,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            html_file = urllib2.urlopen(req).read()
+                            html_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             html_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -851,13 +851,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + html, None, headers)
-                            html_file = urllib2.urlopen(req).read()
+                            html_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + html, None, headers)
                             html_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(html_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Webpage')
+                    print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
                 htmls[html] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -886,7 +886,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            jsp_file = urllib2.urlopen(req).read()
+                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             jsp_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -898,13 +898,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + jsp, None, headers)
-                            jsp_file = urllib2.urlopen(req).read()
+                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + jsp, None, headers)
                             jsp_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(jsp_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Webpage')
+                    print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
                 jsps[jsp] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -933,7 +933,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            asp_file = urllib2.urlopen(req).read()
+                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             asp_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -945,13 +945,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + asp, None, headers)
-                            asp_file = urllib2.urlopen(req).read()
+                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + asp, None, headers)
                             asp_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(asp_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Webpage')
+                    print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
                 asps[asp] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -980,7 +980,7 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url, None, headers)
-                            txt_file = urllib2.urlopen(req).read()
+                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url, None, headers)
                             txt_file = urllib2.urlopen(req, context=self.ctx).read()
@@ -992,13 +992,13 @@ class Inspector(object):
                         if self.ufonet.options.proxy: # set proxy
                             self.proxy_transport(self.ufonet.options.proxy)
                             req = urllib2.Request(target_url + txt, None, headers)
-                            txt_file = urllib2.urlopen(req).read()
+                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
                         else:                    
                             req = urllib2.Request(target_url + txt, None, headers)
                             txt_file = urllib2.urlopen(req, context=self.ctx).read()
                     size = len(txt_file)
                 except: 
-                    print('[Error] - Unable to retrieve info from Text file')
+                    print('[Error] [AI] Unable to retrieve info from Text file -> [Discarding!]')
                     size = 0
                 txts[txt] = int(size)
                 print('(Size: ' + str(size) + ' Bytes)')
@@ -1034,9 +1034,9 @@ class Inspector(object):
         print '-'*20
         print '='*80
         if(biggest_files=={}):
-            print "\nNot any link found on target\n\n"
+            print "\n[Info] [AI] Not any link found on target! -> [Exiting!]\n\n"
             print '='*80 + '\n'
-            return #sys.exit(2)
+            return
         biggest_file_on_target = max(biggest_files.keys(), key=lambda x: biggest_files[x]) # search/extract biggest file value from dict
         target_host = urlparse(target)
         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path

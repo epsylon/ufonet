@@ -1,1 +1,1 @@
-http://heightsmedia.com/xmlrpc.php
+https://heightsmedia.com/xmlrpc.php

