@@ -1,0 +1,20 @@
+*.conf text eol=lf
+*.md text eol=lf
+*.md5 text eol=lf
+*.py text eol=lf
+*.xml text eol=lf
+LICENSE text eol=lf
+COMMITMENT text eol=lf
+
+*_ binary
+*.dll binary
+*.pdf binary
+*.so binary
+*.wav binary
+*.zip binary
+*.x32 binary
+*.x64 binary
+*.exe binary
+*.sln binary
+*.vcproj binary
+

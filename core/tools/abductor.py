@@ -1,14 +1,17 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2017/2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import urllib, urllib2, ssl, random, socket, time, re
-from urlparse import urlparse
+import ssl, random, socket, time, re
+import urllib.request, urllib.error, urllib.parse
+from urllib.parse import urlparse as urlparse
 
 # UFONet recognizance (abduction) class
 class Abductor(object):
@@ -23,9 +26,9 @@ class Abductor(object):
 
     def proxy_transport(self, proxy):
         proxy_url = self.ufonet.extract_proxy(proxy)
-        proxy = urllib2.ProxyHandler({'https': proxy_url})
-        opener = urllib2.build_opener(proxy)
-        urllib2.install_opener(opener)
+        proxy = urllib.request.ProxyHandler({'https': proxy_url})
+        opener = urllib.request.build_opener(proxy)
+        urllib.request.install_opener(opener)
 
     def establish_connection(self, target):
         if target.endswith(""):
@@ -33,17 +36,19 @@ class Abductor(object):
         self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
         try:
-            req = urllib2.Request(target, None, headers)
+            req = urllib.request.Request(target, None, headers)
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
                 self.start = time.time()
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
-                header = urllib2.urlopen(req).info()
+                target_reply = urllib.request.urlopen(req, context=self.ctx)
+                header = target_reply.getheaders()
+                target_reply = target_reply.read().decode('utf-8')
                 self.stop = time.time()
             else:
                 self.start = time.time()
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
-                header = urllib2.urlopen(req).info()
+                target_reply = urllib.request.urlopen(req, context=self.ctx)
+                header = target_reply.getheaders()
+                target_reply = target_reply.read().decode('utf-8')
                 self.stop = time.time()
         except: 
             print('[Error] [AI] Unable to connect -> [Exiting!]\n')
@@ -64,13 +69,23 @@ class Abductor(object):
         return '%.2f' % time
 
     def extract_banner(self, header): # extract webserver banner
+        banner = None
+        via = None
         try:
-            banner = header["server"]
+            for h in header:
+                if h[0] == "Server":
+                    banner = h[1]
         except:
             banner = "NOT found!"
         try:
-            via = header["via"]
+            for h in header:
+                if h[0] == "Via":
+                    via = h[1]
         except: # return when fails performing query
+            via = "NOT found!"
+        if not banner:
+            banner = "NOT found!"
+        if not via:
             via = "NOT found!"
         return banner, via
 
@@ -81,10 +96,10 @@ class Abductor(object):
             if d.creation_date is None: # return when no creation date
                 return
             else:
-                print " -Registrant   : " + str(d.registrar)
-                print " -Creation date: " + str(d.creation_date)
-                print " -Expiration   : " + str(d.expiration_date)
-                print " -Last update  : " + str(d.last_updated)
+                print(" -Registrant   : " + str(d.registrar))
+                print(" -Creation date: " + str(d.creation_date))
+                print(" -Expiration   : " + str(d.expiration_date))
+                print(" -Last update  : " + str(d.last_updated))
         except: # return when fails performing query
             return
 
@@ -92,17 +107,17 @@ class Abductor(object):
         url = 'https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword'
         q = str(banner)
         query_string = { '':q}
-        data = urllib.urlencode(query_string)
+        data = urllib.parse.urlencode(query_string)
         target = url + data
         try:
             self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
-            req = urllib2.Request(target, None, headers)
+            req = urllib.request.Request(target, None, headers)
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
             else:
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
         except: 
             return #sys.exit(2)
         if target_reply == "": # no records found
@@ -129,8 +144,10 @@ class Abductor(object):
                 w = w.split(sep)
                 signature = w[0] # signature
                 t = w[1] # vendor
-        if signature in target_reply or signature in banner:
-            waf = "VENDOR -> " + str(t) 
+            if signature in target_reply or signature in banner:
+                waf = "VENDOR -> " + str(t)
+            else:
+                pass
         else:
             waf = "FIREWALL NOT PRESENT (or not discovered yet)! ;-)\n"
         return waf
@@ -139,12 +156,12 @@ class Abductor(object):
         try:
             target_reply, header = self.establish_connection(target)
         except:
-            print "[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n"
+            print("[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n")
             return #sys.exit(2)
         if not target_reply:
-            print "[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n"
+            print("[Error] [AI] Something wrong connecting to your target -> [Aborting!]\n")
             return #sys.exit(2)
-        print ' -Target URL:', target, "\n"
+        print(' -Target URL:', target, "\n")
         try:
             if target.startswith("http://"):
                 self.port = "80"
@@ -176,15 +193,15 @@ class Abductor(object):
             except:
                 ipv4 = "OFF"
         try:
-            ipv6 = socket.getaddrinfo(domain, port, socket.AF_INET6)
+            ipv6 = socket.getaddrinfo(domain, int(self.port), socket.AF_INET6, socket.IPPROTO_TCP)
             ftpca = ipv6[0]
             ipv6 = ftpca[4][0]
         except:
             ipv6 = "OFF"
-        print ' -IP    :', ipv4
-        print ' -IPv6  :', ipv6
-        print ' -Port  :', self.port
-        print ' \n -Domain:', domain
+        print(' -IP    :', ipv4)
+        print(' -IPv6  :', ipv6)
+        print(' -Port  :', self.port)
+        print(' \n -Domain:', domain)
         try:
             whois = self.extract_whois(domain)
         except:
@@ -202,37 +219,40 @@ class Abductor(object):
             banner, via = self.extract_banner(header)
         except:
             pass
-        print '\n---------'
-        print "\nTrying single visit broadband test (using GET)...\n"
-        print ' -Bytes in :', size
-        print ' -Load time:', load, "seconds\n"
-        print '---------'
-        print "\nDetermining webserver fingerprint (note that this value can be a fake)...\n"
-        print ' -Banner:', banner 
-        print ' -Vía   :', via , "\n"
-        print '---------'
-        print "\nSearching for extra Anti-DDoS protections...\n"
+        print('\n---------')
+        print("\nTrying single visit broadband test (using GET)...\n")
+        print(' -Bytes in :', size)
+        print(' -Load time:', load, "seconds\n")
+        print('---------')
+        print("\nDetermining webserver fingerprint (note that this value can be a fake)...\n")
+        print(' -Banner:', banner) 
+        print(' -Vía   :', via , "\n")
+        print('---------')
+        print("\nSearching for extra Anti-DDoS protections...\n")
         waf = self.waf_detection(banner, target_reply)
-        print ' -WAF/IDS: ' +  waf
+        print(' -WAF/IDS: ' +  waf)
         if 'VENDOR' in waf:
-            print ' -NOTICE : This FIREWALL probably is using Anti-(D)DoS measures!', "\n"
-        print '---------'
+            print(' -NOTICE : This FIREWALL probably is using Anti-(D)DoS measures!', "\n")
+        print('---------')
         if banner == "NOT found!":
             pass
         else:
-            print "\nSearching at CVE (https://cve.mitre.org) for vulnerabilities...\n"
+            print("\nSearching at CVE (https://cve.mitre.org) for vulnerabilities...\n")
             try:
                 cve = self.extract_cve(banner)
                 if cve == None:
-                    print ' -Reports: NOT found!', "\n"
+                    print(' -Last Reports: NOT found!', "\n")
                 elif cve == "NOT found!":
-                    print ' -Reports:', cve
+                    print(' -Last Reports:', cve)
                 else:
-                    print ' -Reports:'
+                    print(' -Last Reports:')
+                    i = 0
                     for c in cve:
-                        cve_info = c.replace("/cgi-bin/cvename.cgi?name=","")
-                        print "\n        +", cve_info, "->", "https://cve.mitre.org" + c # 8 tab for zen
-                print '\n---------'
+                        i = i + 1
+                        if i < 11:
+                            cve_info = c.replace("/cgi-bin/cvename.cgi?name=","")
+                            print("\n        +", cve_info, "->", "https://cve.mitre.org" + c) # 8 tab for zen
+                print('\n---------')
             except:
                 pass
-        print "\n[Info] [AI] Abduction finished! -> [OK!]\n"
+        print("\n[Info] [AI] Abduction finished! -> [OK!]\n")

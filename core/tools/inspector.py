@@ -1,14 +1,17 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import urllib, urllib2, ssl, random, re
-from urlparse import urlparse
+import ssl, random, re
+import urllib.request, urllib.error
+from urllib.parse import urlparse as urlparse
 
 # Inspector spidering class
 class Inspector(object):
@@ -40,9 +43,9 @@ class Inspector(object):
 
     def proxy_transport(self, proxy):
         proxy_url = self.ufonet.extract_proxy(proxy)
-        proxy = urllib2.ProxyHandler({'https': proxy_url})
-        opener = urllib2.build_opener(proxy)
-        urllib2.install_opener(opener)
+        proxy = urllib.request.ProxyHandler({'https': proxy_url})
+        opener = urllib.request.build_opener(proxy)
+        urllib.request.install_opener(opener)
 
     def inspecting(self, target):
         # inspect HTML target's components sizes (ex: http://target.com/foo)           
@@ -56,11 +59,11 @@ class Inspector(object):
         try:
             if self.ufonet.options.proxy: # set proxy
                 self.proxy_transport(self.ufonet.options.proxy)
-                req = urllib2.Request(target, None, headers)
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                req = urllib.request.Request(target, None, headers)
+                target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
             else:
-                req = urllib2.Request(target, None, headers)
-                target_reply = urllib2.urlopen(req, context=self.ctx).read()
+                req = urllib.request.Request(target, None, headers)
+                target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
         except: 
             print('[Error] [AI] Unable to connect to target -> [Exiting!]\n')
             return
@@ -81,38 +84,41 @@ class Inspector(object):
                     self.proxy_transport(self.ufonet.options.proxy)
                 self.ufonet.user_agent = random.choice(self.ufonet.agents).strip() # shuffle user-agent
                 headers = {'User-Agent' : self.ufonet.user_agent, 'Referer' : self.ufonet.referer} # set fake user-agent and referer
-                print('+Image found: ' + img)
                 try:
-                    if img.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            img_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            img_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if img.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + img, None, headers)
-                            img_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + img, None, headers)
-                            img_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(img_file)
+                        if img.startswith("data:image"):
+                            size = 0
+                        else:
+                            if img.startswith('/'):
+                                img = img.replace("/", "", 1)
+                            try:
+                                if self.ufonet.options.proxy: # set proxy
+                                    self.proxy_transport(self.ufonet.options.proxy)
+                                    req = urllib.request.Request(target_url + img, None, headers)
+                                    img_file = urllib.request.urlopen(req, context=self.ctx).read()
+                                else:
+                                    req = urllib.request.Request(target_url + img, None, headers)
+                                    img_file = urllib.request.urlopen(req, context=self.ctx).read()
+                                print('+Image found: ' + target_url + img.split('"')[0])
+                                size = len(img_file)
+                                print('(Size: ' + str(size) + ' Bytes)')
+                                imgs[img] = int(size)
+                                self.c_images = self.c_images + 1
+                                print('-'*12)
+                            except:
+                                size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Image -> [Discarding!]')
                     size = 0
-                imgs[img] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_images = self.c_images + 1
-                print '-'*12
-            biggest_image = max(imgs.keys(), key=lambda x: imgs[x]) # search/extract biggest image value from dict
-            biggest_files[biggest_image] = imgs[biggest_image] # add biggest image to list
+            biggest_image = max(list(imgs.keys()), key=lambda x: imgs[x]) # search/extract biggest image value from dict
+            if biggest_image:
+                biggest_files[biggest_image] = imgs[biggest_image] # add biggest image to list
         except: # if not any image found, go for next
             pass
         try: # search for .mov files
@@ -128,38 +134,36 @@ class Inspector(object):
                 mov_links = re.findall(pattern_mov, target_reply)
             movs = {}
             for mov in mov_links:
-                print('+Video (.mov) found: ' + mov)
                 try:
-                    if mov.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if mov.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + mov, None, headers)
-                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + mov, None, headers)
-                            mov_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(mov_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + mov, None, headers)
+                                mov_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + mov, None, headers)
+                                mov_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.mov) found: ' + target_url + mov.split('"')[0])
+                            size = len(mov_file)
+                            movs[mov] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_mov = self.c_mov + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                movs[mov] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_mov = self.c_mov + 1
-                print '-'*12
-            biggest_mov = max(movs.keys(), key=lambda x: movs[x]) # search/extract biggest video (.mov) value from dict
-            biggest_files[biggest_mov] = movs[biggest_mov] # add biggest video (.mov) to list
+            biggest_mov = max(list(movs.keys()), key=lambda x: movs[x]) # search/extract biggest video (.mov) value from dict
+            if biggest_mov:
+                biggest_files[biggest_mov] = movs[biggest_mov] # add biggest video (.mov) to list
         except: # if not any .mov found, go for next
             pass 
         try: # search for .webm files
@@ -175,38 +179,36 @@ class Inspector(object):
                 webm_links = re.findall(pattern_webm, target_reply)
             webms = {}
             for webm in webm_links:
-                print('+Video (.webm) found: ' + webm)
                 try:
-                    if webm.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if webm.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + webm, None, headers)
-                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + webm, None, headers)
-                            webm_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(webm_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + webm, None, headers)
+                                webm_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + webm, None, headers)
+                                webm_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.webm) found: ' + target_url + webm.split('"')[0])
+                            size = len(webm_file)
+                            webms[webm] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_webm = self.c_webm + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                webms[webm] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_webm = self.c_webm + 1
-                print '-'*12
-            biggest_webm = max(webms.keys(), key=lambda x: webms[x]) # search/extract biggest video (.webm) value from dict
-            biggest_files[biggest_webm] = webms[biggest_webm] # add biggest video (.webm) to list
+            biggest_webm = max(list(webms.keys()), key=lambda x: webms[x]) # search/extract biggest video (.webm) value from dict
+            if biggest_webm:
+                biggest_files[biggest_webm] = webms[biggest_webm] # add biggest video (.webm) to list
         except: # if not any .webm found, go for next
             pass 
         try: # search for .avi files
@@ -222,38 +224,36 @@ class Inspector(object):
                 avi_links = re.findall(pattern_avi, target_reply)
             avis = {}
             for avi in avi_links:
-                print('+Video (.avi) found: ' + avi)
                 try:
-                    if avi.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if avi.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + avi, None, headers)
-                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + avi, None, headers)
-                            avi_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(avi_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + avi, None, headers)
+                                avi_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + avi, None, headers)
+                                avi_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.avi) found: ' + target_url + avi.split('"')[0])
+                            size = len(avi_file)
+                            avis[avi] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_avi = self.c_avi + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                avis[avi] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_avi = self.c_avi + 1
-                print '-'*12
-            biggest_avi = max(avis.keys(), key=lambda x: avis[x]) # search/extract biggest video (.avi) value from dict
-            biggest_files[biggest_avi] = avis[biggest_avi] # add biggest video (.avi) to list
+            biggest_avi = max(list(avis.keys()), key=lambda x: avis[x]) # search/extract biggest video (.avi) value from dict
+            if biggest_avi:
+                biggest_files[biggest_avi] = avis[biggest_avi] # add biggest video (.avi) to list
         except: # if not any .avi found, go for next
             pass
         try: # search for .swf files
@@ -269,38 +269,36 @@ class Inspector(object):
                 swf_links = re.findall(pattern_swf, target_reply)
             swfs = {}
             for swf in swf_links:
-                print('+Flash (.swf) found: ' + swf)
                 try:
-                    if swf.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if swf.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + swf, None, headers)
-                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + swf, None, headers)
-                            swf_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(swf_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + swf, None, headers)
+                                swf_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + swf, None, headers)
+                                swf_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Flash (.swf) found: ' + target_url + swf.split('"')[0])
+                            size = len(swf_file)
+                            swfs[swf] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_swf = self.c_swf + 1
+                            print('-'*12)
+                        except:
+                            size = 0   
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Flash -> [Discarding!]')
                     size = 0
-                swfs[swf] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_swf = self.c_swf + 1
-                print '-'*12
-            biggest_swf = max(swfs.keys(), key=lambda x: swfs[x]) # search/extract biggest flash (.swf) value from dict
-            biggest_files[biggest_swf] = swfs[biggest_swf] # add biggest flash (.swf) to list
+            biggest_swf = max(list(swfs.keys()), key=lambda x: swfs[x]) # search/extract biggest flash (.swf) value from dict
+            if biggest_swf:
+                biggest_files[biggest_swf] = swfs[biggest_swf] # add biggest flash (.swf) to list
         except: # if not any .swf found, go for next
             pass
         try: # search for .mpg files
@@ -316,38 +314,36 @@ class Inspector(object):
                 mpg_links = re.findall(pattern_mpg, target_reply)
             mpgs = {}
             for mpg in mpg_links:
-                print('+Video (.mpg) found: ' + mpg)
                 try:
-                    if mpg.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if mpg.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + mpg, None, headers)
-                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + mpg, None, headers)
-                            mpg_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(mpg_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + mpg, None, headers)
+                                mpg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + mpg, None, headers)
+                                mpg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.mpg) found: ' + target_url + mpg.split('"')[0])
+                            size = len(mpg_file)
+                            mpgs[mpg] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_mpg = self.c_mpg + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                mpgs[mpg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_mpg = self.c_mpg + 1
-                print '-'*12
-            biggest_mpg = max(mpgs.keys(), key=lambda x: mpgs[x]) # search/extract biggest video (.mpg) value from dict
-            biggest_files[biggest_mpg] = mpgs[biggest_mpg] # add biggest video (.mpg) to list
+            biggest_mpg = max(list(mpgs.keys()), key=lambda x: mpgs[x]) # search/extract biggest video (.mpg) value from dict
+            if biggest_mpg:
+                biggest_files[biggest_mpg] = mpgs[biggest_mpg] # add biggest video (.mpg) to list
         except: # if not any .mpg found, go for next
             pass
         try: # search for .mpeg files
@@ -363,38 +359,36 @@ class Inspector(object):
                 mpeg_links = re.findall(pattern_mpeg, target_reply)
             mpegs = {}
             for mpeg in mpeg_links:
-                print('+Video (.mpeg) found: ' + mpeg)
                 try:
-                    if mpeg.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if mpeg.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + mpeg, None, headers)
-                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + mpeg, None, headers)
-                            mpeg_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(mpeg_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + mpeg, None, headers)
+                                mpeg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + mpeg, None, headers)
+                                mpeg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.mpeg) found: ' + target_url + mpeg.split('"')[0])
+                            size = len(mpeg_file)
+                            mpegs[mpeg] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_mpeg = self.c_mpeg + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                mpegs[mpeg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_mpeg = self.c_mpeg + 1
-                print '-'*12
-            biggest_mpeg = max(mpegs.keys(), key=lambda x: mpegs[x]) # search/extract biggest video (.mpeg) value from dict
-            biggest_files[biggest_mpeg] = mpegs[biggest_mpeg] # add biggest video (.mpeg) to list
+            biggest_mpeg = max(list(mpegs.keys()), key=lambda x: mpegs[x]) # search/extract biggest video (.mpeg) value from dict
+            if biggest_mpeg:
+                biggest_files[biggest_mpeg] = mpegs[biggest_mpeg] # add biggest video (.mpeg) to list
         except: # if not any .mpeg found, go for next
             pass
         try: # search for .mp3 files
@@ -410,38 +404,36 @@ class Inspector(object):
                 mp3_links = re.findall(pattern_mp3, target_reply)
             mp3s = {}
             for mp3 in mp3_links:
-                print('+Audio (.mp3) found: ' + mp3)
                 try:
-                    if mp3.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if mp3.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + mp3, None, headers)
-                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + mp3, None, headers)
-                            mp3_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(mp3_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + mp3, None, headers)
+                                mp3_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + mp3, None, headers)
+                                mp3_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Audio (.mp3) found: ' + target_url + mp3.split('"')[0])
+                            size = len(mp3_file)
+                            mp3s[mp3] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_mp3 = self.c_mp3 + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Audio -> [Discarding!]')
                     size = 0
-                mp3s[mp3] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_mp3 = self.c_mp3 + 1
-                print '-'*12
-            biggest_mp3 = max(mp3s.keys(), key=lambda x: mp3s[x]) # search/extract biggest audio (.mp3) value from dict
-            biggest_files[biggest_mp3] = mp3s[biggest_mp3] # add biggest audio (.mp3) to list
+            biggest_mp3 = max(list(mp3s.keys()), key=lambda x: mp3s[x]) # search/extract biggest audio (.mp3) value from dict
+            if biggest_mp3:
+                biggest_files[biggest_mp3] = mp3s[biggest_mp3] # add biggest audio (.mp3) to list
         except: # if not any .mp3 found, go for next
             pass
         try: # search for .mp4 files
@@ -457,38 +449,36 @@ class Inspector(object):
                 mp4_links = re.findall(pattern_mp4, target_reply)
             mp4s = {}
             for mp4 in mp4_links:
-                print('+Video (.mp4) found: ' + mp4)
                 try:
-                    if mp4.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if mp4.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + mp4, None, headers)
-                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + mp4, None, headers)
-                            mp4_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(mp4_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + mp4, None, headers)
+                                mp4_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + mp4, None, headers)
+                                mp4_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.mp4) found: ' + target_url + mp4.split('"')[0])
+                            size = len(mp4_file)
+                            mp4s[mp4] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_mp4 = self.c_mp4 + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                mp4s[mp4] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_mp4 = self.c_mp4 + 1
-                print '-'*12
-            biggest_mp4 = max(mp4s.keys(), key=lambda x: mp4s[x]) # search/extract biggest video (.mp4) value from dict
-            biggest_files[biggest_mp4] = mp4s[biggest_mp4] # add biggest video (.mp4) to list
+            biggest_mp4 = max(list(mp4s.keys()), key=lambda x: mp4s[x]) # search/extract biggest video (.mp4) value from dict
+            if biggest_mp4:
+                biggest_files[biggest_mp4] = mp4s[biggest_mp4] # add biggest video (.mp4) to list
         except: # if not any .mp4 found, go for next
             pass
         try: # search for .ogg files
@@ -504,38 +494,36 @@ class Inspector(object):
                 ogg_links = re.findall(pattern_ogg, target_reply)
             oggs = {}
             for ogg in ogg_links:
-                print('+Audio (.ogg) found: ' + ogg)
                 try:
-                    if ogg.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if ogg.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + ogg, None, headers)
-                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + ogg, None, headers)
-                            ogg_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(ogg_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + ogg, None, headers)
+                                ogg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + ogg, None, headers)
+                                ogg_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Audio (.ogg) found: ' + target_url + ogg.split('"')[0])
+                            size = len(ogg_file)
+                            oggs[ogg] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_ogg = self.c_ogg + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Audio -> [Discarding!]')
                     size = 0
-                oggs[ogg] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_ogg = self.c_ogg + 1
-                print '-'*12
-            biggest_ogg = max(oggs.keys(), key=lambda x: oggs[x]) # search/extract biggest video (.ogg) value from dict
-            biggest_files[biggest_ogg] = oggs[biggest_ogg] # add biggest video (.ogg) to list
+            biggest_ogg = max(list(oggs.keys()), key=lambda x: oggs[x]) # search/extract biggest video (.ogg) value from dict
+            if biggest_ogg:
+                biggest_files[biggest_ogg] = oggs[biggest_ogg] # add biggest video (.ogg) to list
         except: # if not any .ogg found, go for next
             pass
         try: # search for .ogv files
@@ -551,38 +539,36 @@ class Inspector(object):
                 ogv_links = re.findall(pattern_ogv, target_reply)
             ogvs = {}
             for ogv in ogv_links:
-                print('+Video (.ogv) found: ' + ogv)
                 try:
-                    if ogv.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if ogv.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + ogv, None, headers)
-                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + ogv, None, headers)
-                            ogv_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(ogv_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + ogv, None, headers)
+                                ogv_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + ogv, None, headers)
+                                ogv_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.ogv) found: ' + target_url + ogv.split('"')[0])
+                            size = len(ogv_file)
+                            ogvs[ogv] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_ogv = self.c_ogv + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                ogvs[ogv] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_ogv = self.c_ogv + 1
-                print '-'*12
-            biggest_ogv = max(ogvs.keys(), key=lambda x: ogvs[x]) # search/extract biggest video (.ogv) value from dict
-            biggest_files[biggest_ogv] = ogvs[biggest_ogv] # add biggest video (.ogv) to list
+            biggest_ogv = max(list(ogvs.keys()), key=lambda x: ogvs[x]) # search/extract biggest video (.ogv) value from dict
+            if biggest_ogv:
+                biggest_files[biggest_ogv] = ogvs[biggest_ogv] # add biggest video (.ogv) to list
         except: # if not any .ogv found, go for next
             pass
         try: # search for .wmv files
@@ -598,38 +584,36 @@ class Inspector(object):
                 wmv_links = re.findall(pattern_wmv, target_reply)
             wmvs = {}
             for wmv in wmv_links:
-                print('+Video (.wmv) found: ' + wmv)
                 try:
-                    if wmv.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if wmv.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + wmv, None, headers)
-                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + wmv, None, headers)
-                            wmv_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(wmv_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + wmv, None, headers)
+                                wmv_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + wmv, None, headers)
+                                wmv_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Video (.wmv) found: ' + target_url + wmv.split('"')[0])
+                            size = len(wmv_file)
+                            wmvs[wmv] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_wmv = self.c_wmv + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Video -> [Discarding!]')
                     size = 0
-                wmvs[wmv] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_wmv = self.c_wmv + 1
-                print '-'*12
-            biggest_wmv = max(wmvs.keys(), key=lambda x: wmvs[x]) # search/extract biggest video (.wmv) value from dict
-            biggest_files[biggest_wmv] = wmvs[biggest_wmv] # add biggest video (.wmv) to list
+            biggest_wmv = max(list(wmvs.keys()), key=lambda x: wmvs[x]) # search/extract biggest video (.wmv) value from dict
+            if biggest_wmv:
+                biggest_files[biggest_wmv] = wmvs[biggest_wmv] # add biggest video (.wmv) to list
         except: # if not any .wmv found, go for next
             pass
         try: # search for .css files
@@ -645,38 +629,43 @@ class Inspector(object):
                 css_links = re.findall(pattern_css, target_reply)
             csss = {}
             for css in css_links:
-                print('+Style (.css) found: ' + css)
                 try:
-                    if css.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            css_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            css_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if css.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + css, None, headers)
-                            css_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + css, None, headers)
-                            css_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(css_file)
+                        if css.startswith("//"):
+                            size = 0
+                        elif "http://" in css or "https://" in css:
+                            size = 0
+                        else:
+                            if css.startswith('/'):
+                                css = css.replace("/", "", 1)
+                            try:
+                                if self.ufonet.options.proxy: # set proxy
+                                    self.proxy_transport(self.ufonet.options.proxy)
+                                    req = urllib.request.Request(target_url + css, None, headers)
+                                    css_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                                else:                    
+                                    req = urllib.request.Request(target_url + css, None, headers)
+                                    css_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                                print('+Style (.css) found: ' + target_url + css.split('"')[0])
+                                size = len(css_file)
+                                csss[css] = int(size)
+                                print('(Size: ' + str(size) + ' Bytes)')
+                                self.c_css = self.c_css + 1
+                                print('-'*12)
+                            except:
+                                size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Style -> [Discarding!]')
                     size = 0
-                csss[css] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_css = self.c_css + 1
-                print '-'*12
-            biggest_css = max(csss.keys(), key=lambda x: csss[x]) # search/extract biggest style (.css) value from dict
-            biggest_files[biggest_css] = csss[biggest_css] # add biggest style (.css) to list
+            biggest_css = max(list(csss.keys()), key=lambda x: csss[x]) # search/extract biggest style (.css) value from dict
+            if biggest_css:
+                biggest_files[biggest_css] = csss[biggest_css] # add biggest style (.css) to list
         except: # if not any .css found, go for next
             pass
         try: # search for .js files
@@ -692,38 +681,40 @@ class Inspector(object):
                 js_links = re.findall(pattern_js, target_reply)
             jss = {}
             for js in js_links:
-                print('+Script (.js) found: ' + js)
                 try:
-                    if js.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            js_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            js_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if js.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + js, None, headers)
-                            js_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + js, None, headers)
-                            js_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(js_file)
+                        if js.startswith("//"):
+                            size = 0
+                        elif "http://" in js or "https://" in js:
+                            size = 0
+                        else:
+                            if js.startswith('/'):
+                                js = js.replace("/", "", 1)
+                            print('+Script (.js) found: ' + target_url + js.split('"')[0])
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + js, None, headers)
+                                js_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + js, None, headers)
+                                js_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            size = len(js_file)
+                            jss[js] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_js = self.c_js + 1
+                            print('-'*12)
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Script -> [Discarding!]')
                     size = 0
-                jss[js] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_js = self.c_js + 1
-                print '-'*12
-            biggest_js = max(jss.keys(), key=lambda x: jss[x]) # search/extract biggest script (.js) value from dict
-            biggest_files[biggest_js] = jss[biggest_js] # add biggest script (.js) to list
+            biggest_js = max(list(jss.keys()), key=lambda x: jss[x]) # search/extract biggest script (.js) value from dict
+            if biggest_js:
+                biggest_files[biggest_js] = jss[biggest_js] # add biggest script (.js) to list
         except: # if not any .js found, go for next
             pass
         try: # search for .xml files
@@ -739,38 +730,36 @@ class Inspector(object):
                 xml_links = re.findall(pattern_xml, target_reply)
             xmls = {}
             for xml in xml_links:
-                print('+Script (.xml) found: ' + xml)
                 try:
-                    if xml.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if xml.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + xml, None, headers)
-                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + xml, None, headers)
-                            xml_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(xml_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + xml, None, headers)
+                                xml_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + xml, None, headers)
+                                xml_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Script (.xml) found: ' + target_url + xml).split('"')[0]
+                            size = len(xml_file)
+                            xmls[xml] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_xml = self.c_xml + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Script -> [Discarding!]')
                     size = 0
-                xmls[xml] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_xml = self.c_xml + 1
-                print '-'*12
-            biggest_xml = max(xmls.keys(), key=lambda x: xmls[x]) # search/extract biggest script (.xml) value from dict
-            biggest_files[biggest_xml] = xmls[biggest_xml]  # add biggest script (.xml) to list
+            biggest_xml = max(list(xmls.keys()), key=lambda x: xmls[x]) # search/extract biggest script (.xml) value from dict
+            if biggest_xml:
+                biggest_files[biggest_xml] = xmls[biggest_xml]  # add biggest script (.xml) to list
         except: # if not any .xml found, go for next
             pass
         try: # search for .php files
@@ -786,38 +775,36 @@ class Inspector(object):
                 php_links = re.findall(pattern_php, target_reply)
             phps = {}
             for php in php_links:
-                print('+Webpage (.php) found: ' + php)
                 try:
-                    if php.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            php_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            php_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if php.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + php, None, headers)
-                            php_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + php, None, headers)
-                            php_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(php_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + php, None, headers)
+                                php_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + php, None, headers)
+                                php_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Webpage (.php) found: ' + target_url + php.split('"')[0])
+                            size = len(php_file)
+                            phps[php] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_php = self.c_php + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
-                phps[php] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_php = self.c_php + 1
-                print '-'*12
-            biggest_php = max(phps.keys(), key=lambda x: phps[x]) # search/extract biggest file (.php) value from dict
-            biggest_files[biggest_php] = phps[biggest_php] # add biggest file (.php) to list
+            biggest_php = max(list(phps.keys()), key=lambda x: phps[x]) # search/extract biggest file (.php) value from dict
+            if biggest_php:
+                biggest_files[biggest_php] = phps[biggest_php] # add biggest file (.php) to list
         except: # if not any .php found, go for next
             pass
         try: # search for .html files
@@ -833,38 +820,36 @@ class Inspector(object):
                 html_links = re.findall(pattern_html, target_reply)
             htmls = {}
             for html in html_links:
-                print('+Webpage (.html) found: ' + html)
                 try:
-                    if html.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            html_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            html_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if html.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + html, None, headers)
-                            html_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + html, None, headers)
-                            html_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(html_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + html, None, headers)
+                                html_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + html, None, headers)
+                                html_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Webpage (.html) found: ' + target_url + html.split('"')[0])
+                            size = len(html_file)
+                            htmls[html] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_html = self.c_html + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
-                htmls[html] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_html = self.c_html + 1
-                print '-'*12
-            biggest_html = max(htmls.keys(), key=lambda x: htmls[x]) # search/extract biggest file (.html) value from dict
-            biggest_files[biggest_html] = htmls[biggest_html] # add biggest file (.html) to list
+            biggest_html = max(list(htmls.keys()), key=lambda x: htmls[x]) # search/extract biggest file (.html) value from dict
+            if biggest_html:
+                biggest_files[biggest_html] = htmls[biggest_html] # add biggest file (.html) to list
         except: # if not any .html found, go for next
             pass
         try: # search for .jsp files
@@ -880,38 +865,36 @@ class Inspector(object):
                 jsp_links = re.findall(pattern_jsp, target_reply)
             jsps = {}
             for jsp in jsp_links:
-                print('+Webpage (.jsp) found: ' + jsp)
                 try:
-                    if jsp.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if jsp.startswith('http'):
+                        size = 0 
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + jsp, None, headers)
-                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + jsp, None, headers)
-                            jsp_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(jsp_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + jsp, None, headers)
+                                jsp_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + jsp, None, headers)
+                                jsp_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Webpage (.jsp) found: ' + target_url + jsp.split('"')[0])
+                            size = len(jsp_file)
+                            jsps[jsp] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_jsp = self.c_jsp + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
-                jsps[jsp] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_jsp = self.c_jsp + 1
-                print '-'*12
-            biggest_jsp = max(jsps.keys(), key=lambda x: jsps[x]) # search/extract biggest file (.jsp) value from dict
-            biggest_files[biggest_jsp] = jsps[biggest_jsp] # add biggest file (.jsp) to list
+            biggest_jsp = max(list(jsps.keys()), key=lambda x: jsps[x]) # search/extract biggest file (.jsp) value from dict
+            if biggest_jsp:
+                biggest_files[biggest_jsp] = jsps[biggest_jsp] # add biggest file (.jsp) to list
         except: # if not any .jsp found, go for next
             pass
         try: # search for .asp files
@@ -927,38 +910,36 @@ class Inspector(object):
                 asp_links = re.findall(pattern_asp, target_reply)
             asps = {}
             for asp in asp_links:
-                print('+Webpage (.asp) found: ' + asp)
                 try:
-                    if asp.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if asp.startswith('http'):
+                        size = 0
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + asp, None, headers)
-                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + asp, None, headers)
-                            asp_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(asp_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + asp, None, headers)
+                                asp_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + asp, None, headers)
+                                asp_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+Webpage (.asp) found: ' + target_url + asp.split('"')[0])
+                            size = len(asp_file)
+                            asps[asp] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_asp = self.c_asp + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Webpage -> [Discarding!]')
                     size = 0
-                asps[asp] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_asp = self.c_asp + 1
-                print '-'*12
-            biggest_asp = max(asps.keys(), key=lambda x: asps[x]) # search/extract biggest file (.asp) value from dict
-            biggest_files[biggest_asp] = asps[biggest_asp] # add biggest file (.asp) to list
+            biggest_asp = max(list(asps.keys()), key=lambda x: asps[x]) # search/extract biggest file (.asp) value from dict
+            if biggest_asp:
+                biggest_files[biggest_asp] = asps[biggest_asp] # add biggest file (.asp) to list
         except: # if not any .asp found, go for next
             pass
         try: # search for .txt files
@@ -974,81 +955,79 @@ class Inspector(object):
                 txt_links = re.findall(pattern_txt, target_reply)
             txts = {}
             for txt in txt_links:
-                print('+File (.txt) found: ' + txt)
                 try:
-                    if txt.startswith('http'):         
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url, None, headers)
-                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url, None, headers)
-                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
+                    if txt.startswith('http'):       
+                        size = 0 
                     else:
                         target_host = urlparse(target)
                         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
                         if not target_url.endswith('/'): # add "/" to end of target
                             target_url = target_url + "/"
-                        if self.ufonet.options.proxy: # set proxy
-                            self.proxy_transport(self.ufonet.options.proxy)
-                            req = urllib2.Request(target_url + txt, None, headers)
-                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
-                        else:                    
-                            req = urllib2.Request(target_url + txt, None, headers)
-                            txt_file = urllib2.urlopen(req, context=self.ctx).read()
-                    size = len(txt_file)
+                        try:
+                            if self.ufonet.options.proxy: # set proxy
+                                self.proxy_transport(self.ufonet.options.proxy)
+                                req = urllib.request.Request(target_url + txt, None, headers)
+                                txt_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            else:                    
+                                req = urllib.request.Request(target_url + txt, None, headers)
+                                txt_file = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                            print('+File (.txt) found: ' + target_url + txt.split('"')[0])
+                            size = len(txt_file)
+                            txts[txt] = int(size)
+                            print('(Size: ' + str(size) + ' Bytes)')
+                            self.c_txt = self.c_txt + 1
+                            print('-'*12)
+                        except:
+                            size = 0
                 except: 
                     print('[Error] [AI] Unable to retrieve info from Text file -> [Discarding!]')
                     size = 0
-                txts[txt] = int(size)
-                print('(Size: ' + str(size) + ' Bytes)')
-                self.c_txt = self.c_txt + 1
-                print '-'*12
-            biggest_txt = max(txts.keys(), key=lambda x: txts[x]) # search/extract biggest file (.txt) value from dict
-            biggest_files[biggest_txt] = txts[biggest_txt] # add biggest file (.txt) to list
+            biggest_txt = max(list(txts.keys()), key=lambda x: txts[x]) # search/extract biggest file (.txt) value from dict
+            if biggest_text:
+                biggest_files[biggest_txt] = txts[biggest_txt] # add biggest file (.txt) to list
         except: # if not any .txt found, go for next
             pass
-        print "\n", '='*80
+        print("\n" +'='*80)
         total_objects = self.c_images + self.c_mov + self.c_webm + self.c_avi + self.c_swf + self.c_mpg + self.c_mpeg + self.c_mp3 + self.c_ogg + self.c_ogv + self.c_wmv + self.c_css + self.c_js + self.c_xml + self.c_php +  self.c_html + self.c_jsp + self.c_asp + self.c_txt
-        print "Total objects found:", total_objects
-        print '-'*20
-        print "images:", self.c_images
-        print ".mov  :", self.c_mov 
-        print ".jsp  :", self.c_jsp
-        print ".avi  :", self.c_avi
-        print ".html :", self.c_html
-        print ".mpg  :", self.c_mpg
-        print ".asp  :", self.c_asp
-        print ".mp3  :", self.c_mp3
-        print ".js   :", self.c_js
-        print ".ogv  :", self.c_ogv
-        print ".wmv  :", self.c_wmv
-        print ".css  :", self.c_css
-        print ".mpeg :", self.c_mpeg
-        print ".xml  :", self.c_xml
-        print ".php  :", self.c_php
-        print ".txt  :", self.c_txt
-        print ".webm :", self.c_webm
-        print ".ogg  :", self.c_ogg
-        print ".swf  :", self.c_swf
-        print '-'*20
-        print '='*80
+        print("Total objects found:", total_objects)
+        print('-'*20)
+        print("images:", self.c_images)
+        print(".mov  :", self.c_mov) 
+        print(".jsp  :", self.c_jsp)
+        print(".avi  :", self.c_avi)
+        print(".html :", self.c_html)
+        print(".mpg  :", self.c_mpg)
+        print(".asp  :", self.c_asp)
+        print(".mp3  :", self.c_mp3)
+        print(".js   :", self.c_js)
+        print(".ogv  :", self.c_ogv)
+        print(".wmv  :", self.c_wmv)
+        print(".css  :", self.c_css)
+        print(".mpeg :", self.c_mpeg)
+        print(".xml  :", self.c_xml)
+        print(".php  :", self.c_php)
+        print(".txt  :", self.c_txt)
+        print(".webm :", self.c_webm)
+        print(".ogg  :", self.c_ogg)
+        print(".swf  :", self.c_swf)
+        print('-'*20)
+        print('='*80)
         if(biggest_files=={}):
-            print "\n[Info] [AI] Not any link found on target! -> [Exiting!]\n\n"
-            print '='*80 + '\n'
+            print("\n[Info] [AI] Not any link found on target! -> [Exiting!]\n\n")
+            print('='*80 + '\n')
             return
-        biggest_file_on_target = max(biggest_files.keys(), key=lambda x: biggest_files[x]) # search/extract biggest file value from dict
+        biggest_file_on_target = max(list(biggest_files.keys()), key=lambda x: biggest_files[x]) # search/extract biggest file value from dict
         target_host = urlparse(target)
         target_url = target_host.scheme + "://" + target_host.netloc + target_host.path
         if biggest_file_on_target.startswith('http'): # used for absolute links
-            for url,size in biggest_files.items(): # review all dict values
+            for url,size in list(biggest_files.items()): # review all dict values
                 if url.startswith('http'):
                     if not target_url in url: # extract/dismiss external links         
                         del biggest_files[url] # remove value from dict
-            biggest_file_on_target = max(biggest_files.keys(), key=lambda x: biggest_files[x]) # extract new value
-            print ('=Biggest File: ' + biggest_file_on_target)
+            biggest_file_on_target = max(list(biggest_files.keys()), key=lambda x: biggest_files[x]) # extract new value
+            print('=Biggest File: ' + biggest_file_on_target)
         else: # used for relative links
             if not target_url.endswith('/'): # add "/" to end of target
                 target_url = target_url + "/"
-            print ('=Biggest File: ' + target_url + biggest_file_on_target)
-        print '='*80 + '\n'
+            print('=Biggest File: ' + target_url + biggest_file_on_target)
+        print('='*80 + '\n')

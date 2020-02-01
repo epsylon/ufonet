@@ -1,15 +1,20 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2014/2015/2016 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from threading import Thread
-import socket, time, os, base64, re, urlparse
-
+import socket, time, os, base64, re
+try:
+    from urlparse import urlparse
+except:
+    from urllib.parse import urlparse
 class Needle(Thread):
     def __init__(self, client, addr, parent):
         Thread.__init__(self)
@@ -101,7 +106,7 @@ class Doll(Thread):
                 else:
                     return
         if not self._armed:
-            print "\n[Error] Doll not armed"
+            print("\n[Error] Doll not armed")
             return
         self.socket = s
         self.ready = True
@@ -112,7 +117,7 @@ class Doll(Thread):
             except socket.timeout:
                 print("\n[Warning] Socket is giving timeout...")
                 pass
-            except socket.error, e:
+            except socket.error as e:
                 if self.ready == False:
                     return
                 else:

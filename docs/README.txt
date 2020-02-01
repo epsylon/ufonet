@@ -51,14 +51,14 @@ See these links for more info:
 # Installing
 ###############################
 
-UFONet runs on many platforms. It requires Python (>2.7.9) and the following libraries:
+UFONet runs on many platforms. It requires Python (>=3) and the following libraries:
 
-     python-pycurl - Python bindings to libcurl
-     python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
-     python-whois  - Python module for retrieving WHOIS information - Python 2
-     python-crypto - Cryptographic algorithms and protocols for Python
-     python-requests - elegant and simple HTTP library for Python2, built for human beings
-     python-scapy - Packet generator/sniffer and network scanner/discovery
+     python3-pycurl - Python bindings to libcurl (Python 3)
+     python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
+     python3-whois - Python module for retrieving WHOIS information - Python 3
+     python3-crypto - cryptographic algorithms and protocols for Python 3
+     python3-requests - elegant and simple HTTP library for Python3, built for human beings
+     python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
 
 You can automatically get all required libraries using:
 
@@ -66,23 +66,30 @@ You can automatically get all required libraries using:
 
 For manual installation on Debian-based systems (ex: Ubuntu), run: 
 
-     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
+     sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy
 
 On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
-
-     pip install geoip 
+ 
+     pip install GeoIP
+     pip install python-geoip
+     pip install pygeoip
      pip install requests
      pip install pycrypto
+     pip install pycurl
+     pip install whois
+     pip install scapy-python3
 
 Source libs:
 
      * Python: https://www.python.org/downloads/
      * PyCurl: http://pycurl.sourceforge.net/
-     * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
-     * PyWhois: https://pypi.python.org/pypi/whois
+     * GeoIP: https://pypi.python.org/pypi/GeoIP/
+     * Python-geoip: https://pypi.org/project/python-geoip/
+     * Pygeoip: https://pypi.org/project/pygeoip/
+     * Whois: https://pypi.python.org/pypi/whois
      * PyCrypto: https://pypi.python.org/pypi/pycrypto
      * PyRequests: https://pypi.python.org/pypi/requests
-     * PyScapy: https://pypi.org/project/scapy/
+     * Scapy-Python3: https://pypi.org/project/scapy-python3/
      * Leaflet: http://leafletjs.com/ (provided)
 
 ###############################
@@ -106,16 +113,15 @@ Or providing a list of "dorks" from a file:
 
        ./ufonet --sd 'botnet/dorks.txt'
 
-By default UFONet will use a search engine called 'StartPage'. But you can choose a different one:
+By default UFONet will use a search engine called 'DuckDuckGo'. But you can choose a different one:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 This is the list of available search engines with last time that they were working:
 
-        - startpage  [06/03/2019: OK!]
-        - duckduckgo [06/03/2019: OK!]
-        - bing       [06/03/2019: OK!]
-        - yahoo      [06/03/2019: OK!]
+        - duckduckgo [01/02/2020: OK!]
+        - bing       [01/02/2020: OK!]
+        - yahoo      [01/02/2020: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -438,6 +444,10 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+01.02.2020 : v.1.4
+--------------------------
 
 --------------------------
 10.03.2019 : v.1.3

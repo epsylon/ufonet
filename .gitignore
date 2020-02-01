@@ -1,5 +1,2 @@
-build/
-dist/
-*~
-ufonet.egg-info/
-*.pyc
+__pycache__/
+*.py[cod]

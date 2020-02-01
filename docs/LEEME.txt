@@ -53,12 +53,12 @@ En los siguientes enlaces tienes más información:
 
 UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
 
-     python-pycurl - Python bindings to libcurl
-     python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
-     python-whois  - Python module for retrieving WHOIS information - Python 2
-     python-crypto - Cryptographic algorithms and protocols for Python
-     python-requests - elegant and simple HTTP library for Python2, built for human beings
-     python-scapy - Packet generator/sniffer and network scanner/discovery
+     python3-pycurl - Python bindings to libcurl (Python 3)
+     python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
+     python3-whois - Python module for retrieving WHOIS information - Python 3
+     python3-crypto - cryptographic algorithms and protocols for Python 3
+     python3-requests - elegant and simple HTTP library for Python3, built for human beings
+     python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
 
 Puedes obtener todas las librerías requeridas automáticamente usando:
 
@@ -66,23 +66,30 @@ Puedes obtener todas las librerías requeridas automáticamente usando:
 
 Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
 
-     sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
+     sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy
 
 En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 
-     pip install geoip 
+     pip install GeoIP
+     pip install python-geoip
+     pip install pygeoip
      pip install requests
      pip install pycrypto
+     pip install pycurl
+     pip install whois
+     pip install scapy-python3
 
 Paquetes fuente de las librerías:
 
      * Python: https://www.python.org/downloads/
      * PyCurl: http://pycurl.sourceforge.net/
-     * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
-     * PyWhois: https://pypi.python.org/pypi/whois
+     * GeoIP: https://pypi.python.org/pypi/GeoIP/
+     * Python-geoip: https://pypi.org/project/python-geoip/
+     * Pygeoip: https://pypi.org/project/pygeoip/
+     * Whois: https://pypi.python.org/pypi/whois
      * PyCrypto: https://pypi.python.org/pypi/pycrypto
      * PyRequests: https://pypi.python.org/pypi/requests
-     * PyScapy: https://pypi.org/project/scapy/
+     * Scapy-Python3: https://pypi.org/project/scapy-python3/
      * Leaflet: http://leafletjs.com/ (provided)
 
 ###############################
@@ -107,16 +114,15 @@ O utilizando una lista de "dorks" que tengas en un fichero:
 
        ./ufonet --sd 'dorks.txt'
 
-Por defecto, UFONet utiliza un motor de búsqueda que se llama 'StartPage'. Pero puedes elegir uno diferente:
+Por defecto, UFONet utiliza un motor de búsqueda que se llama 'DuckDuckGo'. Pero puedes elegir uno diferente:
 
        ./ufonet -s 'proxy.php?url=' --se 'bing'
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - startpage   [06/03/2019: OK!]
-        - duckduckgo  [06/03/2019: OK!]
-        - bing        [06/03/2019: OK!]
-        - yahoo       [06/03/2019: OK!]
+        - duckduckgo  [01/02/2020: OK!]
+        - bing        [01/02/2020: OK!]
+        - yahoo       [01/02/2020: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -443,6 +449,10 @@ más algunas "extra":
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+01.02.2020 : v.1.4
+--------------------------
 
 --------------------------
 10.03.2019 : v.1.3

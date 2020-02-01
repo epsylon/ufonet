@@ -1,4 +1,4 @@
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-welcome_small.png "UFONet Welcome")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-welcome_small.png "UFONet Welcome")
 
 ----------
 
@@ -26,14 +26,14 @@
 
 #### Installing:
 
-  UFONet runs on many platforms.  It requires Python (>2.7.9) and the following libraries:
+  UFONet runs on many platforms. It requires Python (>=3) and the following libraries:
 
-       python-pycurl - Python bindings to libcurl
-       python-geoip  - Python bindings for the GeoIP IP-to-country resolver library
-       python-whois  - Python module for retrieving WHOIS information - Python 2
-       python-crypto - Cryptographic algorithms and protocols for Python
-       python-requests - elegant and simple HTTP library for Python2, built for human beings
-       python-scapy - Packet generator/sniffer and network scanner/discovery
+       python3-pycurl - Python bindings to libcurl (Python 3)
+       python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
+       python3-whois - Python module for retrieving WHOIS information - Python 3
+       python3-crypto - cryptographic algorithms and protocols for Python 3
+       python3-requests - elegant and simple HTTP library for Python3, built for human beings
+       python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
 
   You can automatically get all required libraries using (as root):
 
@@ -41,24 +41,30 @@
 
   For manual installation, on Debian-based systems (ex: Ubuntu), run: 
 
-       sudo apt-get install python-pycurl python-geoip python-whois python-crypto python-requests python-scapy
+       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
-       pip install geoip 
+       pip install GeoIP
+       pip install python-geoip
+       pip install pygeoip
        pip install requests
        pip install pycrypto
-       pip install scapy
+       pip install pycurl
+       pip install whois
+       pip install scapy-python3
 
 ####  Source libs:
 
    * Python: https://www.python.org/downloads/
    * PyCurl: http://pycurl.sourceforge.net/
-   * PyGeoIP: https://pypi.python.org/pypi/GeoIP/
-   * PyWhois: https://pypi.python.org/pypi/whois
+   * GeoIP: https://pypi.python.org/pypi/GeoIP/
+   * Python-geoip: https://pypi.org/project/python-geoip/
+   * Pygeoip: https://pypi.org/project/pygeoip/
+   * Whois: https://pypi.python.org/pypi/whois
    * PyCrypto: https://pypi.python.org/pypi/pycrypto
    * PyRequests: https://pypi.python.org/pypi/requests
-   * PyScapy: https://pypi.org/project/scapy/
+   * Scapy-Python3: https://pypi.org/project/scapy-python3/
    * Leaflet: http://leafletjs.com/ (provided)
 
 ----------
@@ -72,19 +78,19 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-shell1_small.png "UFONet Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell1_small.png "UFONet Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-shell2_small.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell2_small.png "UFONet Shell Board")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-shell3_small.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell3_small.png "UFONet GUI Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-welcome_small.png "UFONet GUI Welcome")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-welcome_small.png "UFONet GUI Welcome")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-main_small.png "UFONet GUI Main Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-main_small.png "UFONet GUI Main Panel")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-botnet_small.png "UFONet GUI Botnet")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-stats_small.png "UFONet GUI General Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-stats_small.png "UFONet GUI General Stats")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-ranking_small.png "UFONet GUI Ranking")
 
@@ -96,7 +102,7 @@ in the [LICENSE](./docs/LICENSE) file.
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-wargames_small.png "UFONet GUI Wargames")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-attack_small.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-attack_small.png "UFONet GUI Attack")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
 

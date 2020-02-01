@@ -1,16 +1,16 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-"
 """
-UFONet - Denial of Service Toolkit - 2013/2014/2015/2016/2017/2018 - by psy (epsylon@riseup.net)
+This file is part of the UFONet project, https://ufonet.03c8.net
+
+Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket, threading, logging, datetime, sys, os, re, time
-from urlparse import urlparse
-
-import zombie
+from . import zombie
 
 # zombie tracking class
 class Herd(object):
@@ -86,7 +86,7 @@ class Herd(object):
         if options.verbose == True:
             if ac>self.living:
                 if ac-self.living not in self.ufonet.ac_control:
-                    print "[Info] [AI] [Control] Active [ARMY] returning from the combat front: "+ str(ac-self.living)
+                    print("[Info] [AI] [Control] Active [ARMY] returning from the combat front: "+ str(ac-self.living))
                     self.ufonet.ac_control.append(ac-self.living)
         with self.lock:
             return ac==self.living
@@ -115,7 +115,7 @@ class Herd(object):
             try:
                 self.cleanup()
             except:
-                print '[Info] Previous tmp file found... html content will not be updated.'
+                print('[Info] Previous tmp file found... html content will not be updated.')
                 pass
         buf += "<div>" + os.linesep
         if out['err'] is not None:
@@ -160,38 +160,38 @@ class Herd(object):
     # generate statistics for stdout
     def format(self, out):
         if len(out['data'])==0:
-            print "[Info] Not any feedback data to show. Exiting..."
+            print("[Info] Not any feedback data to show. Exiting...")
             return
-        print '='*42
-        print "Herd statistics"
-        print "="*42
+        print('='*42)
+        print("Herd statistics")
+        print("="*42)
         for zo in out['data']:
             z=out['data'][zo]
-            print 'Zombie :', z['name'], " | ", z['hits'], " hits ", z['fails'] ," fails ", z['retries'], " retries "
-            print "  Times:", z['time'], " total ", z['min_time'], " min ", z['avg_time'] ," avg ", z['max_time'], " max "
-            print "  Sizes:", z['size'], " total ", z['min_size'], " min ", z['size'] ," avg ", z['max_size'], " max "
-            print "-"*21
+            print('Zombie :', z['name'], " | ", z['hits'], " hits ", z['fails'] ," fails ", z['retries'], " retries ")
+            print("  Times:", z['time'], " total ", z['min_time'], " min ", z['avg_time'] ," avg ", z['max_time'], " max ")
+            print("  Sizes:", z['size'], " total ", z['min_size'], " min ", z['size'] ," avg ", z['max_size'], " max ")
+            print("-"*21)
         if out['max_hits'] > 0:
-            print "="*80
-            print "Zombie 0day: ", out['max_hitz'], " with ", out['max_hits'], " hits"
+            print("="*80)
+            print("Zombie 0day: ", out['max_hitz'], " with ", out['max_hits'], " hits")
         if out['max_fails'] > 0:
-            print "="*80
-            print "Worst zombie: ", out['max_failz'], " with ", out['max_fails'], " fails"
-        print "="*80
-        print "Total invocations:", self.total_connections,"| Zombies:", str(self.ufonet.total_zombie),"| Hits:", self.total_hits,"| Fails:", self.total_fails
-        print "Total time:", out['total_time'], "| Avg time:", out['avg_time']
-        print "Total size:", out['total_size'],"| Avg size:", out['avg_size']
-        print "-"*21
-        print "="*42
-        print "Troops statistics"
-        print "="*42
-        print "Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail)
-        print "Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail)
-        print "X-RPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail)
-        print "UCAVs : " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail)
-        print "-"*21
-        print "\n" # gui related
-        print '='*21
+            print("="*80)
+            print("Worst zombie: ", out['max_failz'], " with ", out['max_fails'], " fails")
+        print("="*80)
+        print("Total invocations:", self.total_connections,"| Zombies:", str(self.ufonet.total_zombie),"| Hits:", self.total_hits,"| Fails:", self.total_fails)
+        print("Total time:", out['total_time'], "| Avg time:", out['avg_time'])
+        print("Total size:", out['total_size'],"| Avg size:", out['avg_size'])
+        print("-"*21)
+        print("="*42)
+        print("Troops statistics")
+        print("="*42)
+        print("Aliens: " + str(self.ufonet.total_aliens) + " | Hits: " + str(self.ufonet.aliens_hit) + " | Fails: " + str(self.ufonet.aliens_fail))
+        print("Droids: " + str(self.ufonet.total_droids) + " | Hits: " + str(self.ufonet.droids_hit) + " | Fails: " + str(self.ufonet.droids_fail))
+        print("X-RPCs: " + str(self.ufonet.total_rpcs) + " | Hits: " + str(self.ufonet.rpcs_hit) + " | Fails: " + str(self.ufonet.rpcs_fail))
+        print("UCAVs : " + str(self.ufonet.total_ucavs) + " | Hits: " + str(self.ufonet.ucavs_hit) + " | Fails: " + str(self.ufonet.ucavs_fail))
+        print("-"*21)
+        print("\n") # gui related
+        print('='*21)
 
     # show what we have
     def get_stat(self):
@@ -276,17 +276,17 @@ class Herd(object):
         if self.zombies_ready == None: # if not herd return
             return
         if not options.forceyes:
-            print '-'*25
-            update_reply = raw_input("Do you want to update your army (Y/n)")
-            print '-'*25
+            print('-'*25)
+            update_reply = input("Do you want to update your army (Y/n)")
+            print('-'*25)
         else:
             update_reply = "Y"
         if update_reply == "n" or update_reply == "N":
-            print "\nBye!\n"
+            print("\nBye!\n")
             return
         else:
             self.ufonet.update_zombies(self.zombies_ready)
-            print "\n[Info] - Botnet updated! ;-)\n"
+            print("\n[Info] - Botnet updated! ;-)\n")
         if os.path.exists('mothership') == True:
             os.remove('mothership') # remove mothership stream
         if os.path.exists('alien') == True:
