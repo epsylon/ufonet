@@ -21,10 +21,14 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Running environment:**
- - Orb version [e.g. 0.3]
+ - UFONet version [e.g. 1.4]
  - Installation method [e.g. git]
  - Operating system: [e.g. Debian 4.19.16-1~bpo9+1 (2019-02-07) ]
  - Python version [e.g. 3.7]
+
+**Target details:**
+ - Attacking techniques [e.g. UFoSYN+LORIS+STARVATION]
+ - WAF/IPS [if any]
 
 **Error details:**
  - Relevant console output [if any]

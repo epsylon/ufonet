@@ -1,16 +1,16 @@
-# Contributing to orb
+# Contributing to ufonet
 
 ## Reporting bugs
 
-Please report all bugs on the [issue tracker](https://github.com/epsylon/orb/issues).
+Please report all bugs on the [issue tracker](https://github.com/epsylon/ufonet/issues).
 
 ### Guidelines
 
-* Before you submit a bug report, search both [open](https://github.com/epsylon/orb/issues?q=is%3Aopen+is%3Aissue) and [closed](https://github.com/epsylon/orb/issues?q=is%3Aissue+is%3Aclosed) issues to make sure the issue has not come up before. 
+* Before you submit a bug report, search both [open](https://github.com/epsylon/ufonet/issues?q=is%3Aopen+is%3Aissue) and [closed](https://github.com/epsylon/ufonet/issues?q=is%3Aissue+is%3Aclosed) issues to make sure the issue has not come up before. 
 
-* Make sure you can reproduce the bug with the latest development version of orb.
+* Make sure you can reproduce the bug with the latest development version of ufonet.
 
-* Your report should give detailed instructions on how to reproduce the problem. If orb raises an unhandled exception, the entire traceback is needed. Details of the unexpected behaviour are welcome too. A small test case (just a few lines) is ideal.
+* Your report should give detailed instructions on how to reproduce the problem. If ufonet raises an unhandled exception, the entire traceback is needed. Details of the unexpected behaviour are welcome too. A small test case (just a few lines) is ideal.
 
 * If you are making an enhancement request, lay out the rationale for the feature you are requesting. *Why would this feature be useful?*
 
@@ -33,4 +33,4 @@ In order to maintain consistency and readability throughout the code, we ask tha
 
 ### Licensing
 
-By submitting code contributions to the orb developers or via Git pull request, checking them into the orb source code repository, it is understood (unless you specify otherwise) that you are offering the orb copyright holders the unlimited, non-exclusive right to reuse, modify, and relicense the code. This is important because the inability to relicense code has caused devastating problems for other software projects (such as KDE and NASM). If you wish to specify special license conditions of your contributions, just say so when you send them.
+By submitting code contributions to the ufonet developers or via Git pull request, checking them into the ufonet source code repository, it is understood (unless you specify otherwise) that you are offering the ufonet copyright holders the unlimited, non-exclusive right to reuse, modify, and relicense the code. This is important because the inability to relicense code has caused devastating problems for other software projects (such as KDE and NASM). If you wish to specify special license conditions of your contributions, just say so when you send them.
