@@ -20,8 +20,7 @@ class Updater(object):
     def __init__(self):
         GIT_REPOSITORY = "https://code.03c8.net/epsylon/ufonet"
         GIT_REPOSITORY2 = "https://github.com/epsylon/ufonet"
-        rootDir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', ''))
-        if not os.path.exists(os.path.join(rootDir, ".git")):
+        if not os.path.exists(".git"):
             print("Not any .git repository found!\n")
             print("="*30)
             print("\nTo have working this feature, you should clone UFONet with:\n")
@@ -30,8 +29,8 @@ class Updater(object):
             print("$ git clone %s" % GIT_REPOSITORY2 + "\n")
         else:
             checkout = execute("git checkout . && git pull", shell=True, stdout=PIPE, stderr=PIPE).communicate()[0]
-            print(checkout)
-            if not "Already up-to-date" in checkout:
-                print("Congratulations!! UFONet has been updated... ;-)\n")
+            print("[Info] [GitHub] Reply:\n\n"+checkout.decode('utf-8'))
+            if not b"Already up-to-date" in checkout:
+                print("[Info] [AI] Congratulations!! UFONet has been updated... ;-)\n")
             else:
-                print("Your UFONet doesn't need to be updated... ;-)\n")
+                print("[Info] [AI] Your UFONet doesn't need to be updated... ;-)\n")
