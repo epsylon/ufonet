@@ -1427,7 +1427,10 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
             self.decryptedtext = ""
             now = strftime("%d-%m-%Y %H:%M:%S", gmtime())
             now = strptime(now, "%d-%m-%Y %H:%M:%S")
-            job_estimated_dec = strptime(job_estimated_dec.decode('utf-8'), "%d-%m-%Y %H:%M:%S")
+            try:
+                job_estimated_dec = strptime(job_estimated_dec.decode('utf-8'), "%d-%m-%Y %H:%M:%S")
+            except:
+                job_estimated_dec = strptime(job_estimated_dec, "%d-%m-%Y %H:%M:%S")
             if (job_estimated_dec == now or job_estimated_dec < now): # engage it! (when 'now' or '<')
                 self.decrypt(self.crypto_key, job_target)
                 if self.decryptedtext:
