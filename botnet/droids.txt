@@ -1,1 +1,12 @@
 https://jigsaw.w3.org/css-validator/validator?uri=$TARGET&profile=css3&usermedium=all&vextwarning=true
+https://www.openadmintools.com/en/$TARGET
+http://www.statscrop.com/www/$TARGET
+https://www.whatsmydns.net/#A/$TARGET
+http://sitecheck.sucuri.net/results/$TARGET
+https://www.sslshopper.com/ssl-checker.html#hostname=$TARGET
+http://developers.google.com/speed/pagespeed/insights/?url=$TARGET
+https://gsnedders.html5.org/outliner/process.py?url=$TARGET
+http://www.siteworthtraffic.com/report/$TARGET
+http://www.textise.net/showText.aspx?strURL=$TARGET
+http://www.htmlhelp.com/cgi-bin/validate.cgi?url=$TARGET&warnings=yes&spider=yes
+https://mxtoolbox.com/SuperTool.aspx?action=$TARGET

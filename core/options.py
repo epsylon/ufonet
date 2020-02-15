@@ -43,7 +43,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
         description='\n{(D)enial(OF)Fensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nCode: v1.4 [APT] T!M3-WaRS\n')
+        version='\nCode: v1.4.1 [APT] T!M3-WaRS\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")

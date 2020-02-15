@@ -2,15 +2,19 @@
 
 ----------
 
- + Web:  https://ufonet.03c8.net
+ + Web:   https://ufonet.03c8.net
+
+ + Video: https://ufonet.03c8.net/ufonet/ufonet-timewars.ogv
 
 ----------
 
- + FAQ:  https://ufonet.03c8.net/FAQ.html
+ + FAQ:   https://ufonet.03c8.net/FAQ.html
 
 ----------
 
-  UFONet - is a toolkit designed to launch DDoS and DoS attacks.
+  UFONet - is a free software, P2P and cryptographic -disruptive toolkit- that allows to perform DoS and DDoS attacks; 
+on the Layer 7 (APP/HTTP) through the exploitation of Open Redirect vectors on third-party websites to act as a botnet 
+and on the Layer3 (Network) abusing the protocol.
 
   See these links for more info:
 
