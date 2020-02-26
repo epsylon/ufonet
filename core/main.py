@@ -40,6 +40,8 @@ from core.mods.nuke import NUKE
 from core.mods.tachyon import TACHYON
 from core.mods.monlist import MONLIST
 
+DEBUG = False # use 'True' for detailed traceback
+
 class UFONet(object):
     def __init__(self):
         self.exit_msg = 'Donate BTC (Bitcoin) to keep UFONet (https://ufonet.03c8.net) strong!' # set msg show at the end [FILO ;-)]
@@ -47,8 +49,8 @@ class UFONet(object):
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.github_zombies = 'https://raw.githubusercontent.com/epsylon/ufonet/master/botnet/' # default [RAW] download/upload zombies [Blackhole] [GitHub] [DIY]
-        self.external_check_service1 = 'https://status.ws/' # set external check service 1 [OK! 01/02/2020]
-        self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 01/02/2020]
+        self.external_check_service1 = 'https://status.ws/' # set external check service 1 [OK! 26/02/2020]
+        self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 26/02/2020]
         self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site
         self.check_ip_service1 = 'https://checkip.dyndns.com/' # set external check ip service 1 [OK! 28/02/2019]
         self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 28/02/2019]
@@ -259,7 +261,7 @@ class UFONet(object):
         try:
             return func(*args)
         except Exception as e:
-            if options.verbose:
+            if DEBUG == True:
                 print(error, "error")
                 traceback.print_exc()
 
@@ -439,7 +441,7 @@ class UFONet(object):
                     xray = self.instance.scanning(options.xray, portX, portY)
                 except Exception as e:
                     print ("[Error] [AI] Something wrong scanning... Not any data stream found! -> [Exiting!]\n")
-                    if self.options.verbose:
+                    if DEBUG == True:
                         traceback.print_exc()
                     return
 
@@ -1002,7 +1004,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] [AI] Something wrong testing!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # test XML-'rpc' pingback vulnerable servers -> update list
@@ -1016,7 +1018,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] [AI] Something wrong testing X-RPCs!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # check botnet searching for zombies offline
@@ -1027,7 +1029,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] [AI] Something wrong checking for offline [Zombies]!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # check ALL botnet status
@@ -1038,7 +1040,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] [AI] Something wrong testing ALL botnet status!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # attack target -> exploit Open Redirect massively and conduct vulnerable servers to a single target
@@ -1048,11 +1050,12 @@ class UFONet(object):
                 zombies = self.extract_zombies()
                 if not zombies:
                     return
+                options.target = self.parse_url_encoding(options.target) # parse for proper url encoding
                 attack = self.attacking(zombies, options.target)
                 self.update_missions_stats() # update mothership missions stats
             except Exception:
                 print ("\n[Error] [AI] Something wrong attacking!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # attack a list of targets -> exploit Open Redirect massively and conduct vulnerable servers to multiple targets
@@ -1085,15 +1088,16 @@ class UFONet(object):
                     return # end of code block dedicated to: Guido van Rossum [23/12/2018]
                 else:
                     for target in targets:
+                        self.options.target = self.parse_url_encoding(target) # parse for proper url encoding
+                        target = self.options.target
                         print('='*55 + "\n")
                         print("[Info] [AI] Aiming: " + str(target) + " -> [OK!]\n")
                         print("="*55)
-                        self.options.target = target
                         attack = self.attacking(zombies, target)
                         self.update_missions_stats() # update mothership missions stats (each target counts)
             except Exception:
                 print ("\n[Error] [AI] Something wrong attacking to multiple targets!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
 
         # inspect target -> inspect target's components sizes
@@ -1107,7 +1111,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception as e:
                 print ("\n[Error] [AI] Something wrong inspecting... Not any object found!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
                 return #sys.exit(2)
 
@@ -1122,7 +1126,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception as e:
                 print ("\n[Error] [AI] Something wrong abducting... Not any data stream found!\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
                 return #sys.exit(2)
 
@@ -1156,7 +1160,7 @@ class UFONet(object):
                 self.update_missions_stats() # update mothership missions stats
             except Exception as e:
                 print ("\n[Error] [AI] Something wrong redirecting [Zombies] against you...\n")
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
                 return #sys.exit(2)
 
@@ -1253,7 +1257,7 @@ class UFONet(object):
                 upload_list = self.uploading_list()
             except Exception as e:
                 print(("[Error] [AI] Something wrong uploading! "+str(e)+" -> [Exiting!]\n"))
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
                 return #sys.exit(2)
 
@@ -1277,7 +1281,7 @@ class UFONet(object):
                 upload_github_list = self.uploading_github_list()
             except Exception as e:
                 print(("[Error] [AI] Something wrong uploading! "+str(e)+" -> [Exiting!]\n"))
-                if self.options.verbose:
+                if DEBUG == True:
                     traceback.print_exc()
                 return #sys.exit(2)
 
@@ -3346,6 +3350,7 @@ class UFONet(object):
                 return
         shuffle(aliens) # shuffle aliens order, each discarding check :-)
         for alien in aliens:
+            name_alien = None
             if "$POST" in alien: # extract alien/parameters -> search for $POST delimiter on 'aliens.txt' file
                 regex_alien = re.compile('{}(.*){}'.format(re.escape(''), re.escape(';$POST'))) # regex magics
                 pattern_alien = re.compile(regex_alien)
@@ -3393,7 +3398,11 @@ class UFONet(object):
                     self.discard_aliens.append(alien)
                     self.num_discard_aliens = self.num_discard_aliens + 1
             if self.options.verbose:
-                print("[Info] [AI] [Aliens] "+str(name_alien)+" is returning...")
+                if name_alien:
+                    print("[Info] [AI] [Aliens] "+str(name_alien)+" is returning...")
+                else:
+                    print("[Info] [AI] [Aliens] "+str(alien)+" is returning...")
+
         if self.options.disabledroids and self.options.disablerpcs and self.options.disableucavs:
             self.extra_zombies_lock = False # [ARMY] have finished
 
@@ -3457,6 +3466,7 @@ class UFONet(object):
                 return
         shuffle(droids) # shuffle droids order, each discarding check :-)
         for droid in droids:
+            name_droid = None
             if "$TARGET" in droid: # replace droid/parameter for target
                 url = droid.replace("$TARGET", target)
                 t = urlparse(url)
@@ -3494,7 +3504,11 @@ class UFONet(object):
                     self.discard_droids.append(droid)
                     self.num_discard_droids = self.num_discard_droids + 1
             if self.options.verbose:
-                print("[Info] [AI] [Droids] "+str(name_droid)+" is returning...")
+                if name_droid:
+                    print("[Info] [AI] [Droids] "+str(name_droid)+" is returning...")
+                else:
+                    print("[Info] [AI] [Droids] "+str(droid)+" is returning...")
+
         if self.options.disablerpcs and self.options.disableucavs:
             self.extra_zombies_lock = False # [ARMY] have finished
 
@@ -4110,6 +4124,20 @@ class UFONet(object):
                 f.write(z+os.linesep)
         return disc_zombies
 
+    def parse_url_encoding(self, target):
+        t = urlparse(target)
+        host = urllib.parse.quote(t.netloc.encode('utf-8'))
+        path = urllib.parse.quote(t.path.encode('utf-8'))
+        query = urllib.parse.quote(t.query.encode('utf-8'))
+        if query:
+            if path.endswith(""):
+                path.replace("", "/")
+            query = urllib.parse.quote(t.query.encode('utf-8'))
+            target = t.scheme+"://"+host + path + "?" + query
+        else:
+            target = t.scheme+"://"+host + path
+        return target
+
     def testing_rpcs(self, rpcs):
         # discover/test XML-RPC Pingback vulnerabilities on webapps (Wordpress, Drupal, PostNuke, b2evolution, 
         # Xoops, PHPGroupWare, TikiWiki, etc...) and update list
@@ -4139,7 +4167,7 @@ class UFONet(object):
                             req = urllib.request.Request(rpc_pingback_url, rpc_methods.encode('utf-8'), headers)
                             target_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
                         except:
-                            if self.options.verbose:
+                            if DEBUG == True:
                                 traceback.print_exc()
                         if self.options.verbose:
                             print("[Info] [X-RPCs] Reply:", target_reply)
@@ -4586,7 +4614,7 @@ class UFONet(object):
                         self.update_mothership_stats() # update mothership completed attack stats
                 except Exception:
                     print("\n[Error] [AI] Something wrong with your connection!...\n")
-                    if self.options.verbose:
+                    if DEBUG == True:
                         traceback.print_exc()
                 return
             else:
@@ -4619,7 +4647,7 @@ class UFONet(object):
                             head_check_here = False
                     except Exception:
                         print("[Error] [AI] [Control] From YOU: NO -> [Cannot connect!]")
-                        if self.options.verbose:
+                        if DEBUG == True:
                             traceback.print_exc()
                         head_check_here = False
                 else: # check if local IP/PORT is listening on mothership
@@ -4635,7 +4663,7 @@ class UFONet(object):
                             head_check_here = False
                     except Exception:
                         print("[Error] [AI] [Control] Local port: NO | Something wrong checking for open ports...")
-                        if self.options.verbose:
+                        if DEBUG == True:
                             traceback.print_exc()
                         head_check_here = False
             else:
@@ -4644,6 +4672,7 @@ class UFONet(object):
             self.external = True
             if not options.attackme:
                 try:
+                    target = self.parse_url_encoding(target) # parse for proper url encoding
                     try:
                         url = self.external_check_service1 + target # check from external service [1]
                         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
@@ -4652,7 +4681,7 @@ class UFONet(object):
                             self.proxy_transport(options.proxy)
                         req = urllib.request.Request(url, None, headers)
                         external_reply = urllib.request.urlopen(req, context=self.ctx).read()
-                        if "returned code 200 OK and is up".encode('utf-8') in external_reply:
+                        if b"returned code 200 OK and is up" in external_reply:
                             t = urlparse(self.external_check_service1)
                             name_external1 = t.netloc
                             print("[Info] [AI] [Control] From OTHERS: YES -> ["+name_external1+"]")
@@ -4664,18 +4693,24 @@ class UFONet(object):
                         if options.proxy: # set proxy
                             self.proxy_transport(options.proxy)
                         req = urllib.request.Request(url, None, headers)
-                        req_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
-                        if "It's just you" in req_reply:
-                            t = urlparse(self.external_check_service2)
-                            name_external2 = t.netloc
-                            print("[Info] [AI] [Control] From OTHERS: YES -> ["+name_external2+"]")
-                            head_check_external = True
-                        else:
-                            print("[Info] [AI] [Control] From OTHERS: NO -> [Target looks OFFLINE!]")
+                        try:
+                            req_reply = urllib.request.urlopen(req, context=self.ctx).read()
+                            if b"It's just you" in req_reply:
+                                t = urlparse(self.external_check_service2)
+                                name_external2 = t.netloc
+                                print("[Info] [AI] [Control] From OTHERS: YES -> ["+name_external2+"]")
+                                head_check_external = True
+                            else:
+                                print("[Info] [AI] [Control] From OTHERS: NO -> [Target looks OFFLINE!]")
+                                head_check_external = False
+                        except urllib.error.HTTPError as e:
+                            if e:
+                                print("[Error] [AI] [Control] [ "+ self.external_check_service2 +" ] isn't replying to your requests! -> [Passing!]")
+                            print ("[Info] [AI] [Control] From OTHERS: NO -> [Target looks OFFLINE!]")
                             head_check_external = False
                 except Exception:
                         print("[Error] [AI] [Control] From OTHERS: NO -> [Cannot connect!]")
-                        if self.options.verbose:
+                        if DEBUG == True:
                             traceback.print_exc()
                         head_check_external = False
             else:
@@ -4695,7 +4730,7 @@ class UFONet(object):
                 except Exception:
                     print("[Error] [AI] [Control] From OTHERS: NO -> [Check failed!]")
                     head_check_here = False # stop attack if not public IP available
-                    if self.options.verbose:
+                    if DEBUG == True:
                         traceback.print_exc()
                     head_check_external = False
             self.external = False
