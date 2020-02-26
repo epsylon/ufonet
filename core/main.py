@@ -148,7 +148,10 @@ class UFONet(object):
             for ship in motherships:
                 ship = ship.encode("utf-8")
                 self.mothership_ids.append(base64.urlsafe_b64encode(ship))
-            self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'utf-8')
+            try:
+                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'utf-8')
+            except:
+                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'latin-1')+"\n" # id (hack&slash!) creation ;-)
             m = open(self.mothershipname, "w") # write mothership name to a static file as a baptism
             m.write(str(self.mothership_id.upper()))
             m.close()
