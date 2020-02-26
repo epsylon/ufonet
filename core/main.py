@@ -78,6 +78,7 @@ class UFONet(object):
         self.referer = '' # black magic
         self.port = "8080" # default injection port
         self.mothershipname = "core/txt/shipname.txt"
+        self.default_mothership_name = "l4m3r-lulz/0\n" # default mothership name
         self.mothership_baptism() # generating static name/id for your mothership ;-)
         self.head = False
         self.payload = False
@@ -142,20 +143,25 @@ class UFONet(object):
             f.close()
         else:
             self.mothership_ids = [] 
-            f = open(self.motherships_file)
-            motherships = f.readlines()
-            f.close()
-            for ship in motherships:
-                ship = ship.encode("utf-8")
-                self.mothership_ids.append(base64.urlsafe_b64encode(ship))
             try:
-                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'utf-8')
-            except:
+                f = open(self.motherships_file)
+                motherships = f.readlines()
+                f.close()
+                for ship in motherships:
+                    ship = ship.encode("utf-8")
+                    self.mothership_ids.append(base64.urlsafe_b64encode(ship))
                 try:
-                    self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'latin-1')+"\n" # id (hack&slash!) creation ;-)
+                    self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'utf-8')
                 except:
-                    self.mothership_id = "l4m3r-lulz/0\n" # motherhip naming anti-cheating!
-            m = open(self.mothershipname, "w") # write mothership name to a static file as a baptism
+                    try:
+                        self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'latin-1')+"\n" # id (hack&slash!) creation ;-)
+                    except:
+                        self.mothership_id = self.default_mothership_name
+            except:
+                self.mothership_id = self.default_mothership_name
+            if len(str(self.mothership_id.upper())) > 20: # motherhip naming anti-cheating! ;-)
+                self.mothership_id = self.default_mothership_name 
+            m = open(self.mothershipname, "w") # write mothership name to a static file
             m.write(str(self.mothership_id.upper()))
             m.close()
 
