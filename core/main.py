@@ -212,11 +212,14 @@ class UFONet(object):
         print('='*75)
 
     def generate_exit_msg(self):
-        f = open(self.misc_file)
-        m = f.readlines()
-        f.close()
         self.exit_msg = "Generating random exit... \n\n"
-        self.exit_msg += " -> "+str(random.choice(m).strip()) 
+        try:
+            f = open(self.misc_file)
+            m = f.readlines()
+            f.close()
+            self.exit_msg += " -> "+str(random.choice(m).strip())
+        except:
+            self.exit_msg += " -> Donate BTC (Bitcoin) to keep #UFONet (https://ufonet.03c8.net) strong!" 
 
     def AI(self):
         try:
