@@ -151,7 +151,10 @@ class UFONet(object):
             try:
                 self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'utf-8')
             except:
-                self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'latin-1')+"\n" # id (hack&slash!) creation ;-)
+                try:
+                    self.mothership_id = str(base64.b64decode(random.choice(self.mothership_ids).strip()), 'latin-1')+"\n" # id (hack&slash!) creation ;-)
+                except:
+                    self.mothership_id = "l4m3r-lulz/0\n" # motherhip naming anti-cheating!
             m = open(self.mothershipname, "w") # write mothership name to a static file as a baptism
             m.write(str(self.mothership_id.upper()))
             m.close()
