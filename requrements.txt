@@ -1,0 +1,8 @@
+GeoIP
+python-geoip
+pygeoip
+requests
+pycrypto
+pycurl
+whois
+scapy-python3
