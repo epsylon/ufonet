@@ -49,14 +49,7 @@ and on the Layer3 (Network) abusing the protocol.
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
-       pip install GeoIP
-       pip install python-geoip
-       pip install pygeoip
-       pip install requests
-       pip install pycrypto
-       pip install pycurl
-       pip install whois
-       pip install scapy-python3
+       pip install -r requirements.txt
 
 ####  Source libs:
 
