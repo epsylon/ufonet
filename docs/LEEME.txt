@@ -442,13 +442,23 @@ más algunas "extra":
  - SHIP STATS: Permite consultar las estadísticas de tu "nave"
  - RANKING: Permite consultar tu posición en el "ranking"
  - BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
+ - SHIP LINKS: Permite revisar los enlaces publicados por otras "naves"
+ - SHIP STREAMS: Permite revisar los "streams" (video/audio/directo) publicados por otras "naves"
+ - SHIP GAMES: Permite revisar los "juegos" que contiene tu "nave madre"
+ - BROWSER: Permite navegar/surfear la Internet
+ - GLOBAL.NET: Permite revisar las localizaciones publicadas por otras "naves"
  - WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
  - GLOBAL GRID: Permite revisar las estadísticas de otras "naves"
  - WARGAMES: Permite proponer y participar en algunos "juegos de guerra" reales
+ - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+08.06.2020 : v.1.5
+--------------------------
 
 --------------------------
 01.02.2020 : v.1.4

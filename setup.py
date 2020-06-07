@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ufonet',
-    version='1.4',
+    version='1.5',
     license='GPLv3',
     author_email='epsylon@riseup.net',
     author='psy',

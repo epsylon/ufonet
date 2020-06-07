@@ -64,6 +64,21 @@ class Paster(Thread):
                             fc=open(self.parent.target_dir+"wargames.txt","a")
                             fc.write(data+"\n")
                             fc.close()
+                        elif data.find("#L#")!=-1:
+                            print("[Info] [AI] Adding to links")
+                            fc=open(self.parent.target_dir+"links.txt","a")
+                            fc.write(data+"\n")
+                            fc.close()
+                        elif data.find("#S#")!=-1:
+                            print("[Info] [AI] Adding to streams")
+                            fc=open(self.parent.target_dir+"streams.txt","a")
+                            fc.write(data+"\n")
+                            fc.close()
+                        elif data.find("#$#")!=-1:
+                            print("[Info] [AI] Adding to globalnet")
+                            fc=open(self.parent.target_dir+"globalnet.txt","a")
+                            fc.write(data+"\n")
+                            fc.close()
                     conn.close()
         print('[Info] [AI] Done!!!')
         self.sock.close()
@@ -110,6 +125,36 @@ class Grider ( Thread ):
                 wargames_fail = wargames_fail + 1
         else:
             wargames_fail = 0
+        if not os.path.exists(self.target_dir+"links.txt"):
+            links_fail = 0
+            try:
+                fc = open(self.target_dir+'links.txt', 'wb')
+                fc.close()
+            except:
+                print("[Error] [AI] No 'links.txt' file in "+self.target_dir)
+                links_fail = links_fail + 1
+        else:
+            links_fail = 0
+        if not os.path.exists(self.target_dir+"streams.txt"):
+            streams_fail = 0
+            try:
+                fc = open(self.target_dir+'streams.txt', 'wb')
+                fc.close()
+            except:
+                print("[Error] [AI] No 'streams.txt' file in "+self.target_dir)
+                streams_fail = streams_fail + 1
+        else:
+            streams_fail = 0
+        if not os.path.exists(self.target_dir+"globalnet.txt"):
+            globalnet_fail = 0
+            try:
+                fc = open(self.target_dir+'globalnet.txt', 'wb')
+                fc.close()
+            except:
+                print("[Error] [AI] No 'globalnet.txt' file in "+self.target_dir)
+                globalnet_fail = globalnet_fail + 1
+        else:
+            globalnet_fail = 0
         if not os.access(self.target_dir+"grid.txt",os.W_OK):
             print("[Error] [AI] Write access denied for grid file in "+self.target_dir)
             grid_fail = grid_fail + 1
@@ -119,8 +164,17 @@ class Grider ( Thread ):
         if not os.access(self.target_dir+"wargames.txt",os.W_OK):
             print("[Error] [AI] Write access denied for wargames file in "+self.target_dir)
             wargames_fail = wargames_fail + 1
-        if grid_fail > 0 and board_fail > 0 and wargames_fail > 0:
-            print("\n[Error] [AI] 'Grid', 'board' and 'wargames' are unuseable... -> [Aborting!]")
+        if not os.access(self.target_dir+"links.txt",os.W_OK):
+            print("[Error] [AI] Write access denied for links file in "+self.target_dir)
+            links_fail = links_fail + 1
+        if not os.access(self.target_dir+"streams.txt",os.W_OK):
+            print("[Error] [AI] Write access denied for streams file in "+self.target_dir)
+            streams_fail = streams_fail + 1
+        if not os.access(self.target_dir+"globalnet.txt",os.W_OK):
+            print("[Error] [AI] Write access denied for globalnet file in "+self.target_dir)
+            globalnet_fail = globalnet_fail + 1
+        if grid_fail > 0 and board_fail > 0 and wargames_fail > 0 and links_fail > 0 and streams_fail > 0 and globalnet_fail > 0:
+            print("\n[Error] [AI] 'Grid', 'board', 'wargames', 'links', 'streams' and 'globalnet' are unuseable... -> [Aborting!]")
             print("\n[Info] [AI] Suspend [Grider] with: Ctrl+z")
             sys.exit(2)
         self.paster = Paster(self)

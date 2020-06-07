@@ -1,16 +1,12 @@
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-welcome_small.png "UFONet Welcome")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-welcome_small.png "UFONet Welcome")
 
 ----------
 
- + Web:   https://ufonet.03c8.net
-
- + Video: https://ufonet.03c8.net/ufonet/ufonet-timewars.ogv
+ + Project Website:   https://ufonet.03c8.net
 
 ----------
 
- + FAQ:   https://ufonet.03c8.net/FAQ.html
-
-----------
+#### Description:
 
   UFONet - is a free software, P2P and cryptographic -disruptive toolkit- that allows to perform DoS and DDoS attacks; 
 on the Layer 7 (APP/HTTP) through the exploitation of Open Redirect vectors on third-party websites to act as a botnet 
@@ -18,11 +14,11 @@ and on the Layer3 (Network) abusing the protocol.
 
   See these links for more info:
 
+   - FAQ:
+     https://ufonet.03c8.net/FAQ.html
+
    - CWE-601:Open Redirect: 
      https://cwe.mitre.org/data/definitions/601.html
-
-   - OWASP:URL Redirector Abuse: 
-     https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-schema.png "UFONet Schema")
 
@@ -82,21 +78,19 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell1_small.png "UFONet Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-1.png "UFONet Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell2_small.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-2.png "UFONet Shell Board")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-shell3_small.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-3.png "UFONet GUI Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-welcome_small.png "UFONet GUI Welcome")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-main_small.png "UFONet GUI Main Panel")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-main_small.png "UFONet GUI Main Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-botnet_small.png "UFONet GUI Botnet")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-botnet_small.png "UFONet GUI Botnet")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-stats.png "UFONet GUI General Stats")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-stats_small.png "UFONet GUI General Stats")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-ranking_small.png "UFONet GUI Ranking")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-ranking_small.png "UFONet GUI Ranking")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-board_small.png "UFONet GUI Board/Forum")
 
@@ -106,7 +100,11 @@ in the [LICENSE](./docs/LICENSE) file.
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-wargames_small.png "UFONet GUI Wargames")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-timewars-attack_small.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-streams_small.png "UFONet GUI Streams")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-globalnet_small.png "UFONet GUI GlobalNet")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-attack_small.png "UFONet GUI Attack")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
 

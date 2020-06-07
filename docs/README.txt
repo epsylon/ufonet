@@ -437,13 +437,23 @@ This will open a tab on your default browser with all features of the tool and s
  - SHIP STATS: Allows to review statistics from your "spaceship"
  - RANKING: Allows to check your "ranking" position
  - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
+ - SHIP LINKS: Allows to review links published by a "mothership"
+ - SHIP STREAMS: Allows to review streams (video/audio/live) published by a "mothership"
+ - SHIP GAMES: Allows to review games from your "spaceship"
+ - BROWSER: Allows to navigate/surf the Internet from a sandbox
+ - GLOBAL.NET: Allows to review locations published by other "motherships"
  - WARPS: Allows to interact with a "mothership" to download/upload "zombies"
  - GLOBAL GRID: Allows to review statistics from other "spaceships"
  - WARGAMES: Allows to propose and join some real "wargames"
+ - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+08.06.2020 : v.1.5
+--------------------------
 
 --------------------------
 01.02.2020 : v.1.4

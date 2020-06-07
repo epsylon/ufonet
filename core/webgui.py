@@ -15,15 +15,15 @@ python_version = "python"+platform.python_version_tuple()[0]+"."+platform.python
 #######################################################
 
 import socket, threading, re, os, time, random, base64
-import webbrowser, subprocess, json, sys
+import webbrowser, subprocess, json, sys, requests
 import urllib.request, urllib.error, urllib.parse
+from urllib.parse import urlparse as urlparse
 from core.tools.crypter import Cipher
 from time import gmtime, strftime, strptime
 from Crypto.Cipher import AES
 from hashlib import sha1, sha256
 from decimal import Decimal
 from random import shuffle
-from urllib.parse import urlparse as urlparse
 from .options import UFONetOptions
 from .main import UFONet
 from core.tools.abductor import Abductor
@@ -33,10 +33,19 @@ default_blackhole = '176.28.23.46' # default blackhole            #
 crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
 
+browser_init_page = "https://searchencrypt.com" # initial webpage for ship.browser [OK! 06/06/2020]
+check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
+check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
+check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
+
 blackhole_sep = "|" # blackhole stream separator
 board_msg_sep = "#!#" # board stream separator
 grid_msg_sep = "#?#" # grid stream seperator
 wargames_msg_sep = "#-#" # wargames stream seperator
+links_msg_sep = "#L#" # links stream separator
+streams_msg_sep = "#S#" # streams stream separator
+games_msg_sep = "#G#" # games stream separator
+globalnet_msg_sep = "#$#" # globalnet stream separator
 
 host = "0.0.0.0"
 port = 9999
@@ -383,17 +392,26 @@ window.setTimeout(window.close,1234)
             your_ranking = "<font color='yellow' size='4'>[-]</font> ( no0b! )" # no0b hacking attempt! ;-)
         return self.pages["/header"] + """<script language="javascript"> 
 function Ranking() {
-        var win_grid = window.open("ranking","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Grid() {
-        var win_grid = window.open("grid","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Links() {
+        var win_links = window.open("links","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Streams() {
+        var win_streams = window.open("streams","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 </script></head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <center>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><img src='data:image/png;base64,"""+self.mothership_img+"""'></td>
-<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button></td>
+<td><a href="javascript:alert('CR1SPR-9-AI says: This is your ship, """ + self.ranking + """... Not bad, Eeeeh!?.');"><img src='data:image/png;base64,"""+self.mothership_img+"""'></a></td><td>
+<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit TV.streams..." onclick="Streams()">VISIT STREAMS!</button></td>
 </tr></table>
 <table border="0" cellpadding="5" cellspacing="10"><tr><td>
 <table border="1" cellpadding="5" cellspacing="10"><tr>
@@ -508,9 +526,16 @@ function Grid() {
             pass
 
     def encrypt(self, key, text):
-        key = base64.b64encode(key)
+        try:
+            key = base64.b64encode(str(key))
+        except:
+            key = base64.b64encode(key.encode('utf-8'))
         c = Cipher(key, text)
         msg = c.encrypt()
+        try:
+            msg = msg.decode('utf-8')
+        except:
+            pass
         c.set_text(msg)
         self.encryptedtext = str(msg)
 
@@ -551,7 +576,7 @@ function RefreshNews(){
 </tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshNews()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search News...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Psihiz says: """ + self.ranking + """... Welcome to CryptoNews!...');"><img src='data:image/png;base64,"""+self.alien1_img+"""'></a></td><td>
+<td><a href="javascript:alert('Psihiz says: """ + self.ranking + """... Welcome to the Crypto-News!...');"><img src='data:image/png;base64,"""+self.alien1_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>
 <form method='GET'>
 Your key: <input type="text" name="news_key" id="news_key" size="20" value='"""+str(self.crypto_key)+"""'>
@@ -603,7 +628,7 @@ function RefreshMissions(){
 </tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshMissions()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search missions...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Mnahät says: """ + self.ranking + """... Welcome to CryptoMissions!...');"><img src='data:image/png;base64,"""+self.alien2_img+"""'></a></td><td>
+<td><a href="javascript:alert('Mnahät says: """ + self.ranking + """... Welcome to the Crypto-Missions!...');"><img src='data:image/png;base64,"""+self.alien2_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>
 <form method='GET'>
 Your key: <input type="text" name="missions_key" id="missions_key" size="20" value='"""+str(self.crypto_key)+"""'>
@@ -624,7 +649,7 @@ Last update: <font color='"""+ self.missions_status_color + """'>"""+ self.missi
         self.board_send_msg = "<button title='Send your message to the Board (REMEMBER: you will cannot remove it!)...' onclick='SendMessage()'>SEND IT!</button>"
         if '"profile_token": "NONE"' in open(self.mothership_boardcfg_file).read():
             device_state = "OFF"
-            device = "Board device: <font color='red'>OFF</font><br>"
+            device = "BOARD device: <font color='red'>OFF</font><br>"
         else:
             device_state = "ON"
             self.moderator_text = ''.join(random.sample(self.moderator_text,len(self.moderator_text)))
@@ -755,7 +780,7 @@ function SendMessage() {
 <br>
 <center>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Riättth says: """ + self.ranking + """... Welcome to the Board. You can generate new identities every time that you want. But remember that, this can be a dangerous place. Just respect to others to be respected... Keep safe and enjoy it. COPYCAT!.');"><img src='data:image/png;base64,"""+self.board_img+"""'></a></td><td>
+<td><a href="javascript:alert('Riättth says: """ + self.ranking + """... Welcome to the Crypto-Board!. You can generate new identities every time that you want. But remember that, this can be a dangerous place. Just respect to others to be respected... Keep safe and enjoy it. COPYCAT!.');"><img src='data:image/png;base64,"""+self.board_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>"""+device+"""<br><button title="Set your profile for this device..." onclick="BoardProfile()">CONFIGURE!</button> """+remove_profile+"""
 </td></tr></table></tr></table>
 <hr><br>"""+board_panel+"""
@@ -988,7 +1013,7 @@ function SendMessage() {
             your_ranking = "<font color='yellow' size='4'>[-]</font> ( no0b! )" # no0b hacking attempt! ;-)
         if '"grid_token": "NONE"' in open(self.mothership_gridcfg_file).read():
             device_state = "OFF"
-            device = "Grid device: <font color='red'>OFF</font><br>"
+            device = "GRID device: <font color='red'>OFF</font><br>"
         else:
             device_state = "ON"
             gridcfg_json_file = open(self.mothership_gridcfg_file, "r") # extract mothership gridcfg
@@ -1098,7 +1123,7 @@ function GridFilter(filter, key){
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <br><center>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('7337-VH13 says: """ + self.ranking + """... Welcome to the Grid. A good place to represent our Federation.');"><img src='data:image/png;base64,"""+self.alien6_img+"""'></a></td><td>
+<td><a href="javascript:alert('7337-VH13 says: """ + self.ranking + """... Welcome to the Grid!. A good place to represent our Federation.');"><img src='data:image/png;base64,"""+self.alien6_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>"""+device+"""<br><button title="Set your profile for this device..." onclick="GridProfile()">CONFIGURE!</button> """+remove_grid+"""</td></tr></table></tr></table>
 <hr><div id='sync_panel_block' name='sync_panel_block' style='display:none;'>"""+sync_panel+"""</div><div id='transfer_panel' name='transfer_panel' style='display:none;'>"""+transfer_panel+"""</div><div id="dec_panel" style="display:none;">"""+dec_panel+"""<hr></div>"""+grid_panel+"""
 """ + self.pages["/footer"]
@@ -1318,6 +1343,523 @@ function EditSupply(){
 <hr><br>
 <u>WARGAMES</u>: (Last Update: <font color='green'>"""+str(l)+"""</font>)<br><br>"""+wargames_table+"""<div id='cmdOut'></div><br><br>"""+ self.pages["/footer"]
 
+    def generate_links(self):
+        with open(self.links_file) as f:
+            for line in f:
+                line = line.strip()
+            f.close()
+            links_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>CREATION:</u></td><td align='center'><u>TOPIC:</u></td><td align='center'><u>URL:</u></td></tr>"
+            for m in self.list_links: # list = creation, topic, url
+                if links_msg_sep in m:
+                    m = m.split(links_msg_sep)
+                    link_creation = m[0][0:12] # creation date
+                    link_creation = ''.join(random.sample(link_creation,len(link_creation))) # creation date (obfuscation)
+                    link_topic = m[1][0:12] # topic
+                    link_topic = ''.join(random.sample(link_topic,len(link_topic))) # topic (obfuscation)
+                    link_url = m[2][0:12] # url
+                    link_url = ''.join(random.sample(link_url,len(link_url))) # link url (obfuscation)
+                    links_table += "<tr><td align='center'>"+str(link_creation)+"</td><td align='center'>"+str(link_topic)+"</td><td align='center'>"+str(link_url)+"</td></tr>"
+            links_table += "</table>"
+            mother_link = "<div id='links_panel_enc' style='display:block'>"
+            links_table = mother_link + links_table + "</div>"
+            return links_table
+
+    def generate_streams(self):
+        with open(self.streams_file) as f:
+            for line in f:
+                line = line.strip()
+            f.close()
+            streams_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>CREATION:</u></td><td align='center'><u>TOPIC:</u></td><td align='center'><u>STREAM:</u></td></tr>"
+            for m in self.list_streams: # list = creation, topic, stream
+                if streams_msg_sep in m:
+                    m = m.split(streams_msg_sep)
+                    stream_creation = m[0][0:12] # creation date
+                    strean_creation = ''.join(random.sample(stream_creation,len(stream_creation))) # creation date (obfuscation)
+                    stream_topic = m[1][0:12] # topic
+                    stream_topic = ''.join(random.sample(stream_topic,len(stream_topic))) # topic (obfuscation)
+                    stream_url = m[2][0:12] # url
+                    stream_url = ''.join(random.sample(stream_url,len(stream_url))) # stream url (obfuscation)
+                    streams_table += "<tr><td align='center'>"+str(stream_creation)+"</td><td align='center'>"+str(stream_topic)+"</td><td align='center'>"+str(stream_url)+"</td></tr>"
+            streams_table += "</table>"
+            mother_stream = "<div id='streams_panel_enc' style='display:block'>"
+            streams_table = mother_stream + streams_table + "</div>"
+            return streams_table
+
+    def generate_games(self):
+        games_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NAME:</u></td><td align='center'><u>DESCRIPTION:</u></td><td><u>ACTION:</u></td></tr>"
+        with open(self.games_file) as f:
+            for line in f:
+                line = line.strip()
+                if games_msg_sep in line:
+                    line = line.split(games_msg_sep)
+                    game_name = line[0] # name
+                    game_description = line[1] # description
+                    games_table += "<tr><td align='center'><a onClick='javascript:PlayGame()'>"+str(game_name)+"</a></td><td align='center'>"+str(game_description)+"</td><td align='center'><button id='play_game' onclick='PlayGame();return false;'>PLAY!</button></td></tr>"
+            games_table += "</table>"
+            f.close()
+        mother_games = "<div id='games_panel_enc' style='display:block'>"
+        games_table = mother_games + games_table + "</div>"
+        return games_table
+
+    def generate_browser(self):
+        browser_table = "<iframe width='90%' height='600px' src='"+browser_init_page+"'></frame>"
+        return browser_table
+
+    def generate_globalnet(self):
+        with open(self.globalnet_file) as f:
+            for line in f:
+                line = line.strip()
+            f.close()
+            globalnet_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>OWNER:</u></td><td align='center'><u>COMMENT:</u></td><td align='center'><u>WARPING:</u></td></tr>"
+            for m in self.list_globalnet: # list = owner, comment, warping, ip
+                if globalnet_msg_sep in m:
+                    m = m.split(globalnet_msg_sep)
+                    globalnet_owner = m[0][0:12] # owner
+                    globalnet_owner = ''.join(random.sample(globalnet_owner,len(globalnet_owner))) # owner (obfuscation)
+                    globalnet_comment = m[1][0:32] # comment
+                    globalnet_comment = ''.join(random.sample(globalnet_comment,len(globalnet_comment))) # globalnet (obfuscation)
+                    globalnet_warp = m[2][0:12] # warp
+                    globalnet_warp = ''.join(random.sample(globalnet_warp,len(globalnet_warp))) # warp (obfuscation)
+                    globalnet_table += "<tr><td align='center'>"+str(globalnet_owner)+"</td><td align='center'>"+str(globalnet_comment)+"</td><td align='center'>"+str(globalnet_warp)+"</td></tr>"
+            globalnet_table += "</table>"
+            mother_globalnet = "<div id='globalnet_panel_enc' style='display:block'>"
+            globalnet_table = mother_globalnet + globalnet_table + "</div>"
+            return globalnet_table
+
+    def html_links(self):
+        l = time.ctime(os.path.getmtime(self.links_file)) # get last modified time
+        now = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+        links_table = self.generate_links()
+        return self.pages["/header"] + """<script language="javascript">
+function Decrypt_links(){
+        link_deckey=document.getElementById("link_deckey").value
+        if(link_deckey == "") {
+          window.alert("You need to enter a valid key (provided by someone)");
+          return
+         }else{
+          params="link_deckey="+escape(link_deckey)
+         runCommandX("cmd_decrypt_links",params)
+         panel_enc = document.getElementById("links_panel_enc").style.display
+         if(panel_enc == "block"){
+           panel_enc = document.getElementById("links_panel_enc").style.display = 'none';
+        }
+       }
+      }
+function Ranking() {
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Grid() {
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Stats() {
+        var win_stats = window.open("stats","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Streams() {
+        var win_streams = window.open("streams","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function SyncLinks(){
+        link_source=document.getElementById("link_source").value
+        if(link_source == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+         }else{
+          params="link_source="+escape(link_source)
+         runCommandX("cmd_sync_links",params)
+         setTimeout("location.reload()", 10000)
+         }
+      }
+function LinkFilter(filter, key) {
+        params="filter="+escape(filter)+"&key="+escape(key)
+        runCommandX("cmd_link_filter", params)
+        setTimeout("Decrypt_links()", 2000)
+}
+function Send() {
+        link_source2=document.getElementById("link_source2").value
+        link_enckey=document.getElementById("link_enckey").value
+        link_topic=document.getElementById("link_topic").value
+        link_url=document.getElementById("link_url").value
+        if(link_source2 == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+        }else{
+          if(link_enckey == "") {
+            window.alert("You need to enter a valid key (provided by someone)");
+            return
+          }else{
+            if(link_url == "http://127.0.0.1") {
+            window.alert("You need to enter a valid link");
+            return
+          }else{
+            params="link_source2="+escape(link_source2)+"&link_enckey="+escape(link_enckey)+"&link_topic="+escape(link_topic)+"&link_url="+escape(link_url)
+            runCommandX("cmd_transfer_link",params)
+            setTimeout("location.reload()", 10000)
+            }
+          }
+        }
+      }
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Armada KATRAAZKA says: SSSSssshshhhh! """ + self.ranking + """,... this is our ship-library. You can take and leave links, without any price.');"><img src='data:image/png;base64,"""+self.alien10_img+"""'></a></td>
+  <td>DATA/LINKS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit ship stats..." onclick="Stats()">VISIT STATS!</button> <button title="Visit global.streams..." onclick="Streams()">VISIT STREAMS!</button></td>
+</tr></table>
+<hr><br>
+<center><table cellpadding="5" border="1"><tr><td>Blackhole/IP:</td><td><input type='text' name='link_source' id='link_source' size='20' value='"""+default_blackhole+"""'></td><td><button title="Download 'links' proposed by other motherships..." onclick="SyncLinks()">DOWNLOAD!</button></td><td><form method='GET'><input type="hidden" name="link_deckey" id="link_deckey" size="20" value='"""+self.crypto_key+"""' READONLY><a style='color:red;text-decoration:underline red;' onclick=javascript:Decrypt_links();>Try decryption!</a></td></tr></table></center></form><br><hr><form method='GET'><table cellpadding='5' cellspacing='5'><tr><td>TOPIC:</td><td> <select id="link_topic">
+  <option value="OFF" selected>OFF - NO-Topic</option>
+  <option value="WKP">WKP - Wikipedia + Knowledge</option>
+  <option value="NSA">NSA - National Space/Security Agency</option>
+  <option value="DPW">DPW - Deep Web / Dark Web</option>
+  <option value="HCP">HCP - Hacking / Cracking / Phreaking</option>
+  <option value="HAR">HAR - Hardware / Electronics</option>
+  <option value="FPR">FPR - Freedom / Privacy / Rights</option>
+  <option value="HAR">SEC - Hardering / C.R.Y.P.T.O</option>
+  <option value="APT">APT - ArT.Trolling / #PSY-OPS</option>
+  <option value="SPM">SPM - Propaganda + SPAM</option>
+  <option value="SCI">SCI - SCience + phi</option>
+  <option value="UFO">UFO - UFONET</option>
+  </select></td></tr><tr><td>Your link:</td><td><input type="text" name="link_url" id="link_url" size="90" placeholder="http(s)://" required pattern="https?://.+"></td>
+</tr><tr><td>Blackhole/IP:</td><td><input type='text' name='link_source2' id='link_source2' size='20' value='"""+default_blackhole+"""'></td></tr><tr><td><input type="hidden" name="link_enckey" id="link_enckey" size="20" value='"""+self.crypto_key+"""' READONLY></td></tr></table></form><button title="Send your link to other motherships..." onClick=Send() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">SEND!</button></pre></td></tr></table><br><br>
+<hr><br>
+<u>DATA.LINKS</u>: (Last Update: <font color='green'>"""+str(l)+"""</font>)<br><br>"""+links_table+"""<div id='cmdOut'></div><br><br>"""+ self.pages["/footer"]
+
+    def html_streams(self):
+        l = time.ctime(os.path.getmtime(self.streams_file)) # get last modified time
+        now = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+        streams_table = self.generate_streams()
+        return self.pages["/header"] + """<script language="javascript">
+function Decrypt_streams(){
+        stream_deckey=document.getElementById("stream_deckey").value
+        if(stream_deckey == "") {
+          window.alert("You need to enter a valid key (provided by someone)");
+          return
+         }else{
+          params="stream_deckey="+escape(stream_deckey)
+         runCommandX("cmd_decrypt_streams",params)
+         panel_enc = document.getElementById("streams_panel_enc").style.display
+         if(panel_enc == "block"){
+           panel_enc = document.getElementById("streams_panel_enc").style.display = 'none';
+        }
+       }
+      }
+function Ranking() {
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Grid() {
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Stats() {
+        var win_stats = window.open("stats","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Links() {
+        var win_links = window.open("links","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function SyncStreams(){
+        stream_source=document.getElementById("stream_source").value
+        if(stream_source == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+         }else{
+          params="stream_source="+escape(stream_source)
+         runCommandX("cmd_sync_streams",params)
+         setTimeout("location.reload()", 10000)
+         }
+      }
+function StreamFilter(filter, key) {
+        params="filter="+escape(filter)+"&key="+escape(key)
+        runCommandX("cmd_stream_filter", params)
+        setTimeout("Decrypt_streams()", 2000)
+}
+function Send() {
+        stream_source2=document.getElementById("stream_source2").value
+        stream_enckey=document.getElementById("stream_enckey").value
+        stream_topic=document.getElementById("stream_topic").value
+        stream_url=document.getElementById("stream_url").value
+        if(stream_source2 == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+        }else{
+          if(stream_enckey == "") {
+            window.alert("You need to enter a valid key (provided by someone)");
+            return
+          }else{
+            if (stream_url.startsWith("https://www.youtube.com/watch?v=") == false){
+            window.alert("You need to enter a valid (only Youtube is supported) URL stream (ex: https://www.youtube.com/watch?v=xxxxxxxxxxx)");
+            return
+          }else{
+            params="stream_source2="+escape(stream_source2)+"&stream_enckey="+escape(stream_enckey)+"&stream_topic="+escape(stream_topic)+"&stream_url="+escape(stream_url)
+            runCommandX("cmd_transfer_stream",params)
+            setTimeout("location.reload()", 10000)
+            }
+          }
+        }
+      }
+
+function PlayStream() {
+                video_id = document.getElementById("play_button").value;
+                document.getElementById("play_button").style.display = 'none';
+                document.getElementById("video").style.display = 'block';
+                document.getElementById("video").innerHTML = "<div id='player'></div>";
+                var tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                var firstScriptTag = document.getElementsByTagName('script')[0];
+                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            }
+            var player;
+            function onYouTubeIframeAPIReady() {
+                player = new YT.Player('player', {
+                    height: '390',
+                    width: '640',
+                    videoId: video_id,
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            }
+            function onPlayerReady(event) {
+                event.target.playVideo();
+            }
+            var done = false;
+            function onPlayerStateChange(event) {
+                if (event.data == YT.PlayerState.PLAYING && !done) {
+                    done = true;
+                }
+                if (event.data === 0) {
+                   document.getElementById("play_button").style.display = 'block';
+                   document.getElementById("video").style.display = 'none';
+                  }
+            }
+            function stopVideo() {
+                player.stopVideo();
+            }
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Dr. UHÑÄAUFKATRAAZKA says: Hello! """ + self.ranking + """,... these are the current (audio/video/live) streams available. Enjoy!');"><img src='data:image/png;base64,"""+self.alien9_img+"""'></a></td>
+  <td>STREAMS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit ship stats..." onclick="Stats()">VISIT STATS!</button> <button title="Visit ship.links..." onclick="Links()">VISIT LINKS!</button></td>
+</tr></table>
+<hr><br>
+<center><table cellpadding="5" border="1"><tr><td>Blackhole/IP:</td><td><input type='text' name='stream_source' id='stream_source' size='20' value='"""+default_blackhole+"""'></td><td><button title="Download 'streams' proposed by other motherships..." onclick="SyncStreams()">DOWNLOAD!</button></td><td><form method='GET'><input type="hidden" name="stream_deckey" id="stream_deckey" size="20" value='"""+self.crypto_key+"""' READONLY><a style='color:red;text-decoration:underline red;' onclick=javascript:Decrypt_streams();>Try decryption!</a></td></tr></table></center></form><br><hr><form method='GET'><table cellpadding='5' cellspacing='5'><tr><td>TOPIC:</td><td> <select id="stream_topic">
+  <option value="OFF" selected>OFF - NO-Topic</option>
+  <option value="WKP">WKP - Wikipedia + Knowledge</option>
+  <option value="NSA">NSA - National Space/Security Agency</option>
+  <option value="DPW">DPW - Deep Web / Dark Web</option>
+  <option value="HCP">HCP - Hacking / Cracking / Phreaking</option>
+  <option value="HAR">HAR - Hardware / Electronics</option>
+  <option value="FPR">FPR - Freedom / Privacy / Rights</option>
+  <option value="HAR">SEC - Hardering / C.R.Y.P.T.O</option>
+  <option value="APT">APT - ArT.Trolling / #PSY-OPS</option>
+  <option value="SPM">SPM - Propaganda + SPAM</option>
+  <option value="SCI">SCI - SCience + phi</option>
+  <option value="UFO">UFO - UFONET</option>
+  </select></td></tr><tr><td>Your (url) stream:</td><td><input type="text" name="stream_url" id="stream_url" size="90" placeholder="http(s)://" required pattern="https?://.+"></td>
+</tr><tr><td>Blackhole/IP:</td><td><input type='text' name='stream_source2' id='stream_source2' size='20' value='"""+default_blackhole+"""'></td></tr><tr><td><input type="hidden" name="stream_enckey" id="stream_enckey" size="20" value='"""+self.crypto_key+"""' READONLY></td></tr></table></form><button title="Send your stream to other motherships..." onClick=Send() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">SEND!</button></pre></td></tr></table><br><br>
+<hr><br>
+<u>VIDEO.STREAMS</u>: (Last Update: <font color='green'>"""+str(l)+"""</font>)<br><br>"""+streams_table+"""<div id='cmdOut'></div><br><br>"""+ self.pages["/footer"]
+
+    def html_games(self):
+        games_table = self.generate_games()
+        return self.pages["/header"] + """<script language="javascript">
+function Ranking() {
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Wargames() {
+        var win_wargames = window.open("wargames","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Grid() {
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Stats() {
+        var win_stats = window.open("stats","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function PlayGame() {
+        var win_game = window.open("spaceinvaders","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+            }
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Barrier UJJJHGYTYGASOO-IV says: HI slave!... I mean ... worker!... I mean, """ + self.ranking + """,... Do you wanna play some games?!');"><img src='data:image/png;base64,"""+self.alien12_img+"""'></a></td>
+  <td>GAMES device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit ship stats..." onclick="Stats()">VISIT STATS!</button> <button title="Visit current ship.Wargames..." onclick="Wargames()">VISIT WARGAMES!</button></td>
+</tr></table>
+<hr><br>
+<u>SHIP.GAMES</u>: <br><br>"""+games_table+"""<br><br>"""+ self.pages["/footer"]
+
+    def html_spaceinvaders(self):
+        return self.pages["/header"] + """<script language="javascript"></script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br><center>
+<hr><br>
+        <div id="gamecontainer">
+        <canvas id="gameCanvas"></canvas>
+        </div>
+        <div id="info">
+            <p>Move with arrow keys or swipe, fire with the space bar or touch. The invaders get faster and drop
+                more bombs as you complete each level!</p>
+        </div></script><script src="js/spaceinvaders.js"></script><script>
+            var canvas = document.getElementById("gameCanvas");
+            canvas.width = 800;
+            canvas.height = 600;
+            var game = new Game();
+            game.initialise(canvas);
+            game.start();
+            window.addEventListener("keydown", function keydown(e) {
+                var keycode = e.which || window.event.keycode;
+                //  Supress further processing of left/right/space (37/29/32)
+                if(keycode == 37 || keycode == 39 || keycode == 32) {
+                    e.preventDefault();
+                }
+                game.keyDown(keycode);
+            });
+            window.addEventListener("keyup", function keydown(e) {
+                var keycode = e.which || window.event.keycode;
+                game.keyUp(keycode);
+            });
+            window.addEventListener("touchstart", function (e) {
+                game.touchstart(e);
+            }, false);
+            window.addEventListener('touchend', function(e){
+                game.touchend(e);
+            }, false);
+            window.addEventListener('touchmove', function(e){
+                game.touchmove(e);
+            }, false);
+            function toggleMute() {
+                game.mute();
+                document.getElementById("muteLink").innerText = game.sounds.mute ? "unmute" : "mute";
+            }
+        </script><br><br>"""+ self.pages["/footer"]
+
+    def html_browser(self):
+        browser_table = self.generate_browser()
+        return self.pages["/header"] + """<script language="javascript">
+function Ranking() {
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Grid() {
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Links() {
+        var win_links = window.open("links","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Streams() {
+        var win_streams = window.open("streams","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+            }
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Rockoide GRAAANJJÄEEEB says: HI organic living structure..., """ + self.ranking + """,... You can navigate/surf the Net from here...');"><img src='data:image/png;base64,"""+self.alien13_img+"""'></a></td>
+  <td>BROWSER device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit ship.Links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit current ship.Streams..." onclick="Streams()">VISIT STREAMS!</button></td>
+</tr></table>
+<hr><br>"""+browser_table+"""<br><br>"""+ self.pages["/footer"]
+
+    def html_globalnet(self):
+        l = time.ctime(os.path.getmtime(self.links_file)) # get last modified time
+        globalnet_table = self.generate_globalnet()
+        return self.pages["/header"] + """<script language="javascript">
+function Ranking() {
+        var win_ranking = window.open("ranking","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Grid() {
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Warps() {
+        var win_blackholes = window.open("blackholes","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function SyncGlobalnet(){
+        globalnet_source=document.getElementById("globalnet_source").value
+        if(globalnet_source == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+         }else{
+          params="globalnet_source="+escape(globalnet_source)
+         runCommandX("cmd_sync_globalnet",params)
+         setTimeout("location.reload()", 10000)
+         }
+      }
+function Decrypt_globalnet(){
+        globalnet_deckey=document.getElementById("globalnet_deckey").value
+        if(globalnet_deckey == "") {
+          window.alert("You need to enter a valid key (provided by someone)");
+          return
+         }else{
+          params="globalnet_deckey="+escape(globalnet_deckey)
+         runCommandX("cmd_decrypt_globalnet",params)
+         panel_enc = document.getElementById("globalnet_panel_enc").style.display
+         if(panel_enc == "block"){
+           panel_enc = document.getElementById("globalnet_panel_enc").style.display = 'none';
+        }
+       }
+      }
+function GlobalnetFilter(filter, key) {
+        params="filter="+escape(filter)+"&key="+escape(key)
+        runCommandX("cmd_globalnet_filter", params)
+        setTimeout("Decrypt_globalnet()", 2000)
+}
+function Send() {
+        globalnet_source2=document.getElementById("globalnet_source2").value
+        globalnet_enckey=document.getElementById("globalnet_enckey").value
+        globalnet_owner=document.getElementById("globalnet_owner").value
+        globalnet_comment=document.getElementById("globalnet_comment").value
+        globalnet_warp=document.getElementById("globalnet_warp").value
+        if(globalnet_source2 == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+        }else{
+          if(globalnet_enckey == "") {
+            window.alert("You need to enter a valid key (provided by someone)");
+            return
+          }else{
+            params="globalnet_source2="+escape(globalnet_source2)+"&globalnet_enckey="+escape(globalnet_enckey)+"&globalnet_owner="+escape(globalnet_owner)+"&globalnet_comment="+escape(globalnet_comment)+"&globalnet_warp="+escape(globalnet_warp)
+            runCommandX("cmd_transfer_globalnet",params)
+            setTimeout("location.reload()", 10000)
+          }
+        }
+      }
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center>
+<table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
+  <td><a href="javascript:alert('Senator M.BIRDY says: Welcome ..., """ + self.ranking + """,... These are other visible motherships detected by our technology, that are currently working for the Federation... You can contribute by uploading your location... Remember, to be a strong network, always depends on you!');"><img src='data:image/png;base64,"""+self.alien11_img+"""'></a></td>
+  <td>RADAR device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit visible blackhole.Warps..." onclick="Warps()">VISIT WARPS!</button></td>
+</tr></table>
+<hr><br>
+<center><table cellpadding="5" border="1"><tr><td>Blackhole/IP:</td><td><input type='text' name='globalnet_source' id='globalnet_source' size='20' value='"""+default_blackhole+"""'></td><td><button title="Download 'locations' proposed by other motherships..." onclick="SyncGlobalnet()">DOWNLOAD!</button></td><td><form method='GET'><input type="hidden" name="globalnet_deckey" id="globalnet_deckey" size="20" value='"""+self.crypto_key+"""' READONLY><a style='color:red;text-decoration:underline red;' onclick=javascript:Decrypt_globalnet();>Try decryption!</a></td></tr></table></center></form><br><hr><form method='GET'><table cellpadding='5' cellspacing='5'><tr>
+<td>Owner (your nick):</td><td><input type="text" maxlength="12" pattern=".{3,12}" title="3 to 12 characters" name="globalnet_owner" id="globalnet_owner" size="12" placeholder="Anonymous"></td></tr><tr><td>Ship Description (short comment):</td><td><input type="text" maxlength="90" name="globalnet_comment" id="globalnet_comment" size="90" placeholder="Uplink open from 00:00-GMT3 until 02:00-GMT3"></td></tr><tr><td>WARPING:</td><td> <select id="globalnet_warp">
+  <option value="OFF" selected>OFF - Blackhole technology is -OFF-</option>
+  <option value="ON1">ON1 - Blackhole technology is -ON- (download only)</option>
+  <option value="ON2">ON2 - Blachhole technology is -ON- (upload/download)</option>
+  </select></td></tr><tr><td>Blackhole/IP:</td><td><input type='text' name='globalnet_source2' id='globalnet_source2' size='20' value='"""+default_blackhole+"""'></td></tr><tr><td><input type="hidden" name="globalnet_enckey" id="globalnet_enckey" size="20" value='"""+self.crypto_key+"""' READONLY></td></tr></table></form><button title="Send your location to other motherships..." onClick=Send() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">SUBMIT!</button></pre></td></tr></table><br><br><hr><br><u>GLOBAL.NET</u>: (Last Update: <font color='green'>"""+str(l)+"""</font>)<br><br>"""+globalnet_table+"""<div id='cmdOut'></div><br><br>"""+ self.pages["/footer"]
+
     def html_abduction(self):
         return self.pages["/header"] + """<script language="javascript"> 
 function Requests() {
@@ -1396,7 +1938,7 @@ function RefreshBlackhole(){
 </tr></table></td><td><button title="Refreshing blackhole..." onClick="RefreshBlackhole()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Open Warp!</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Dhïkta says: """ + self.ranking + """... I can open warps directly to blackholes created by other motherships. This is nice to share and increase your legion on a crypto-distributed way...');"><img src='data:image/png;base64,"""+self.alien3_img+"""'></a></td><td>
+<td><a href="javascript:alert('Dhïkta says: """ + self.ranking + """... I can open warps directly to blackholes created by other motherships. This is nice to share and increase your legion on a crypto-distributed (P2P) way...');"><img src='data:image/png;base64,"""+self.alien3_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>
 <form method='GET'>
 Your key: <input type="text" name="blackhole_key" id="blackhole_key" size="20" value='"""+self.crypto_key+"""'>
@@ -1412,7 +1954,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
 """ + self.pages["/footer"]
 
     def wargames_engage_routine(self, wargames_engage_list): # check jobs when gui refresh (global army supply)
-        sep = "#-#"
+        sep = wargames_msg_sep
         flag_ufosyn = None
         flag_spray = None
         flag_smurf = None
@@ -1626,6 +2168,10 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.grid_file = 'data/grid.txt' # set source path to retrieve grid
         self.board_warning = "" # set initial (str) board warning message
         self.wargames_file = 'data/wargames.txt' # set source path to retrieve wargames
+        self.links_file = 'data/links.txt' # set source path to retrieve links
+        self.streams_file = 'data/streams.txt' # set source path to retrieve streams
+        self.games_file = 'data/games.txt' # set source path to retrieve games
+        self.globalnet_file = 'data/globalnet.txt' # set source path to retrieve Global.Net
         self.zombies_file = "botnet/zombies.txt" # set source path to retrieve 'zombies'
         self.aliens_file = "botnet/aliens.txt" # set source path to retrieve 'aliens'
         self.droids_file = "botnet/droids.txt" # set source path to retrieve 'droids'
@@ -1653,6 +2199,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.mothership_img = open("core/images/mothership.txt").read()
         self.commander_img = open("core/images/commander.txt").read()
         self.board_img = open("core/images/board.txt").read()
+        self.aliens_img = open("core/images/aliens.txt").read()
         self.alien1_img = open("core/images/aliens/alien1.txt").read()
         self.alien2_img = open("core/images/aliens/alien2.txt").read()
         self.alien3_img = open("core/images/aliens/alien3.txt").read()
@@ -1661,6 +2208,11 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.alien6_img = open("core/images/aliens/alien6.txt").read()
         self.alien7_img = open("core/images/aliens/alien7.txt").read()
         self.alien8_img = open("core/images/aliens/alien8.txt").read()
+        self.alien9_img = open("core/images/aliens/alien9.txt").read()
+        self.alien10_img = open("core/images/aliens/alien10.txt").read()
+        self.alien11_img = open("core/images/aliens/alien11.txt").read()
+        self.alien12_img = open("core/images/aliens/alien12.txt").read()
+        self.alien13_img = open("core/images/aliens/alien13.txt").read()
         self.ranking_grid_total = 0
         self.ranking_grid_rookie = 0
         self.ranking_grid_mercenary = 0
@@ -1750,6 +2302,33 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.list_wargames = []
         for n in self.wargames_block:
             self.list_wargames.append(n)
+        f = open(self.links_file) # double links extraction
+        self.links_text = f.read()
+        f.close()
+        f = open(self.links_file)
+        self.links_block = f.readlines()
+        f.close()
+        self.list_links = []
+        for n in self.links_block:
+            self.list_links.append(n)
+        f = open(self.globalnet_file) # double globalnet extraction
+        self.globalnet_text = f.read()
+        f.close()
+        f = open(self.globalnet_file)
+        self.globalnet_block = f.readlines()
+        f.close()
+        self.list_globalnet = []
+        for n in self.globalnet_block:
+            self.list_globalnet.append(n)
+        f = open(self.streams_file) # double streams extraction
+        self.streams_text = f.read()
+        f.close()
+        f = open(self.streams_file)
+        self.streams_block = f.readlines()
+        f.close()
+        self.list_streams = []
+        for n in self.streams_block:
+            self.list_streams.append(n)
         f = open(self.missions) # double extract missions
         self.missions_text = f.read()
         f.close()
@@ -1891,7 +2470,6 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
 <style>
 body{font-size:15px}a,a:hover{outline:none;color:red;font-size:14px;font-weight:700}nav ul ul{display:none}nav ul li:hover > ul{display:block}nav ul{list-style:none;position:relative;display:inline-table}nav ul:after{content:"";clear:both;display:block}nav ul li{font-size:12px}nav ul li a{display:block;padding:2px 3px}html,body{height:100%}ul,li{margin:0;padding:0}.ringMenu{width:100px;margin:80px auto}.ringMenu ul{list-style:none;position:relative;width:100px;color:#fff}.ringMenu ul a{color:#fff}.ringMenu ul li{-webkit-transition:all .3s ease-in-out;-moz-transition:all .3s ease-in-out;-o-transition:all .3s ease-in-out;transition:all .3s ease-in-out}.ringMenu ul li a{display:block;width:100px;height:100px;background:rgba(50,50,50,0.7);text-align:center;line-height:100px;-webkit-border-radius:50px;-moz-border-radius:50px;border-radius:50px}.ringMenu ul li a:hover{background:rgba(230,150,20,0.7)}.ringMenu ul li:not(.main){-webkit-transform:rotate(-180deg) scale(0);-moz-transform:rotate(-180deg) scale(0);-o-transform:rotate(-180deg) scale(0);transform:rotate(-180deg) scale(0);opacity:0}.ringMenu:hover ul li{-webkit-transform:rotate(0) scale(1);-moz-transform:rotate(0) scale(1);-o-transform:rotate(0) scale(1);transform:rotate(0) scale(1);opacity:1}.ringMenu ul li.top{-webkit-transform-origin:50% 152px;-moz-transform-origin:50% 152px;-o-transform-origin:50% 152px;transform-origin:50% 152px;position:absolute;top:-102px;left:0}.ringMenu ul li.bottom{-webkit-transform-origin:50% -52px;-moz-transform-origin:50% -52px;-o-transform-origin:50% -52px;transform-origin:50% -52px;position:absolute;bottom:-102px;left:0}.ringMenu ul li.right{-webkit-transform-origin:-52px 50%;-moz-transform-origin:-52px 50%;-o-transform-origin:-52px 50%;transform-origin:-52px 50%;position:absolute;top:0;right:-102px}.ringMenu ul li.left{-webkit-transform-origin:152px 50%;-moz-transform-origin:152px 50%;-o-transform-origin:152px 50%;transform-origin:152px 50%;position:absolute;top:0;left:-102px}textarea{padding:30px 0}
 </style>"""
-
         self.pages["/footer"] = """</center></body>
 </html>
 """
@@ -1901,7 +2479,7 @@ body{font-size:15px}a,a:hover{outline:none;color:red;font-size:14px;font-weight:
       }
 </script>
 <script type="text/javascript">
-var text="REMEMBER -> This code is NOT for educational purposes!!";
+var text="REMEMBER -> This code is NOT for educational purposes!";
 var delay=1;
 var currentChar=1;
 var destination="tt";
@@ -1940,14 +2518,15 @@ function startTyping(textParam, delayParam, destinationParam)
 <body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <center><br><br><br><br>
-<table><tr><td><img src='data:image/png;base64,"""+self.ufonet_logo_img+"""'></td><td>
+<table><tr>
+<td>
 <div class="ufo-cloud">
-		<ul>
-			<li><a href="javascript:alert('Let them hate so long as they fear...');"><span></span>'oderint dum metuant'</a></li>
+        <ul>
+            <li><a href="javascript:alert('Let them hate so long as they fear...');"><span></span>'oderint dum metuant'</a></li>
             <li><a href="javascript:alert('In order to achieve what has been undertaken...');"><span></span>'ad susceptum perficiendum'</a></li>
             <li><a href="javascript:alert('Out of order, comes chaos...');"><span></span>'chao ab ordo'</a></li>
-			<li><a href="javascript:alert('The truth being enveloped by obscure things...');"><span></span>'obscuris vera involvens'</a></li>
-			<li><a href="javascript:alert('Everything changes, nothing perishes...');"><span></span>'omnia mutantur, nihil interit'</a></li>
+            <li><a href="javascript:alert('The truth being enveloped by obscure things...');"><span></span>'obscuris vera involvens'</a></li>
+            <li><a href="javascript:alert('Everything changes, nothing perishes...');"><span></span>'omnia mutantur, nihil interit'</a></li>
             <li><a href="javascript:alert('One world...');"><span></span>'orbis unum'</a></li>
             <li><a href="javascript:alert('If you want peace, prepare the war...');"><span></span>'si vis pacem, para bellum'</a></li>
             <li><a href="javascript:alert('Man is a wolf to man...');"><span></span>'homo homini lupus'</a></li>
@@ -1962,31 +2541,52 @@ function startTyping(textParam, delayParam, destinationParam)
             <li><a href="javascript:alert('If you did it, deny it...');"><span></span>'si fecisti nega'</a></li>
             <li><a href="javascript:alert('There is no law, if there is a need...');"><span></span>'necessitas caret lege'</a></li>
             <li><a href="javascript:alert('Let justice be done, and let the world perish...');"><span></span>'fiat iustitia, et pereat mundus'</a></li>
-		</ul>
-	</div>
+        </ul>
+    </div>
+</td>
+<td><img src='data:image/png;base64,"""+self.ufonet_logo_img+"""'></td><td>
 </td></tr></table><br>
-<hr>
-<br /><b><a href="https://ufonet.03c8.net" target="_blank">UFONet</a></b> - is a toolkit designed to launch <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks.<br /><br />
-<div id="tt">REMEMBER -> This code is NOT for educational purposes!!</div><br />
+<br /><b><a href="https://ufonet.03c8.net" target="_blank">UFONet</a></b> - is a /disruptive_toolkit/ that allows to perform <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks ...<br /><br />
+<div id="tt">REMEMBER -> This code is NOT for educational purposes!</div><br />
 <script type="text/javascript">
 startTyping(text, 80, "tt");
-</script><hr><br />
-<button title="Start to fly with your UFONet mothership..." onclick="Start()" style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">START MOTHERSHIP!</button>""" + self.pages["/footer"]
+</script><br />
+<button title="Start Mothership..." onclick="Start()" style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">START MOTHERSHIP!</button>""" + self.pages["/footer"]
 
         self.pages["/gui"] = self.pages["/header"] + """<script>function News() {
         var win_requests = window.open("news","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
 </script>
 <script>function Missions() {
-        var win_requests = window.open("missions","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+        var win_requests = window.open("missions","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
 </script>
 <script>function Stats() {
-        var win_requests = window.open("stats","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+        var win_requests = window.open("stats","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
 </script>
 <script>function Board() {
-        var win_requests = window.open("board","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+        var win_requests = window.open("board","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+</script>
+<script>function Links() {
+        var win_requests = window.open("links","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+</script>
+<script>function Streams() {
+        var win_requests = window.open("streams","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+</script>
+<script>function Games() {
+        var win_requests = window.open("games","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+</script>
+<script>function Browser() {
+        var win_browser = window.open("browser","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+</script>
+<script>function GlobalNet() {
+        var win_global_net = window.open("globalnet","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
 </script>
 </head>
@@ -2010,36 +2610,34 @@ startTyping(text, 80, "tt");
 <table border="1" bgcolor="black" cellpadding="24" cellspacing="25">
 <tr>
 <td>
-<pre>Welcome to: <a href="https://ufonet.03c8.net/" target="_blank">UFONet</a> | <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">FAQ</a> - <a href="/help" target="_parent">Help</a> |
+<pre>Welcome to: <a href="https://ufonet.03c8.net/" target="_blank">UFONet</a> ;-)
 
 ----------------------------------
 """ + self.options.version + """ 
  - Rel: """ + self.release_date + """ - Dep: """ + time.ctime(os.path.getctime('ufonet')) + """ 
 
- | <a href='javascript:runCommandX("cmd_check_tool")'>Auto-update</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">Code</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">Mirror</a> |
+ | <a href='javascript:runCommandX("cmd_check_tool")'>Update</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">Code</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">Mirror</a> | <a href='javascript:runCommandX("cmd_view_changelog")'>Logs</a> |
 
 -----------------------------------
 
 Mothership ID: <b>""" + str(self.mothership_id) + """</b>
- - Your ranking is: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</a></b>
+ - Your ranking is: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</b></a>
 """+str(self.current_tasks)+"""</td>
 <td>
-<table>
-<tr>
-<td><img src='data:image/png;base64,"""+self.alien1_img+"""' onclick="News()"></td>
-<td><img src='data:image/png;base64,"""+self.alien2_img+"""' onclick="Missions()"></td>
-</tr>
-<tr>
-<td><img src='data:image/png;base64,"""+self.alien5_img+"""' onclick="Stats()"></td>
-<td><img src='data:image/png;base64,"""+self.alien4_img+"""' onclick="Board()"></td>
+ <table>
+ <tr>
+  <td>
+  <table cellpadding="2" cellspacing="5">
+    <tr>
+<td align="right"><img src='data:image/png;base64,"""+self.alien1_img+"""' onclick="News()"><br><a href="javascript:News()">NEWS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien2_img+"""' onclick="Missions()"><br><a href="javascript:Missions()">MISSIONS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien5_img+"""' onclick="Stats()"><br><a href="javascript:Stats()">SHIP.STATS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien4_img+"""' onclick="Board()"><br><a href="javascript:Board()">SHIP.BOARD</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien10_img+"""' onclick="Links()"><br><a href="javascript:Links()">SHIP.LINKS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien9_img+"""' onclick="javascript:Streams()"><br><a href="javascript:Streams()">SHIP.STREAMS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien12_img+"""' onclick="javascript:Games()"><br><a href="javascript:Games()">SHIP.GAMES</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien13_img+"""' onclick="javascript:Browser()"><br><a href="javascript:Browser()">SHIP.BROWSER</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien11_img+"""' onclick="GlobalNet()"><br><a href="javascript:GlobalNet()">GLOBAL.NET</a></td>
+ </tr>
+ </table>
+ </td>
 </tr>
 </table>
 </td>
 </tr>
-</table> 
- </td>
-</tr>
-</table>
+</table><center><br><br>
 <div id="cmdOut"></div>
 """ + self.pages["/footer"]
 
@@ -2126,7 +2724,7 @@ function HideAll()
      }
 </script>
 <script>function Blackholes() {
-        var win_requests = window.open("blackholes","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+        var win_requests = window.open("blackholes","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
 </script>
 </head>
@@ -2170,7 +2768,7 @@ function HideAll()
 <td>
 <table cellpadding="5" cellspacing="2">
 <tr>
-<td><img src='data:image/png;base64,"""+self.alien3_img+"""' onclick="Blackholes()"></td>
+<td><table><tr><td><img src='data:image/png;base64,"""+self.alien3_img+"""' onclick="Blackholes()"></td></tr><tr><td align="right"><a href="javascript:Blackholes()">GLOBAL.WARPS</a></td></tr></table></td>
 </tr>
 <tr>
 <table><tr>
@@ -2197,10 +2795,10 @@ function Requests() {
         var win_requests = window.open("requests","_blank","fullscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Grid() {
-        var win_requests = window.open("grid","_blank","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_requests = window.open("grid","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Wargames() {
-        var win_requests = window.open("wargames","_blank","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_requests = window.open("wargames","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function ShowPanel() {
         if (document.getElementById("extra_attack").checked){
@@ -2320,7 +2918,7 @@ function Start(){
 <hr></div>
   <button title="Start to attack your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" id="attack_button">ATTACK!</button> | Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></pre>
 </td><td>
-<table><tr><td><img src='data:image/png;base64,"""+self.alien6_img+"""' onclick="Grid()"></td></tr><tr><td><img src='data:image/png;base64,"""+self.alien8_img+"""' onclick="Wargames()"></td></tr></table>
+<table><tr><td><table><tr><td><img src='data:image/png;base64,"""+self.alien6_img+"""' onclick="Grid()"></td></tr><tr><td align="right"><a href="javascript:Grid()">GLOBAL.GRID</a></td></tr></table></td></tr><tr><td><table><tr><td><img src='data:image/png;base64,"""+self.alien8_img+"""' onclick="Wargames()"></td></tr><tr><td align="right"><a href="javascript:Wargames()">GLOBAL.WARGAMES</a></td></tr></table></td></tr></table>
 </td></tr></table>
  </td></tr></table>
 <hr>
@@ -2363,7 +2961,11 @@ function show(one) {
  </td>
  <td>
 <table cellpadding="24" cellspacing="25" border="1">
-<tr><td><pre>
+<tr>
+<td>
+<a href="javascript:alert('DAIALAFSÄ & LUÄRKS says: Hi! """ + self.ranking + """, The first steps are easy ... RTFM! ;-)');"><img src='data:image/png;base64,"""+self.aliens_img+"""'></a>
+</td>
+<td><pre>
 <div><a id="mH1" href="javascript:show('nb1');" style="text-decoration: none;" >+ Project info</a></div>
 <div class="nb" id="nb1" style="display: none;">  <b>UFONet</b> - is a set of tools designed to launch <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks
             and that allows to combine both in a single offensive.
@@ -2400,7 +3002,7 @@ function Requests() {
         var win_requests = window.open("requests","_blank","fullscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Abduction() {
-        var win_requests = window.open("abduction","_blank","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_requests = window.open("abduction","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Start(){
         target=document.getElementById("target").value
@@ -2449,7 +3051,7 @@ function Start(){
 
 <hr>
    <button title="Start to search for biggest file on your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">INSPECT!</button></pre>
-</td><td><img src='data:image/png;base64,"""+self.alien7_img+"""' onclick="Abduction()"></td>
+</td><td><table><tr><td><img src='data:image/png;base64,"""+self.alien7_img+"""' onclick="Abduction()"></td></tr><tr><td align="right"><a href="javascript:Abduction()">ABDUCTION!</a></td></tr></table></td>
 </tr></table>
  </td>
 </tr>
@@ -2460,10 +3062,19 @@ function Start(){
 
         self.pages["/ranking"] = self.pages["/header"] + """<script language="javascript">
 function Grid() {
-        var win_requests = window.open("grid","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_grid = window.open("grid","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Stats() {
-        var win_requests = window.open("stats","_parent","fullscreen=no, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+        var win_stats = window.open("stats","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Board() {
+        var win_board = window.open("board","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Links() {
+        var win_links = window.open("links","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Streams() {
+        var win_streams = window.open("streams","_parent","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Sync_ranking(){
     ranking_source=document.getElementById("ranking_source").value
@@ -2484,7 +3095,7 @@ function Sync_ranking(){
 <center>
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
   <td><a href="javascript:alert('Commander DPR says: I love new blood!! """ + self.ranking + """, in the Ranking section you can see information about how to raise your grade, meet the best UFOMasters, be close to those who are like you and try to find partners to dominate the multi-verse... Until then: Dont be evil!');"><img src='data:image/png;base64,"""+self.commander_img+"""'></a></td>
-  <td>GRADUATION/CLANS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit your own stats..." onclick="Stats()">VISIT STATS!</button></td>
+  <td>GRADUATION/CLANS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit your own stats..." onclick="Stats()">VISIT STATS!</button><br><br><button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit TV.streams..." onclick="Streams()">VISIT STREAMS!</button></td>
 </tr></table>
 <table cellpadding="5" cellspacing="10">
 <tr>
@@ -2621,10 +3232,10 @@ function runCommandX(cmd,params) {
                                 document.getElementById("cmdOut").innerHTML = xmlhttp.responseText;
                                 //document.getElementById("cmdOut").scrollIntoView();
                                 newcmd=cmd
-                                if(newcmd=="cmd_list_army"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"){ //do not refresh listing army
+                                if(newcmd=="cmd_list_army"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -2826,6 +3437,11 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_check_tool_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_view_changelog":
+           f = open("docs/VERSION", "r")
+           changelog = f.read()
+           f.close()
+           self.pages["/cmd_view_changelog"] = "</center><pre>"+str(changelog)+"<br /><br/>"
         if page == "/cmd_list_army":
             self.pages["/cmd_list_army"] = "<pre><h1>Total Botnet = "+self.total_botnet+"</h1><table cellpadding='10' cellspacing='10' border='1'><tr><td>UCAVs:</td><td>"+self.num_ucavs+"</td><td>Aliens:</td><td>"+self.num_aliens+"</td></tr><tr><td>Droids:</td><td>"+self.num_droids+"</td><td>Zombies:</td><td>"+self.num_zombies+"</td></tr><tr><td>XML-RPCs:</td><td>"+self.num_rpcs+" </td></tr></table> <hr><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>UCAVs:</u> <b>"+self.num_ucavs+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.ucavs_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_ucavs)+"</td><td></h3>"+'\n'.join(self.ucavs)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Aliens:</u> <b>"+self.num_aliens+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.aliens_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_aliens)+"</td><td></h3>"+'\n'.join(self.aliens)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Droids:</u> <b>"+self.num_droids+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.droids_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_droids)+"</td><td></h3>"+'\n'.join(self.droids)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Zombies:</u> <b>"+self.num_zombies+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.zombies_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_zombies)+"</td><td></h3>"+'\n'.join(self.zombies)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>XML-RPCs:</u> <b>"+self.num_rpcs+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.rpcs_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_rpcs)+"</td><td></h3>"+'\n'.join(self.rpcs)+"</td></tr></table><br /><br/>"
         if page == "/cmd_list_zombies":
@@ -3067,6 +3683,78 @@ function runCommandX(cmd,params) {
                 stream = f.read()
                 stream = re.sub("(.{100})", "\\1\n", stream, 0, re.DOTALL) # regex magics! (set visual stream to 100 chars after \n)
                 self.pages["/cmd_sync_wargames_update"] = "<pre>"+stream+"<pre>"
+        if page == "/cmd_sync_links":
+            self.pages["/cmd_sync_links"] = "<pre>Waiting for 'blackhole' reply...</pre>"
+            blackhole_ip = pGet["link_source"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                links = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/links.txt').read().decode('utf-8')
+                f = open(self.links_file, "w") # write updates to links.txt
+                f.write(links)
+                f.close()
+                self.links_text = links
+            except:
+                links = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(str(links))
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_sync_links_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                stream = f.read()
+                stream = re.sub("(.{100})", "\\1\n", stream, 0, re.DOTALL) # regex magics! (set visual stream to 100 chars after \n)
+                self.pages["/cmd_sync_links_update"] = "<pre>"+stream+"<pre>"
+        if page == "/cmd_sync_globalnet":
+            self.pages["/cmd_sync_globalnet"] = "<pre>Waiting for 'blackhole' reply...</pre>"
+            blackhole_ip = pGet["globalnet_source"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                globalnet = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/globalnet.txt').read().decode('utf-8')
+                f = open(self.globalnet_file, "w") # write updates to globalnet.txt
+                f.write(globalnet)
+                f.close()
+                self.globalnet_text = globalnet
+            except:
+                globalnet = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(str(globalnet))
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_sync_globalnet_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                stream = f.read()
+                stream = re.sub("(.{100})", "\\1\n", stream, 0, re.DOTALL) # regex magics! (set visual stream to 100 chars after \n)
+                self.pages["/cmd_sync_globalnet_update"] = "<pre>"+stream+"<pre>"
+        if page == "/cmd_sync_streams":
+            self.pages["/cmd_sync_streams"] = "<pre>Waiting for 'blackhole' reply...</pre>"
+            blackhole_ip = pGet["stream_source"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                streams = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/streams.txt').read().decode('utf-8')
+                f = open(self.streams_file, "w") # write updates to streams.txt
+                f.write(streams)
+                f.close()
+                self.streams_text = streams
+            except:
+                streams = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(str(streams))
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_sync_streams_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                stream = f.read()
+                stream = re.sub("(.{100})", "\\1\n", stream, 0, re.DOTALL) # regex magics! (set visual stream to 100 chars after \n)
+                self.pages["/cmd_sync_streams_update"] = "<pre>"+stream+"<pre>"
         if page == "/cmd_refresh_missions":
             self.pages["/cmd_refresh_missions"] = "<pre>Waiting for 'blackhole' reply...</pre>"
             blackhole_ip = pGet["missions_source"]
@@ -3177,7 +3865,7 @@ function runCommandX(cmd,params) {
                     ls = f.readlines()
                     f.close()
                     f = open(self.wargames_file,"w")
-                    sep = "#-#"
+                    sep = wargames_msg_sep
                     for l in ls:
                         job_estimated = l.rsplit(sep, 1)[1]
                         self.decrypt(key, job_estimated)
@@ -3239,7 +3927,7 @@ function runCommandX(cmd,params) {
                     ls = f.readlines()
                     f.close()
                     f = open(self.wargames_file,"w")
-                    sep = "#-#"
+                    sep = wargames_msg_sep
                     for l in ls:
                         if str(l) != str(job_task):
                             f.write(l)
@@ -3248,7 +3936,7 @@ function runCommandX(cmd,params) {
                             job_creation = job_t2.rsplit(sep, 1)[0]
                             job_target = job_t2.rsplit(sep, 1)[1]
                             job_estimated = job_task.rsplit(sep, 1)[1]
-                            l = str(job_creation) + "#-#" + str(job_target) + "!!!#-#" + str(job_estimated) # '!!!' target marked as job
+                            l = str(job_creation) + wargames_msg_sep + str(job_target) + "!!!#-#" + str(job_estimated) # '!!!' target marked as job
                             f.write(l)
                     f.close()
                 except:
@@ -3266,16 +3954,16 @@ function runCommandX(cmd,params) {
                 ls = f.readlines()
                 f.close()
                 f = open(self.wargames_file,"w")
-                sep = "#-#"
+                sep = wargames_msg_sep
                 for l in ls:
                     job_t2 = l.rsplit(sep, 1)[0]
                     job_creation = job_t2.rsplit(sep, 1)[0]
                     job_target = job_t2.rsplit(sep, 1)[1]
                     job_estimated = l.rsplit(sep, 1)[1]
                     if not "!!!" in job_target:
-                        l = str(job_creation) + "#-#" + str(job_target) + "!!!#-#" + str(job_estimated)
+                        l = str(job_creation) + wargames_msg_sep + str(job_target) + "!!!#-#" + str(job_estimated)
                     else:
-                        l = str(job_creation) + "#-#" + str(job_target) + "#-#" + str(job_estimated)
+                        l = str(job_creation) + wargames_msg_sep + str(job_target) + wargames_msg_sep + str(job_estimated)
                     f.write(l)
                 f.close()
             except:
@@ -3305,13 +3993,13 @@ function runCommandX(cmd,params) {
                         if str(l) != str(job_task):
                             f.write(l)
                         else:
-                            sep = "#-#"
+                            sep = wargames_msg_sep
                             job_t2 = job_task.rsplit(sep, 1)[0]
                             job_creation = job_t2.rsplit(sep, 1)[0]
                             job_target = job_t2.rsplit(sep, 1)[1]
                             job_target = job_target.replace("!!!","") # undo target marked as job (unjob)
                             job_estimated = job_task.rsplit(sep, 1)[1]
-                            l = str(job_creation) + "#-#" + str(job_target) + "#-#" + str(job_estimated)
+                            l = str(job_creation) + wargames_msg_sep + str(job_target) + wargames_msg_sep + str(job_estimated)
                             f.write(l)
                     f.close()
                 except:
@@ -3329,14 +4017,14 @@ function runCommandX(cmd,params) {
                 ls = f.readlines()
                 f.close()
                 f = open(self.wargames_file,"w")
-                sep = "#-#"
+                sep = wargames_msg_sep
                 for l in ls:
                     job_t2 = l.rsplit(sep, 1)[0]
                     job_creation = job_t2.rsplit(sep, 1)[0]
                     job_target = job_t2.rsplit(sep, 1)[1]
                     job_target = job_target.replace("!!!","") # undo target marked as job (unjob)
                     job_estimated = l.rsplit(sep, 1)[1]
-                    l = str(job_creation) + "#-#" + str(job_target) + "#-#" + str(job_estimated)
+                    l = str(job_creation) + wargames_msg_sep + str(job_target) + wargames_msg_sep + str(job_estimated)
                     f.write(l)
                 f.close()
             except:
@@ -3416,7 +4104,7 @@ function runCommandX(cmd,params) {
                     if self.encryptedtext:
                         wargames_estimated = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer  
-                    l = str(wargames_creation) + "#-#" + str(wargames_target) + "#-#" + str(wargames_estimated)
+                    l = str(wargames_creation) + wargames_msg_sep + str(wargames_target) + wargames_msg_sep + str(wargames_estimated)
                     f.write(l + os.linesep)
                 f.close()
             except:
@@ -3426,6 +4114,270 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_job_filter_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_link_filter":
+            try:
+                link_filter = pGet["filter"]
+                link_key = pGet["key"]
+            except:
+                link_filter = "creation"
+                link_key = str(self.crypto_key)
+            self.pages["/cmd_link_filter"] = "<pre>Ordering links by: "+link_filter+"</pre>"
+            nodec_text = "KEY?"
+            try:
+                links_items=[]
+                with open(self.links_file) as f:
+                    ls = f.read().splitlines()
+                f.close()
+                f = open(self.links_file,"w")
+                for j in ls:
+                    if links_msg_sep in j:
+                        m = j.split(links_msg_sep)
+                        link_creation = m[0] # creation date
+                        self.decrypt(link_key, link_creation)
+                        if self.decryptedtext:
+                            link_creation = self.decryptedtext
+                        else:
+                            link_creation = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        link_url = m[1] # url
+                        self.decrypt(link_key, link_url)
+                        if self.decryptedtext:
+                            link_url = self.decryptedtext
+                            if link_url.startswith("www."):
+                                link_url = link_url.replace("www.","")
+                        else:
+                            link_url = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        link_topic = m[2] # topic
+                        self.decrypt(link_key, link_topic)
+                        if self.decryptedtext:
+                            link_topic = self.decryptedtext
+                        else:
+                            link_topic = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        link_creation = strptime(link_creation, "%d-%m-%Y %H:%M:%S")
+                        links_items.append([link_creation,link_url,link_topic])
+                if link_filter == "creation":
+                    links_items=sorted(links_items,key=lambda x:x[0]) # sorted by creation
+                elif link_filter == "url": 
+                    links_items=sorted(links_items,key=lambda x:x[1]) # sorted by url
+                elif link_filter == "topic": 
+                    links_items=sorted(links_items,key=lambda x:x[2]) # sorted by topic
+                else:
+                    links_items=sorted(links_items,key=lambda x:x[0]) # sorted by creation
+                for i in links_items:
+                    link_creation = i[0]
+                    link_creation = strftime("%d-%m-%Y %H:%M:%S", link_creation)
+                    self.encrypt(link_key, link_creation)
+                    if self.encryptedtext:
+                        link_creation = self.encryptedtext
+                    else:
+                        link_creation = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    link_url = str(i[1])
+                    self.encrypt(link_key, link_url)
+                    if self.encryptedtext:
+                        link_url = self.encryptedtext
+                    else:
+                        link_url = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    link_topic = str(i[2])
+                    self.encrypt(link_key, link_topic)
+                    if self.encryptedtext:
+                        link_topic = self.encryptedtext
+                    else:
+                        link_topic = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    l = str(link_creation) + links_msg_sep + str(link_url) + links_msg_sep + str(link_topic)
+                    f.write(l + os.linesep)
+                f.close()
+            except:
+                pass
+        if page == "/cmd_link_filter_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_link_filter_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_stream_filter":
+            try:
+                stream_filter = pGet["filter"]
+                stream_key = pGet["key"]
+            except:
+                stream_filter = "creation"
+                stream_key = str(self.crypto_key)
+            self.pages["/cmd_stream_filter"] = "<pre>Ordering streams by: "+stream_filter+"</pre>"
+            nodec_text = "KEY?"
+            try:
+                streams_items=[]
+                with open(self.streams_file) as f:
+                    ls = f.read().splitlines()
+                f.close()
+                f = open(self.streams_file,"w")
+                for j in ls:
+                    if streams_msg_sep in j:
+                        m = j.split(streams_msg_sep)
+                        stream_creation = m[0] # creation date
+                        self.decrypt(stream_key, stream_creation)
+                        if self.decryptedtext:
+                            stream_creation = self.decryptedtext
+                        else:
+                            stream_creation = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_url = m[1] # url
+                        self.decrypt(stream_key, stream_url)
+                        if self.decryptedtext:
+                            stream_url = self.decryptedtext
+                            if stream_url.startswith("www."):
+                                stream_url = stream_url.replace("www.","")
+                        else:
+                            stream_url = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_topic = m[2] # topic
+                        self.decrypt(stream_key, stream_topic)
+                        if self.decryptedtext:
+                            stream_topic = self.decryptedtext
+                        else:
+                            stream_topic = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_creation = strptime(stream_creation, "%d-%m-%Y %H:%M:%S")
+                        streams_items.append([stream_creation,stream_url,stream_topic])
+                if stream_filter == "creation":
+                    streams_items=sorted(streams_items,key=lambda x:x[0]) # sorted by creation
+                elif stream_filter == "url": 
+                    streams_items=sorted(streams_items,key=lambda x:x[1]) # sorted by url
+                elif stream_filter == "topic": 
+                    streams_items=sorted(streams_items,key=lambda x:x[2]) # sorted by topic
+                else:
+                    streams_items=sorted(streams_items,key=lambda x:x[0]) # sorted by creation
+                for i in streams_items:
+                    stream_creation = i[0]
+                    stream_creation = strftime("%d-%m-%Y %H:%M:%S", stream_creation)
+                    self.encrypt(stream_key, stream_creation)
+                    if self.encryptedtext:
+                        stream_creation = self.encryptedtext
+                    else:
+                        stream_creation = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    stream_url = str(i[1])
+                    self.encrypt(stream_key, stream_url)
+                    if self.encryptedtext:
+                        stream_url = self.encryptedtext
+                    else:
+                        stream_url = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    stream_topic = str(i[2])
+                    self.encrypt(stream_key, stream_topic)
+                    if self.encryptedtext:
+                        stream_topic = self.encryptedtext
+                    else:
+                        stream_topic = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    l = str(stream_creation) + streams_msg_sep + str(stream_url) + streams_msg_sep + str(stream_topic)
+                    f.write(l + os.linesep)
+                f.close()
+            except:
+                pass
+        if page == "/cmd_stream_filter_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_stream_filter_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_globalnet_filter":
+            try:
+                globalnet_filter = pGet["filter"]
+                globalnet_key = pGet["key"]
+            except:
+                globalnet_filter = "owner"
+                globalnet_key = str(self.crypto_key)
+            self.pages["/cmd_globalnet_filter"] = "<pre>Ordering Global.Net by: "+globalnet_filter+"</pre>"
+            nodec_text = "KEY?"
+            try:
+                globalnet_items=[]
+                with open(self.globalnet_file) as f:
+                    ls = f.read().splitlines()
+                f.close()
+                f = open(self.globalnet_file,"w")
+                for j in ls:
+                    if globalnet_msg_sep in j:
+                        m = j.split(globalnet_msg_sep)
+                        globalnet_owner = m[0] # owner
+                        self.decrypt(globalnet_key, globalnet_owner)
+                        if self.decryptedtext:
+                            globalnet_owner = self.decryptedtext
+                        else:
+                            globalnet_owner = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_comment = m[1] # comment
+                        self.decrypt(globalnet_key, globalnet_comment)
+                        if self.decryptedtext:
+                            globalnet_comment = self.decryptedtext
+                        else:
+                            globalnet_comment = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_warp = m[2] # warp
+                        self.decrypt(globalnet_key, globalnet_warp)
+                        if self.decryptedtext:
+                            globalnet_warp = self.decryptedtext
+                        else:
+                            globalnet_warp = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_ip = m[3] # ip
+                        self.decrypt(globalnet_key, globalnet_ip)
+                        if self.decryptedtext:
+                            globalnet_ip = self.decryptedtext
+                        else:
+                            globalnet_ip = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_items.append([globalnet_owner,globalnet_comment,globalnet_warp,globalnet_ip])
+                if globalnet_filter == "owner":
+                    globalnet_items=sorted(globalnet_items,key=lambda x:x[0]) # sorted by owner
+                elif globalnet_filter == "comment": 
+                    globalnet_items=sorted(globalnet_items,key=lambda x:x[1]) # sorted by comment
+                elif globalnet_filter == "warp": 
+                    globalnet_items=sorted(globalnet_items,key=lambda x:x[2]) # sorted by warp
+                elif globalnet_filter == "ip": 
+                    globalnet_items=sorted(globalnet_items,key=lambda x:x[3]) # sorted by ip
+                else:
+                    globalnet_items=sorted(globalnet_items,key=lambda x:x[0]) # sorted by owner
+                for i in globalnet_items:
+                    globalnet_owner = str(i[0])
+                    self.encrypt(globalnet_key, globalnet_owner)
+                    if self.encryptedtext:
+                        globalnet_owner = self.encryptedtext
+                    else:
+                        globalnet_owner = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    globalnet_comment = str(i[1])
+                    self.encrypt(globalnet_key, globalnet_comment)
+                    if self.encryptedtext:
+                        globalnet_comment = self.encryptedtext
+                    else:
+                        globalnet_comment = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    globalnet_warp = str(i[2])
+                    self.encrypt(globalnet_key, globalnet_warp)
+                    if self.encryptedtext:
+                        globalnet_warp = self.encryptedtext
+                    else:
+                        globalnet_warp = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    globalnet_ip = str(i[3])
+                    self.encrypt(globalnet_key, globalnet_ip)
+                    if self.encryptedtext:
+                        globalnet_ip = self.encryptedtext
+                    else:
+                        globalnet_ip = nodec_text
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    l = str(globalnet_owner) + globalnet_msg_sep + str(globalnet_comment) + globalnet_msg_sep + str(globalnet_warp) + globalnet_msg_sep + str(globalnet_ip)
+                    f.write(l + os.linesep)
+                f.close()
+            except:
+                pass
+        if page == "/cmd_globalnet_filter_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_globalnet_filter_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_grid_filter":
             try:
                 grid_filter = pGet["filter"]
@@ -4142,6 +5094,209 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_transfer_wargame_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_transfer_link":
+            self.pages["/cmd_transfer_link"] = "<pre>Waiting for 'blackhole' connection...</pre>"
+            blackhole_ip = pGet["link_source2"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                link_enckey = pGet["link_enckey"]
+            except:
+                link_enckey = ""
+            link_creation = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+            link_url = pGet["link_url"]
+            if link_url.startswith("http://") or link_url.startswith("https://"): # parse proposed link
+                pass
+            else:
+                links_trans = "[Error] [AI] Proposed link hasn't a correct format!. Try it again...\n"
+                link_enckey = ""
+            if link_url.startswith("www."):
+                link_url = link_url.replace("www.","")
+            link_topic = pGet["link_topic"]
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            if link_enckey is not "": # stream creation + encryption + package send
+                try:
+                    self.encrypt(link_enckey, link_creation)
+                    if self.encryptedtext:
+                        link_creation = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    self.encrypt(link_enckey, link_url)
+                    if self.encryptedtext:
+                        link_url = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    self.encrypt(link_enckey, link_topic)
+                    if self.encryptedtext:
+                        link_topic = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    stream = str(link_creation)+links_msg_sep+str(link_url)+links_msg_sep+str(link_topic)
+                    try: 
+                        host = blackhole_ip
+                        cport = 9992 # port used by mothership grider (server side script)
+                        gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        gs.settimeout(5.0)
+                        gs.connect((host, cport))
+                        gs.send(stream)
+                        gs.close()
+                        try: # download latest links after submit
+                            links = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/links.txt').read().decode('utf-8')
+                            f = open(self.links_file, "w") # write updates to links.txt
+                            f.write(links)
+                            f.close()
+                        except:
+                            pass
+                        links_trans = "[Info] [AI] Link transferred! -> [OK!]\n"
+                    except:
+                        links_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+                except:
+                    links_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(links_trans)
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_transfer_link_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_transfer_link_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_transfer_stream":
+            self.pages["/cmd_transfer_stream"] = "<pre>Waiting for 'blackhole' connection...</pre>"
+            blackhole_ip = pGet["stream_source2"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                stream_enckey = pGet["stream_enckey"]
+            except:
+                stream_enckey = ""
+            stream_creation = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+            stream_url = pGet["stream_url"]
+            if stream_url.startswith("http://") or stream_url.startswith("https://"): # parse proposed stream
+                pass
+            else:
+                streams_trans = "[Error] [AI] Proposed stream hasn't a correct format!. Try it again...\n"
+                stream_enckey = ""
+            if stream_url.startswith("www."):
+                stream_url = stream_url.replace("www.","")
+            stream_topic = pGet["stream_topic"]
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            if stream_enckey is not "": # stream creation + encryption + package send
+                try:
+                    self.encrypt(stream_enckey, stream_creation)
+                    if self.encryptedtext:
+                        stream_creation = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    self.encrypt(stream_enckey, stream_url)
+                    if self.encryptedtext:
+                        stream_url = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    self.encrypt(stream_enckey, stream_topic)
+                    if self.encryptedtext:
+                        stream_topic = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    stream = str(stream_creation)+streams_msg_sep+str(stream_url)+streams_msg_sep+str(stream_topic)
+                    try: 
+                        host = blackhole_ip
+                        cport = 9992 # port used by mothership grider (server side script)
+                        gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        gs.settimeout(5.0)
+                        gs.connect((host, cport))
+                        gs.send(stream)
+                        gs.close()
+                        try: # download latest links after submit
+                            streams = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/streams.txt').read().decode('utf-8')
+                            f = open(self.streams_file, "w") # write updates to streams.txt
+                            f.write(streams)
+                            f.close()
+                        except:
+                            pass
+                        streams_trans = "[Info] [AI] Link transferred! -> [OK!]\n"
+                    except:
+                        streams_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+                except:
+                    streams_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(streams_trans)
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_transfer_stream_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_transfer_stream_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_transfer_globalnet":
+            self.pages["/cmd_transfer_globalnet"] = "<pre>Waiting for 'blackhole' connection...</pre>"
+            blackhole_ip = pGet["globalnet_source2"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                globalnet_enckey = pGet["globalnet_enckey"]
+            except:
+                globalnet_enckey = ""
+            globalnet_owner = pGet["globalnet_owner"]
+            if len(globalnet_owner) < 3 or len(globalnet_owner) > 12: # default owner
+                globalnet_owner = "Anonymous"
+            globalnet_comment = pGet["globalnet_comment"]
+            if len(globalnet_comment) < 3 or len(globalnet_comment) > 90: # default comment
+                globalnet_comment = "-"
+            globalnet_warp = pGet["globalnet_warp"]
+            try:
+                globalnet_ip = requests.get(check_ip_service3).text
+            except:
+                try:
+                    globalnet_ip = requests.get(check_ip_service2).text
+                except:
+                    try:
+                        globalnet_ip = requests.get(check_ip_service1).text
+                    except:
+                        globalnet_ip = "Unknown!"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            if globalnet_enckey is not "": # stream creation + encryption + package send
+                try:
+                    self.encrypt(globalnet_enckey, globalnet_owner)
+                    if self.encryptedtext:
+                        globalnet_owner = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    self.encrypt(globalnet_enckey, globalnet_comment)
+                    if self.encryptedtext:
+                        globalnet_comment = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer 
+                    self.encrypt(globalnet_enckey, globalnet_warp)
+                    if self.encryptedtext:
+                        globalnet_warp = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    self.encrypt(globalnet_enckey, globalnet_ip)
+                    if self.encryptedtext:
+                        globalnet_ip = self.encryptedtext
+                    self.encryptedtext = "" # clean encryptedtext buffer
+                    stream = str(globalnet_owner)+globalnet_msg_sep+str(globalnet_comment)+globalnet_msg_sep+str(globalnet_warp)+globalnet_msg_sep+str(globalnet_ip)
+                    try: 
+                        host = blackhole_ip
+                        cport = 9992 # port used by mothership grider (server side script)
+                        gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        gs.settimeout(5.0)
+                        gs.connect((host, cport))
+                        gs.send(stream)
+                        gs.close()
+                        try: # download latest globalnet after submit
+                            globalnet = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/globalnet.txt').read().decode('utf-8')
+                            f = open(self.globalnet_file, "w") # write updates to globalnet.txt
+                            f.write(globalnet)
+                            f.close()
+                        except:
+                            pass
+                        globalnet_trans = "[Info] [AI] Location transferred! -> [OK!]\n"
+                    except:
+                        globalnet_trans = "[Error] [AI] Something wrong uploading location. Try it again...\n"
+                except:
+                    globalnet_trans = "[Error] [AI] Something wrong uploading location. Try it again...\n"
+            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(globalnet_trans)
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_transfer_globalnet_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_transfer_globalnet_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_sync_board":
             self.pages["/cmd_sync_board"] = "<pre>Waiting for 'blackhole' reply...</pre>"
             blackhole_ip = pGet["board_source"]
@@ -4343,6 +5498,18 @@ function runCommandX(cmd,params) {
             self.pages["/grid"] = self.html_grid()
         if page == "/wargames":
             self.pages["/wargames"] = self.html_wargames()
+        if page == "/links":
+            self.pages["/links"] = self.html_links()
+        if page == "/streams":
+            self.pages["/streams"] = self.html_streams()
+        if page == "/games":
+            self.pages["/games"] = self.html_games()
+        if page == "/spaceinvaders":
+            self.pages["/spaceinvaders"] = self.html_spaceinvaders()
+        if page == "/browser":
+            self.pages["/browser"] = self.html_browser()
+        if page == "/globalnet":
+            self.pages["/globalnet"] = self.html_globalnet()
         if page == "/grid_profile":
             if pGet=={}:
                 self.pages["/grid_profile"] = self.html_grid_profile()
@@ -5130,6 +6297,170 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_decrypt_wargames_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_decrypt_links":
+            self.pages["/cmd_decrypt_links"] = "<pre>Waiting for decrypting results...</pre>"
+            try:
+                link_deckey = pGet["link_deckey"]
+            except:
+                link_deckey = ""
+            end_mark = "[Info] [AI] End of decryption."
+            if link_deckey is not "": # links decryption
+                nodec_text = "KEY?"
+                links_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('creation','"+str(link_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('topic','"+str(link_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('url','"+str(link_deckey)+"')>URL:</a></td></tr>"
+                f = open("/tmp/out", "w")
+                self.list_links_rev = reversed(self.list_links) # order by DESC
+                for m in self.list_links_rev: # list = creation, topic, url
+                    if links_msg_sep in m:
+                        m = m.split(links_msg_sep)
+                        link_creation = m[0] # creation date
+                        self.decrypt(link_deckey, link_creation)
+                        if self.decryptedtext:
+                            link_creation = self.decryptedtext
+                        else:
+                            link_creation = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        link_url = m[1] # url
+                        self.decrypt(link_deckey, link_url)
+                        if self.decryptedtext:
+                            link_url = self.decryptedtext
+                            if link_url.startswith("www."):
+                                link_url = link_url.replace("www.","")
+                        else:
+                            link_url = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        link_topic = m[2] # topic
+                        self.decrypt(link_deckey, link_topic)
+                        if self.decryptedtext:
+                            link_topic = self.decryptedtext
+                        else:
+                            link_topic = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                    else:
+                        link_url = "KEY?"
+                    links_table += "<tr><td align='center'>"+link_creation+"</td><td align='center'>"+link_topic+"</td><td align='center'><a href='http://"+str(link_url)+"' target='_blank'>"+str(link_url)+"</a></td></tr>"
+                links_table += "</table><br>"
+                f.write(links_table)
+                f.write(end_mark)
+                f.close()
+        if page == "/cmd_decrypt_links_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_decrypt_links_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_decrypt_streams":
+            self.pages["/cmd_decrypt_streams"] = "<pre>Waiting for decrypting results...</pre>"
+            try:
+                stream_deckey = pGet["stream_deckey"]
+            except:
+                stream_deckey = ""
+            end_mark = "[Info] [AI] End of decryption."
+            if stream_deckey is not "": # streams decryption
+                nodec_text = "KEY?"
+                streams_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('creation','"+str(stream_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('topic','"+str(stream_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('url','"+str(stream_deckey)+"')>STREAM:</a></td><td align='center'>VIDEO:</td></tr>"
+                f = open("/tmp/out", "w")
+                self.list_streams_rev = reversed(self.list_streams) # order by DESC
+                for m in self.list_streams_rev: # list = creation, topic, url
+                    if streams_msg_sep in m:
+                        m = m.split(streams_msg_sep)
+                        stream_creation = m[0] # creation date
+                        self.decrypt(stream_deckey, stream_creation)
+                        if self.decryptedtext:
+                            stream_creation = self.decryptedtext
+                        else:
+                            stream_creation = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_url = m[1] # url
+                        self.decrypt(stream_deckey, stream_url)
+                        if self.decryptedtext:
+                            stream_url = self.decryptedtext
+                            if stream_url.startswith("www."):
+                                stream_url = stream_url.replace("www.","")
+                        else:
+                            stream_url = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_topic = m[2] # topic
+                        self.decrypt(stream_deckey, stream_topic)
+                        if self.decryptedtext:
+                            stream_topic = self.decryptedtext
+                        else:
+                            stream_topic = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        stream_id = str(stream_url.split("v=")[1]) # extract (Youtube) VideoID
+                    else:
+                        stream_url = "KEY?"
+                        stream_id = None
+                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='http://"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button' value='"+stream_id+"' onclick='PlayStream();return false;'>PLAY!</button><div id='video'></div></td></tr>"
+                streams_table += "</table><br>"
+                f.write(streams_table)
+                f.write(end_mark)
+                f.close()
+        if page == "/cmd_decrypt_streams_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_decrypt_streams_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_decrypt_globalnet":
+            self.pages["/cmd_decrypt_globalnet"] = "<pre>Waiting for decrypting results...</pre>"
+            try:
+                globalnet_deckey = pGet["globalnet_deckey"]
+            except:
+                globalnet_deckey = ""
+            end_mark = "[Info] [AI] End of decryption."
+            if globalnet_deckey is not "": # globalnet decryption
+                nodec_text = "KEY?"
+                globalnet_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_owner' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('owner','"+str(globalnet_deckey)+"');>OWNER:</a></td><td align='center'><a id='filter_comment' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('comment','"+str(globalnet_deckey)+"')>COMMENT:</a></td><td align='center'><a id='filter_warp' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('warp','"+str(globalnet_deckey)+"')>WARPING:</a></td><td align='center'><a id='filter_ip' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('ip','"+str(globalnet_deckey)+"')>IP:</a></td></tr>"
+                f = open("/tmp/out", "w")
+                self.list_globalnet_rev = reversed(self.list_globalnet) # order by DESC
+                for m in self.list_globalnet_rev: # list = owner, comment, warping, ip
+                    if globalnet_msg_sep in m:
+                        m = m.split(globalnet_msg_sep)
+                        globalnet_owner = m[0] # owner
+                        self.decrypt(globalnet_deckey, globalnet_owner)
+                        if self.decryptedtext:
+                            globalnet_owner = self.decryptedtext
+                        else:
+                            globalnet_owner = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_comment = m[1] # comment
+                        self.decrypt(globalnet_deckey, globalnet_comment)
+                        if self.decryptedtext:
+                            globalnet_comment = self.decryptedtext
+                        else:
+                            globalnet_comment = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_warp = m[2] # warp
+                        self.decrypt(globalnet_deckey, globalnet_warp)
+                        if self.decryptedtext:
+                            globalnet_warp = self.decryptedtext
+                        else:
+                            globalnet_warp = nodec_text
+                        if globalnet_warp == "OFF":
+                            warp_color = "pink" 
+                        elif globalnet_warp == "ON1":
+                            warp_color = "orange"
+                        else: # ON2
+                            warp_color = "blue"
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                        globalnet_ip = m[3] # ip
+                        self.decrypt(globalnet_deckey, globalnet_ip)
+                        if self.decryptedtext:
+                            globalnet_ip = self.decryptedtext
+                        else:
+                            globalnet_ip = nodec_text
+                        self.decryptedtext = "" # clean decryptedtext buffer
+                    else:
+                        globalnet_owner = "KEY?"
+                        globalnet_comment = "KEY?"
+                    globalnet_table += "<tr><td align='center'>"+str(globalnet_owner)+"</td><td align='center'>"+str(globalnet_comment)+"</td><td align='center'><font color="+warp_color+">"+str(globalnet_warp)+"</font></td><td align='center'><font color="+warp_color+">"+str(globalnet_ip)+"</font></td></tr>"
+                globalnet_table += "</table><br>"
+                f.write(globalnet_table)
+                f.write(end_mark)
+                f.close()
+        if page == "/cmd_decrypt_globalnet_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_decrypt_globalnet_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/blackholes":
             self.pages["/blackholes"] = self.html_blackholes()
         if page == "/requests":

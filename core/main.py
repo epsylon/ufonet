@@ -52,9 +52,9 @@ class UFONet(object):
         self.external_check_service1 = 'https://status.ws/' # set external check service 1 [OK! 26/02/2020]
         self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 26/02/2020]
         self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site
-        self.check_ip_service1 = 'https://checkip.dyndns.com/' # set external check ip service 1 [OK! 28/02/2019]
-        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 28/02/2019]
-        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! 28/02/2019]
+        self.check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
+        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
+        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
         self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve [Zombies]
@@ -68,6 +68,9 @@ class UFONet(object):
         self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve [Dorks]
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
         self.timeline_file = 'docs/VERSION' # set source for code releases
+        self.links_file = "data/links.txt" # set source path to retrieve [Blackhole] [Links]
+        self.streams_file = "data/streams.txt" # set source path to retrieve [Blackhole] [Streams]
+        self.globalnet_file = "data/globalnet.txt" # set source path to retrieve [Blackhole] [Globalnet]
         self.news_file = "data/news.txt" # set source path to retrieve [Blackhole] [News]
         self.missions_file = "data/missions.txt" # set source path to retrieve [Blackhole] [Missions]
         self.board_file = "data/board.txt" # set source path to retrieve [Blackhole] [Board]
@@ -175,14 +178,14 @@ class UFONet(object):
     def banner_welcome(self):
         print("")
         print("                                                0=============================================0")
-        print("                                                ||                                           ||")
-        print("   ||                                     ||    ||  * Botnet -> [DDoS]:                      ||")
-        print(" -(00)-                                 -(00)-  ||      /Zombies : HTTP GET bots             ||")
-        print("   ||                (00)                 ||    ||      /Droids  : HTTP GET (+params) bots   ||")
-        print("        (O)_  (O)  0'----'0  (O)  _(O)          ||      /Aliens  : HTTP POST bots            ||")   
+        print("                   + (XX) +                     ||                                           ||")
+        print("   ||             *~~~~~~~~*              ||    ||  * Botnet -> [DDoS]:                      ||")
+        print(" -(00)-          (0)      (0)           -(00)-  ||      /ZOMBIES : HTTP GET bots             ||")
+        print("   ||             \| (00) |/              ||    ||      /DROIDS  : HTTP GET (+params) bots   ||")
+        print("        (O)_  (O)  0'----'0  (O)  _(O)          ||      /ALIENS  : HTTP POST bots            ||")   
         print("            |  |.''.( xx ).''.|  |              ||      /UCAVs   : Web Abusing bots          ||")
         print("            .'.'   X|'..'|X   '.'.              ||      /X-RPCs  : XML-RPC bots              ||")
-        print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||      /DBSTRESS: HTTP DB attack            ||")
+        print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||      /DBSTRESS: HTTP Database flooder     ||")
         print("    (O).)-|0|  \   x| ## |x   /  |0|-(.(O)      ||      /SPRAY   : TCP-SYN reflector         ||")
         print("     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||      /SMURF   : ICMP echo flooder         ||")
         print("        _ | ||  '-.___||___.-'  || | _          ||      /TACHYON : DNS amplificator          ||")
@@ -192,9 +195,9 @@ class UFONet(object):
         print("    | |(0)| '.  0\||__**_ ||/0  .' |(0)| |      ||      /LOIC    : Fast HTTP requests        ||")
         print("    \ '._.'   '.  | \_##_/ |  .'   '._.' /      ||      /LORIS   : Slow HTTP requests        ||")
         print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       ||      /UFOSYN  : TCP-SYN flooder           ||")
-        print("    .'_.-|                          |-._'.      ||      /XMAS    : TCP-XMAS flooder          ||")
+        print("    .'_.-|            YY            |-._'.      ||      /XMAS    : TCP-XMAS flooder          ||")
         print("                                                ||      /NUKE    : TCP-STARVATION attack     ||") 
-        print("    + Class: UFONet / ViPR404+ (model G) +      ||                                           ||")
+        print("    + Class: UFONet / ViPR404+ (model H) +      ||                                           ||")
         print("                                                0|===========================================|0") 
         print("")
 
@@ -1217,7 +1220,7 @@ class UFONet(object):
                 print("[Error] "+str(e)) 
                 print("\n[AI] Something was wrong generating [Blackhole]... -> [Aborting!]\n")
 
-        # create [Griger] server to share [Stats/Wargames/Messages]
+        # create [Grider] server to share [Stats/Wargames/Messages]
         if options.grider is not None:
             self.banner()
             try:
@@ -2060,6 +2063,12 @@ class UFONet(object):
             grid_reply = urllib.request.urlopen(grid, context=self.ctx, timeout=timeout).read().decode('utf-8')
             wargames = urllib.request.Request('https://'+self.blackhole+'/ufonet/wargames.txt', None, headers)
             wargames_reply = urllib.request.urlopen(wargames, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            links = urllib.request.Request('https://'+self.blackhole+'/ufonet/links.txt', None, headers)
+            links_reply = urllib.request.urlopen(links, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            streams = urllib.request.Request('https://'+self.blackhole+'/ufonet/streams.txt', None, headers)
+            streams_reply = urllib.request.urlopen(streams, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            globalnet = urllib.request.Request('https://'+self.blackhole+'/ufonet/globalnet.txt', None, headers)
+            globalnet_reply = urllib.request.urlopen(globalnet, context=self.ctx, timeout=timeout).read().decode('utf-8')
         else:
             news = urllib.request.Request('http://'+self.blackhole+'/ufonet/news.txt', None, headers)
             news_reply = urllib.request.urlopen(news, context=self.ctx).read().decode('utf-8')
@@ -2071,6 +2080,12 @@ class UFONet(object):
             grid_reply = urllib.request.urlopen(grid, context=self.ctx).read().decode('utf-8')
             wargames = urllib.request.Request('http://'+self.blackhole+'/ufonet/wargames.txt', None, headers)
             wargames_reply = urllib.request.urlopen(wargames, context=self.ctx).read().decode('utf-8')
+            links = urllib.request.Request('http://'+self.blackhole+'/ufonet/links.txt', None, headers)
+            links_reply = urllib.request.urlopen(links, context=self.ctx).read().decode('utf-8')
+            streams = urllib.request.Request('http://'+self.blackhole+'/ufonet/streams.txt', None, headers)
+            streams_reply = urllib.request.urlopen(streams, context=self.ctx).read().decode('utf-8')
+            globalnet = urllib.request.Request('http://'+self.blackhole+'/ufonet/globalnet.txt', None, headers)
+            globalnet_reply = urllib.request.urlopen(globalnet, context=self.ctx).read().decode('utf-8')
         f = open(self.news_file, 'w')
         f.write(news_reply)
         f.close()
@@ -2086,18 +2101,33 @@ class UFONet(object):
         f = open(self.wargames_file, 'w')
         f.write(wargames_reply)
         f.close()
+        f = open(self.links_file, 'w')
+        f.write(links_reply)
+        f.close()
+        f = open(self.streams_file, 'w')
+        f.write(streams_reply)
+        f.close()
+        f = open(self.globalnet_file, 'w')
+        f.write(globalnet_reply)
+        f.close()
         print('-'*25 + "\n")
         print("[Info] [AI] GUI data correctly updated:\n")
         if news_reply:
-            print("[Info] [AI] [News]    : OK!")
+            print("[Info] [AI] [News]     : OK!")
         if missions_reply:
-            print("[Info] [AI] [Missions]: OK!")
+            print("[Info] [AI] [Missions] : OK!")
         if board_reply:
-            print("[Info] [AI] [Board]   : OK!")
+            print("[Info] [AI] [Board]    : OK!")
         if grid_reply:
-            print("[Info] [AI] [Grid]    : OK!")
+            print("[Info] [AI] [Grid]     : OK!")
         if wargames_reply:
-            print("[Info] [AI] [Wargames]: OK!")
+            print("[Info] [AI] [Wargames] : OK!")
+        if links_reply:
+            print("[Info] [AI] [Links]    : OK!")
+        if streams_reply:
+            print("[Info] [AI] [Streams]  : OK!")
+        if globalnet_reply:
+            print("[Info] [AI] [GlobalNet]: OK!")
         print('-'*25)
         print("\n[AI] "+self.exit_msg+"\n")
 
@@ -2435,7 +2465,7 @@ class UFONet(object):
             self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
             if not self.options.forceyes: # ask for update everything
                 print('-'*25 + "\n")
-                update_reply = input("[AI] You would also like to update other content: [News] [Grid] [Board]... (Y/n)")
+                update_reply = input("[AI] You would also like to update other content: [News] [Missions] [Grid] [Board]... (Y/n)")
             else:
                 update_reply = "Y"
             if update_reply == "n" or update_reply == "N":
@@ -2700,7 +2730,7 @@ class UFONet(object):
             self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
             if not self.options.forceyes: # ask for update everything
                 print('-'*25 + "\n")
-                update_reply = input("[AI] You would also like to update other content: [News] [Grid] [Board]... (Y/n)")
+                update_reply = input("[AI] You would also like to update other content: [News] [Missions] [Grid] [Board]... (Y/n)")
             else:
                 update_reply = "Y"
             if update_reply == "n" or update_reply == "N":

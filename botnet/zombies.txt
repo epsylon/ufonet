@@ -1,4 +1,1 @@
 https://validator.w3.org/nu/?doc=
-http://www.babalweb.net/ar/open.php?url=
-http://translate.google.com/translate?u=
-http://check-host.net/check-http?host=

@@ -1,8 +1,1 @@
 https://gtmetrix.com/analyze.html;$POST;url
-https://isitdown.co.uk/check/;$POST;domainname
-https://www.site24x7.com/check-website-availability.html;$POST;url
-https://nibbler.silktide.com/en_US/report/submit;$POST;url
-https://checkwebsiteonline.com/domain;$POST;url
-https://websitechecker.online/test_url;$POST;url
-https://isitdown.co.uk/check/;$POST;domainname
-https://wheresitup.com/demo/results;$POST;url

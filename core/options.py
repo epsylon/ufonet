@@ -41,9 +41,9 @@ class UFONetOptions(optparse.OptionParser):
         self.x_energy = self.extract_x_energy()
         self.formula = self.formula_x_energy()
         optparse.OptionParser.__init__(self, 
-        description='\n{(D)enial(OF)Fensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
+        description='\n{(D)enial(OFF)ensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nCode: v1.4.1 [APT] T!M3-WaRS\n')
+        version='\nCode: v1.5 [MLV] - "MuLTi.V3rSe!"\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
@@ -135,17 +135,22 @@ class UFONetOptions(optparse.OptionParser):
         return sengines
 
     def extract_tools(self):
-        tools = ["CYPTER", "NETWORK", "XRAY", "WARPER", "INSPECTOR", "ABDUCTOR", "AI.BOTNET", "AI.GUI", "AI.STATS", "AI.EVASIVE", "BLACKHOLE"]
+        tools = ["CYPTER", "NETWORK", "XRAY", "WARPER", "INSPECTOR", "ABDUCTOR", "AI.BOTNET", "AI.GUI", "AI.STATS", "AI.EVASIVE", "BLACKHOLE", "AI.LINKS", "AI.STREAMS", "AI.BROWSER", "AI.GLOBALNET", "AI.GAMES"]
         tools = len(tools)
         return tools
 
     def extra_tools(self):
         etools =  '\n     _> ABDUCTOR                   * Defensive Shield Detector'
         etools += '\n     _> AI.BOTNET                  * Intelligent Attack System'
+        etools += '\n     _> AI.BROWSER                 * Private Sandbox Browser'
         etools += '\n     _> AI.EVASIVE                 * Automatic Evasion System'
+        etools += '\n     _> AI.GAMES                   * Fun & Games Center'
         etools += '\n     _> AI.GEO                     * Geomapping System'
+        etools += '\n     _> AI.GLOBAL_NET              * Global UFONET Network'
+        etools += '\n     _> AI.LIBRARY                 * Public (data.Links) Library'
         etools += '\n     _> AI.STATS                   * Live Stats Reporter'
-        etools += '\n     _> AI.WEB                     * Visual Interface'
+        etools += '\n     _> AI.STREAMING               * Video (data.Streams) Player'
+        etools += '\n     _> AI.WEB                     * Graphical User Web-Interface'
         etools += '\n     _> BLACKHOLE                  * Warper (p2p.Botnet) Generator'
         etools += '\n     _> CRYPTER                    * Telegram (crypto.Community) System'
         etools += '\n     _> INSPECTOR                  * Objective Scanning Crawler'
@@ -287,7 +292,7 @@ class UFONetOptions(optparse.OptionParser):
             print(self.description, "\n")
             print('='*75)
             self.version = self.version.replace("\n","")
-            print('\n  '+"\u25BC "+self.version+" \u25BC"+' {/Al13n_PerSYSt-[T4]Hunt1ng/}20++ '+"\u25BC"+'\n')
+            print('\n  '+"\u25BC "+self.version+" \u25BC"'\n')
             print("-"*75+"\n")
             print(' -> _BOTNET [DDoS]:   [', format(int(self.total_botnet), '06d'),'] '+"\u25BC"+' Bots (Available)'+ self.ebotnet)
             print('\n -> _DORKS:           [', format(int(self.dorks), '06d'), '] '+"\u25BC"+' Open Redirect (CWE-601) patterns')
