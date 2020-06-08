@@ -6337,7 +6337,7 @@ function runCommandX(cmd,params) {
                         self.decryptedtext = "" # clean decryptedtext buffer
                     else:
                         link_url = "KEY?"
-                    links_table += "<tr><td align='center'>"+link_creation+"</td><td align='center'>"+link_topic+"</td><td align='center'><a href='http://"+str(link_url)+"' target='_blank'>"+str(link_url)+"</a></td></tr>"
+                    links_table += "<tr><td align='center'>"+link_creation+"</td><td align='center'>"+link_topic+"</td><td align='center'><a href='"+str(link_url)+"' target='_blank'>"+str(link_url)+"</a></td></tr>"
                 links_table += "</table><br>"
                 f.write(links_table)
                 f.write(end_mark)
@@ -6389,7 +6389,7 @@ function runCommandX(cmd,params) {
                     else:
                         stream_url = "KEY?"
                         stream_id = None
-                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='http://"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button' value='"+stream_id+"' onclick='PlayStream();return false;'>PLAY!</button><div id='video'></div></td></tr>"
+                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button' value='"+stream_id+"' onclick='PlayStream();return false;'>PLAY!</button><div id='video'></div></td></tr>"
                 streams_table += "</table><br>"
                 f.write(streams_table)
                 f.write(end_mark)
