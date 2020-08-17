@@ -20,6 +20,7 @@ class UFONetOptions(optparse.OptionParser):
         self.rpcs_file = "botnet/rpcs.txt" # set source path to retrieve 'rpcs'
         self.dnss_file = "botnet/dns.txt" # set source path to retrieve 'dnss'
         self.ntps_file = "botnet/ntp.txt" # set source path to retrieve 'ntps'
+        self.snmps_file = "botnet/snmp.txt" # set source path to retrieve 'snmp'
         self.dorks_file = "botnet/dorks.txt" # set source path to retrieve 'dorks'
         self.sengines = self.extract_sengines()
         self.zombies = int(self.extract_zombies())
@@ -29,13 +30,14 @@ class UFONetOptions(optparse.OptionParser):
         self.rpcs = int(self.extract_rpcs())
         self.dnss = int(self.extract_dnss())
         self.ntps = int(self.extract_ntps())
+        self.snmps = int(self.extract_snmps())
         self.dorks = int(self.extract_dorks())
         self.tools = self.extract_tools()
         self.etools = self.extra_tools()
         self.weapons = self.extract_weapons()
         self.ebotnet = self.electronic_botnet()
         self.eweapons = self.extra_weapons()
-        self.total_botnet = str(self.zombies+self.aliens+self.droids+self.ucavs+self.rpcs+self.dnss+self.ntps)
+        self.total_botnet = str(self.zombies+self.aliens+self.droids+self.ucavs+self.rpcs+self.dnss+self.ntps+self.snmps)
         self.d_energy = self.extract_d_energy()
         self.y_energy = self.extract_y_energy()
         self.x_energy = self.extract_x_energy()
@@ -43,7 +45,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
         description='\n{(D)enial(OFF)ensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nCode: v1.5 [MLV] - "MuLTi.V3rSe!"\n')
+        version='\nCode: 1.6 '+"\u25BC "+'[MR3] [ M4RAuD3R ] '+"\u25BC"+'\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
@@ -101,32 +103,40 @@ class UFONetOptions(optparse.OptionParser):
         group5.add_option("-x", action="store", dest="abduction", help="Examine webserver configuration (+CVE, +WAF detection)")
         self.add_option_group(group5)
         group6 = optparse.OptionGroup(self, "*Configure Attack(s)*")
-        group6.add_option("-a", action="store", dest="target", help="[DDoS] attack an URL (ex: -a 'http(s)://target.com')")
+        group6.add_option("-a", action="store", dest="target", help="[DDoS] attack a target (ex: -a 'http(s)://target.com')")
         group6.add_option("-f", action="store", dest="target_list", help="[DDoS] attack a list of targets (ex: -f 'targets.txt')")
         group6.add_option("-b", action="store", dest="place", help="Set place to attack (ex: -b '/path/big.jpg')")
         group6.add_option("-r", action="store", dest="rounds", help="Set number of rounds (ex: -r '1000') (default: 1)")
         self.add_option_group(group6)
         group7 = optparse.OptionGroup(self, "*Extra Configuration(s)*")
-        group7.add_option("--no-aliens", action="store_true", dest="disablealiens", help="Disable 'aliens' web abuse")
-        group7.add_option("--no-droids", action="store_true", dest="disabledroids", help="Disable 'droids' redirectors")
-        group7.add_option("--no-rpcs", action="store_true", dest="disablerpcs", help="Disable 'xml-rpcs' reflectors")
-        group7.add_option("--no-ucavs", action="store_true", dest="disableucavs", help="Disable 'ucavs' checkers")
+        group7.add_option("--no-droids", action="store_true", dest="disabledroids", help="Disable 'DROIDS' redirectors")
+        group7.add_option("--no-ucavs", action="store_true", dest="disableucavs", help="Disable 'UCAVS' checkers")
+        group7.add_option("--no-aliens", action="store_true", dest="disablealiens", help="Disable 'ALIENS' web abuse")
+        group7.add_option("--no-rpcs", action="store_true", dest="disablerpcs", help="Disable 'XML-RPCs' reflectors")
         group7.add_option("--no-head", action="store_true", dest="disablehead", help="Disable 'Is target up?' starting check")
         group7.add_option("--no-scan", action="store_true", dest="disablescanner", help="Disable 'Scan shields' round check")
         group7.add_option("--no-purge", action="store_true", dest="disablepurge", help="Disable 'Zombies purge' round check")
         group7.add_option("--expire", action="store", dest="expire", help="Set expire time for 'Zombies purge' (default: 30)")
         self.add_option_group(group7)
         group8 = optparse.OptionGroup(self, "*Extra Attack(s)*")
-        group8.add_option("--db", action="store", dest="dbstress", help="[DDoS] 'HTTP DB' attack (ex: --db 'search.php?q=')")
-        group8.add_option("--spray", action="store", dest="spray", help="[DDoS] 'TCP-SYN reflection' attack (ex: --spray 100)")
-        group8.add_option("--smurf", action="store", dest="smurf", help="[DDoS] 'ICMP broadcast' attack (ex: --smurf 101)")
-        group8.add_option("--tachyon", action="store", dest="tachyon", help="[DDoS] 'DNS amplification' attack (ex: --tachyon 1000)")
-        group8.add_option("--monlist", action="store", dest="monlist", help="[DDoS] 'NTP amplification' attack (ex: --monlist 1001)")
-        group8.add_option("--loic", action="store", dest="loic", help="[ DoS] 'HTTP fast' attack (ex: --loic 100)")
-        group8.add_option("--loris", action="store", dest="loris", help="[ DoS] 'HTTP slow' attack (ex: --loris 101)")
-        group8.add_option("--ufosyn", action="store", dest="ufosyn", help="[ DoS] 'TCP-SYN flood' attack (ex: --ufosyn 100)")
-        group8.add_option("--xmas", action="store", dest="xmas", help="[ DoS] 'TCP-XMAS flood' attack (ex: --xmas 101)")
-        group8.add_option("--nuke", action="store", dest="nuke", help="[ DoS] 'TCP-STARVATION' attack (ex: --nuke 10000)")
+        group8.add_option("--fraggle", action="store", dest="fraggle", help="[DDoS] 'UDP amplification' (ex: --fraggle 101)")
+        group8.add_option("--tachyon", action="store", dest="tachyon", help="[DDoS] 'DNS amplification' (ex: --tachyon 101)")
+        group8.add_option("--monlist", action="store", dest="monlist", help="[DDoS] 'NTP amplification' (ex: --monlist 101)")
+        group8.add_option("--smurf", action="store", dest="smurf", help="[DDoS] 'ICMP amplification' (ex: --smurf 101)")
+        group8.add_option("--sniper", action="store", dest="sniper", help="[DDoS] 'SNMP amplification' (ex: --sniper 101)")
+        group8.add_option("--spray", action="store", dest="spray", help="[DDoS] 'TCP-SYN reflection' (ex: --spray 101)")
+        group8.add_option("--db", action="store", dest="dbstress", help="[DDoS] 'HTTP-DB flood' (ex: --db 'search.php?q=')")
+        group8.add_option("--loic", action="store", dest="loic", help="[ DoS] 'HTTP-FAST flood' (ex: --loic 101)")
+        group8.add_option("--loris", action="store", dest="loris", help="[ DoS] 'HTTP-SLOW flood' (ex: --loris 101)")
+        group8.add_option("--ufosyn", action="store", dest="ufosyn", help="[ DoS] 'TCP-SYN flood' (ex: --ufosyn 101)")
+        group8.add_option("--xmas", action="store", dest="xmas", help="[ DoS] 'TCP-XMAS flood' (ex: --xmas 101)")
+        group8.add_option("--nuke", action="store", dest="nuke", help="[ DoS] 'TCP-STARVATION flood' (ex: --nuke 101)")
+        group8.add_option("--ufoack", action="store", dest="ufoack", help="[ DoS] 'TCP-ACK flood' (ex: --ufoack 101)")
+        group8.add_option("--uforst", action="store", dest="uforst", help="[ DoS] 'TCP-RST flood' (ex: --uforst 101)")
+        group8.add_option("--droper", action="store", dest="droper", help="[ DoS] 'IP-FRAGMENTATION flood' (ex: --droper 101)")
+        group8.add_option("--overlap", action="store", dest="overlap", help="[ DoS] 'IP-OVERLAP flood' (ex: --overlap 101)")
+        group8.add_option("--pinger", action="store", dest="pinger", help="[ DoS] 'ICMP flood' (ex: --pinger 101)")
+        group8.add_option("--ufoudp", action="store", dest="ufoudp", help="[ DoS] 'UDP flood' (ex: --ufoudp 101)")
         self.add_option_group(group8)
 
     def extract_sengines(self):
@@ -159,31 +169,40 @@ class UFONetOptions(optparse.OptionParser):
         return etools
 
     def extract_weapons(self):
-        weapons = ["DBSTRESSER", "SPRAY", "SMURF", "TACHYON", "MONLIST", "LOIC", "LORIS", "UFOSYN", "XMAS", "NUKE"]
+        weapons = ["SMURF", "TACHYON", "MONLIST", "SNIPER", "SPRAY", "DBSTRESS", "LOIC", "LORIS", "UFOSYN", "XMAS", "NUKE", "UFOACK", "UFORST", "DROPER", "OVERLAP", "PINGER", "UFOUPD", "FRAGGLE"]
         weapons = len(weapons)
         return weapons
 
     def extra_weapons(self):
-        eweapons =  '\n     _> DBSTRESS                   * [DDoS] HTTP DB Stresser'
-        eweapons += '\n     _> SPRAY                      * [DDoS] TCP SYN-Reflector'
-        eweapons += '\n     _> SMURF                      * [DDoS] ICMP Broadcaster'
+        eweapons = '\n     _> FRAGGLE                    * [DDoS] UDP Amplificator'
         eweapons += '\n     _> TACHYON                    * [DDoS] DNS Amplificator'
         eweapons += '\n     _> MONLIST                    * [DDoS] NTP Amplificator'
-        eweapons += '\n     _> LOIC                       * [ DoS] HTTP Fast-Requester'
-        eweapons += '\n     _> LORIS                      * [ DoS] HTTP Slow-Requester'
-        eweapons += '\n     _> UFOSYN                     * [ DoS] TCP SYN-Flag Flooder'
-        eweapons += '\n     _> XMAS                       * [ DoS] TCP XMAS-Flag Flooder'
-        eweapons += '\n     _> NUKE                       * [ DoS] TCP STARVATION Flooder'
+        eweapons += '\n     _> SMURF                      * [DDoS] ICMP Amplificator'
+        eweapons += '\n     _> SNIPER                     * [DDoS] SNMP Amplificator'
+        eweapons += '\n     _> SPRAY                      * [DDoS] TCP SYN Reflector'
+        eweapons += '\n     _> DBSTRESS                   * [DDoS] HTTP-DB Stresser'
+        eweapons += '\n     _> LOIC                       * [ DoS] HTTP-FAST Requester'
+        eweapons += '\n     _> LORIS                      * [ DoS] HTTP-SLOW Requester'
+        eweapons += '\n     _> UFOSYN                     * [ DoS] TCP-SYN Flooder'
+        eweapons += '\n     _> XMAS                       * [ DoS] TCP-XMAS Flooder'
+        eweapons += '\n     _> NUKE                       * [ DoS] TCP-STARVATION Flooder'
+        eweapons += '\n     _> UFOACK                     * [ DoS] TCP-ACK Flooder'
+        eweapons += '\n     _> UFORST                     * [ DoS] TCP-RST Flooder'
+        eweapons += '\n     _> DROPER                     * [ DoS] IP-FRAGMENTATION Flooder'
+        eweapons += '\n     _> OVERLAP                    * [ DoS] IP-OVERLAP Flooder'
+        eweapons += '\n     _> PINGER                     * [ DoS] ICMP Flooder'
+        eweapons += '\n     _> UFOUDP                     * [ DoS] UDP Flooder'
         return eweapons
 
     def electronic_botnet(self):
-        ebotnet =  '\n     _> ALIENS        [ '+ format(int(self.aliens), '06d')+ ' ]   * HTTP POST'
-        ebotnet += '\n     _> DROIDS        [ '+ format(int(self.droids), '06d')+ ' ]   * HTTP GET (complex)'
-        ebotnet += '\n     _> UCAVs         [ '+ format(int(self.ucavs), '06d')+ ' ]   * WebAbuse'
-        ebotnet += '\n     _> X-RPCs        [ '+ format(int(self.rpcs), '06d')+ ' ]   * PingBack XML-RPC exploit'
-        ebotnet += '\n     _> ZOMBIES       [ '+ format(int(self.zombies), '06d')+ ' ]   * HTTP GET (simple)'
-        ebotnet += '\n     _> DNSs          [ '+ format(int(self.dnss), '06d')+ ' ]   * DNS (reflectors)'
-        ebotnet += '\n     _> NTPs          [ '+ format(int(self.ntps), '06d')+ ' ]   * NTP (reflectors)'
+        ebotnet = '\n     _> ZOMBIES       [ '+ format(int(self.zombies), '08d')+ ' ]   * HTTP GET (simple)'
+        ebotnet += '\n     _> DROIDS        [ '+ format(int(self.droids), '08d')+ ' ]   * HTTP GET (complex)'
+        ebotnet += '\n     _> UCAVs         [ '+ format(int(self.ucavs), '08d')+ ' ]   * WebAbuse (multiple)'
+        ebotnet += '\n     _> ALIENS        [ '+ format(int(self.aliens), '08d')+ ' ]   * HTTP POST'
+        ebotnet += '\n     _> X-RPCs        [ '+ format(int(self.rpcs), '08d')+ ' ]   * XML-RPC'
+        ebotnet += '\n     _> DNSs          [ '+ format(int(self.dnss), '08d')+ ' ]   * DNS'
+        ebotnet += '\n     _> NTPs          [ '+ format(int(self.ntps), '08d')+ ' ]   * NTP'
+        ebotnet += '\n     _> SNMPs         [ '+ format(int(self.snmps), '08d')+ ' ]   * SNMP'
         return ebotnet
 
     def extract_zombies(self):
@@ -249,6 +268,15 @@ class UFONetOptions(optparse.OptionParser):
             ntps = "broken!"
         return ntps
 
+    def extract_snmps(self):
+        try:
+            f = open(self.snmps_file)
+            snmps = len(f.readlines())
+            f.close()
+        except:
+            snmps = "broken!"
+        return snmps
+
     def extract_dorks(self):
         try:
             f = open(self.dorks_file)
@@ -292,14 +320,14 @@ class UFONetOptions(optparse.OptionParser):
             print(self.description, "\n")
             print('='*75)
             self.version = self.version.replace("\n","")
-            print('\n  '+"\u25BC "+self.version+" \u25BC"'\n')
+            print('\n  '+"\u25BC "+self.version+'\n')
             print("-"*75+"\n")
-            print(' -> _BOTNET [DDoS]:   [', format(int(self.total_botnet), '06d'),'] '+"\u25BC"+' Bots (Available)'+ self.ebotnet)
-            print('\n -> _DORKS:           [', format(int(self.dorks), '06d'), '] '+"\u25BC"+' Open Redirect (CWE-601) patterns')
-            print('     _> ENGINES       [', format(int(self.sengines), '06d'), ']   * Dorking providers (Working)')
-            print('\n -> _TOOLS:           [', format(int(self.tools), '06d'),'] '+"\u25BC"+' Extra Tools (Misc)'+self.etools)
-            print('\n -> _WEAPONS:         [', format(int(self.weapons), '06d'),'] '+"\u25BC"+' Extra Attacks (Weapons)'+ self.eweapons)
-            print('\n -> _X-ENERGY [X'+"\u2091"+''+"\N{SUBSCRIPT EIGHT}"+']:  [', format(int(self.x_energy), '06d'),'] '+"\u25BC"+' '+self.formula+'\n')
+            print(' -> _BOTNET [DDoS]:   [', format(int(self.total_botnet), '08d'),'] '+"\u25BC"+' Bots (Available)'+ self.ebotnet)
+            print('\n -> _DORKS:           [', format(int(self.dorks), '08d'), '] '+"\u25BC"+' Open Redirect (CWE-601) patterns')
+            print('     _> ENGINES       [', format(int(self.sengines), '08d'), ']   * Dorking providers (Working)')
+            print('\n -> _TOOLS:           [', format(int(self.tools), '08d'),'] '+"\u25BC"+' Extra Tools (Misc)'+self.etools)
+            print('\n -> _WEAPONS:         [', format(int(self.weapons), '08d'),'] '+"\u25BC"+' Extra Attacks (DDoS & DoS)'+ self.eweapons)
+            print('\n -> _X-ENERGY [X'+"\u2091"+''+"\N{SUBSCRIPT EIGHT}"+']:  [', format(int(self.x_energy), '08d'),'] '+"\u25BC"+' '+self.formula+'\n')
             print("-"*75+"\n")
             print(" -> _HELP:            ./ufonet --help (or ./ufonet -h)")
             print(' -> _EXAMPLES:        ./ufonet --examples')

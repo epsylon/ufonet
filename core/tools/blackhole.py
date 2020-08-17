@@ -40,6 +40,7 @@ class AI(Thread):
         rpcs_incoming=[]
         ntps_incoming=[]
         dnss_incoming=[]
+        snmps_incoming=[]
         for meat in self.meats:
             f_in = gzip.open(self.tmp_dir+"blackhole/"+meat)
             if 'community_zombies.txt.gz' in f_in: # zombies found
@@ -82,6 +83,12 @@ class AI(Thread):
                 f_out = open(self.tmp_dir+'label.txt', 'wb')
                 for line in f_in.readlines():
                     dnss_incoming.append(line)
+                    f_out.write(line.strip()+os.linesep)
+                f_out.close()
+            elif 'community_snmps.txt.gz' in f_in: # snmps found
+                f_out = open(self.tmp_dir+'glass.txt', 'wb')
+                for line in f_in.readlines():
+                    snmps_incoming.append(line)
                     f_out.write(line.strip()+os.linesep)
                 f_out.close()
             f_in.close()
@@ -194,7 +201,7 @@ class AI(Thread):
             f_tested = open(self.tmp_dir+'clock.txt')
             ntps_community = f_tested.readlines()
             f_tested.close()
-            o_in = gzip.open(self.target_dir+'crystals.txt.gz', 'rb')
+            o_in = gzip.open(self.target_dir+'warps.txt.gz', 'rb')
             ntps_army = o_in.readlines()
             initial = len(ntps_army)
             o_in.close()
@@ -207,12 +214,12 @@ class AI(Thread):
             for ntp in ntps_army:
                 fc.write(ntp.strip()+os.linesep)
             fc.close()
-            shutil.move(self.tmp_dir+'newntps.txt.gz', self.target_dir+'crystals.txt.gz')
+            shutil.move(self.tmp_dir+'newntps.txt.gz', self.target_dir+'warps.txt.gz')
             print("[Info] [AI] NTPs tested : " +str(len(ntps_community)) + " / initial : " +str(initial) + " / final : " + str(len(ntps_army)))
             f_tested = open(self.tmp_dir+'label.txt')
             dnss_community = f_tested.readlines()
             f_tested.close()
-            o_in = gzip.open(self.target_dir+'warps.txt.gz', 'rb')
+            o_in = gzip.open(self.target_dir+'crystals.txt.gz', 'rb')
             dnss_army = o_in.readlines()
             initial = len(dnss_army)
             o_in.close()
@@ -225,8 +232,26 @@ class AI(Thread):
             for dns in dnss_army:
                 fc.write(dns.strip()+os.linesep)
             fc.close()
-            shutil.move(self.tmp_dir+'newdnss.txt.gz', self.target_dir+'warps.txt.gz')
+            shutil.move(self.tmp_dir+'newdnss.txt.gz', self.target_dir+'crystals.txt.gz')
             print("[Info] [AI] DNSs tested : " +str(len(dnss_community)) + " / initial : " +str(initial) + " / final : " + str(len(dnss_army)))
+            f_tested = open(self.tmp_dir+'glass.txt')
+            snmps_community = f_tested.readlines()
+            f_tested.close()
+            o_in = gzip.open(self.target_dir+'bosons.txt.gz', 'rb')
+            snmps_army = o_in.readlines()
+            initial = len(snmps_army)
+            o_in.close()
+            for snmp in snmps_community:
+                if snmp.strip() not in snmps_army:
+                    snmps_army.append(snmp)
+                else:
+                    pass
+            fc = gzip.open(self.tmp_dir+'newsnmps.txt.gz', 'wb')
+            for snmp in snmps_army:
+                fc.write(snmp.strip()+os.linesep)
+            fc.close()
+            shutil.move(self.tmp_dir+'newsnmps.txt.gz', self.target_dir+'bosons.txt.gz')
+            print("[Info] [AI] SNMPs tested : " +str(len(snmps_community)) + " / initial : " +str(initial) + " / final : " + str(len(snmps_army)))
 
     def run(self):
         self.power_on = True
@@ -294,6 +319,7 @@ class Eater(Thread):
         rpc_meat = "community_rpcs.txt.gz"
         ntp_meat = "community_ntps.txt.gz"
         dns_meat = "community_dnss.txt.gz"
+        snmp_meat = "community_snmps.txt.gz"
         while 1:
             data = self.client.recv(1024)
             if not data:
@@ -330,7 +356,7 @@ class Eater(Thread):
             f.write(data)
             print('\n[Info] [AI] Got "%s Closing media transfer"' % f.name)
             f.close()
-        elif rpc_meat in data: # get ucavs
+        elif rpc_meat in data: # get rpcs
             r = re.compile(".*("+rpc_meat+").*") # regex magics
             meat_type = r.search(data)
             m = meat_type.group(1)
@@ -348,6 +374,14 @@ class Eater(Thread):
             f.close()
         elif dns_meat in data: # get dnss
             r = re.compile(".*("+dns_meat+").*") # regex magics
+            meat_type = r.search(data)
+            m = meat_type.group(1)
+            f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
+            f.write(data)
+            print('\n[Info] [AI] Got "%s Closing media transfer"' % f.name)
+            f.close()
+        elif snmp_meat in data: # get snmps
+            r = re.compile(".*("+snmp_meat+").*") # regex magics
             meat_type = r.search(data)
             m = meat_type.group(1)
             f = open(self.parent.tmp_dir+"blackhole/"+m,"wb")
@@ -459,26 +493,36 @@ class BlackHole ( Thread ):
                 reflectors_fail = reflectors_fail + 1
         else:
             reflectors_fail = 0
-        if not os.path.exists(self.target_dir+"crystals.txt.gz"):
-            ntps_fail = 0
-            try:
-                fc = gzip.open(self.target_dir+'crystals.txt.gz', 'wb')
-                fc.close()
-            except:
-                print("[Error] [AI] Not 'crystals.txt.gz' file in "+self.target_dir)
-                ntps_fail = ntps_fail + 1
-        else:
-            ntps_fail = 0
         if not os.path.exists(self.target_dir+"warps.txt.gz"):
-            dnss_fail = 0
+            ntps_fail = 0
             try:
                 fc = gzip.open(self.target_dir+'warps.txt.gz', 'wb')
                 fc.close()
             except:
                 print("[Error] [AI] Not 'warps.txt.gz' file in "+self.target_dir)
+                ntps_fail = ntps_fail + 1
+        else:
+            ntps_fail = 0
+        if not os.path.exists(self.target_dir+"crystals.txt.gz"):
+            dnss_fail = 0
+            try:
+                fc = gzip.open(self.target_dir+'crystals.txt.gz', 'wb')
+                fc.close()
+            except:
+                print("[Error] [AI] Not 'crystals.txt.gz' file in "+self.target_dir)
                 dnss_fail = dnss_fail + 1
         else:
             dnss_fail = 0
+        if not os.path.exists(self.target_dir+"bosons.txt.gz"):
+            snmps_fail = 0
+            try:
+                fc = gzip.open(self.target_dir+'bosons.txt.gz', 'wb')
+                fc.close()
+            except:
+                print("[Error] [AI] Not 'bosons.txt.gz' file in "+self.target_dir)
+                snmps_fail = snmps_fail + 1
+        else:
+            snmps_fail = 0
         if not os.access(self.target_dir+"abductions.txt.gz",os.W_OK):
             print("[Error] [AI] Write access denied for 'abductions' file in "+self.target_dir)
             abductions_fail = abductions_fail + 1
@@ -494,13 +538,16 @@ class BlackHole ( Thread ):
         if not os.access(self.target_dir+"reflectors.txt.gz",os.W_OK):
             print("[Error] [AI] Write access denied for 'reflectors' file in "+self.target_dir)
             reflectors_fail = reflectors_fail + 1
-        if not os.access(self.target_dir+"crystals.txt.gz",os.W_OK):
-            print("[Error] [AI] Write access denied for 'crystals' file in "+self.target_dir)
-            ntps_fail = ntps_fail + 1
         if not os.access(self.target_dir+"warps.txt.gz",os.W_OK):
             print("[Error] [AI] Write access denied for 'warps' file in "+self.target_dir)
+            ntps_fail = ntps_fail + 1
+        if not os.access(self.target_dir+"crystals.txt.gz",os.W_OK):
+            print("[Error] [AI] Write access denied for 'crystals' file in "+self.target_dir)
             dnss_fail = dnss_fail + 1
-        if abductions_fail > 0 and troops_fail > 0 and robots_fail > 0 and drones_fail > 0 and reflectors_fail > 0 and ntps_fail > 0 and dnss_fail > 0:
+        if not os.access(self.target_dir+"bosons.txt.gz",os.W_OK):
+            print("[Error] [AI] Write access denied for 'bosons' file in "+self.target_dir)
+            snmps_fail = snmps_fail + 1
+        if abductions_fail > 0 and troops_fail > 0 and robots_fail > 0 and drones_fail > 0 and reflectors_fail > 0 and ntps_fail > 0 and dnss_fail > 0 and snmps_fail > 0:
             print("\n[Error] [AI] Cannot found any container... -> [Aborting!]")
             print("\n[Info] [AI] Suspend [Blackhole] with: Ctrl+z")
             sys.exit(2)

