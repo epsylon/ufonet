@@ -88,7 +88,7 @@ and on the Layer3 (Network) abusing the protocol.
 
   You can automatically get all required libraries using (as root):
 
-       sudo python setup.py install
+       sudo python3 setup.py install
 
   For manual installation, on Debian-based systems (ex: Ubuntu), run: 
 
