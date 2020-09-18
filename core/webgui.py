@@ -5993,7 +5993,7 @@ function runCommandX(cmd,params) {
         if page == "/cmd_send_message_board":
             self.pages["/cmd_send_message_board"] = "<pre>Waiting for 'blackhole' connection...</pre>"
             blackhole_ip = pGet["board_source"]
-            blackhole_ip = urllib.parse.unquote(blackhole_ip).decode('utf8')
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
             try:
                 board_key = pGet["board_key"]
             except:
@@ -6041,7 +6041,7 @@ function runCommandX(cmd,params) {
                         host = blackhole_ip
                         cport = 9992 # port used by mothership grider (server side script)
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-                        gs.settimeout(5.0)
+                        gs.settimeout(30)
                         gs.connect((host, cport))
                         gs.send(stream.encode())
                         gs.close()
