@@ -5876,7 +5876,7 @@ function runCommandX(cmd,params) {
                             f.close()
                         except:
                             pass
-                        streams_trans = "[Info] [AI] Link transferred! -> [OK!]\n"
+                        streams_trans = "[Info] [AI] Stream transferred! -> [OK!]\n"
                     except:
                         streams_trans = "[Error] [AI] Something wrong uploading stream. Try it again...\n"
                 except:
