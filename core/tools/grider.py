@@ -34,7 +34,7 @@ class Paster(Thread):
             try:
                 conn,addr = self.sock.accept()
                 print('[Info] [AI] Got copy from', addr)
-                data = conn.recv(1024).decode()
+                data = conn.recv(4096).decode()
                 print ("[Info] [AI] Stream received:", repr(data))
             except socket.timeout:
                 print("[Info] [AI] Socket listening...")
