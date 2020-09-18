@@ -88,7 +88,7 @@ and on the Layer3 (Network) abusing the protocol.
 
   You can automatically get all required libraries using (as root):
 
-       sudo python setup.py install
+       python3 setup.py install
 
   For manual installation, on Debian-based systems (ex: Ubuntu), run: 
 
@@ -96,14 +96,14 @@ and on the Layer3 (Network) abusing the protocol.
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
-       pip install GeoIP
-       pip install python-geoip
-       pip install pygeoip
-       pip install requests
-       pip install pycrypto
-       pip install pycurl
-       pip install whois
-       pip install scapy-python3
+       pip3 install GeoIP
+       pip3 install python-geoip
+       pip3 install pygeoip
+       pip3 install requests
+       pip3 install pycrypto
+       pip3 install pycurl
+       pip3 install whois
+       pip3 install scapy-python3
 
 ####  Source libs:
 

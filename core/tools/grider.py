@@ -34,7 +34,10 @@ class Paster(Thread):
             try:
                 conn,addr = self.sock.accept()
                 print('[Info] [AI] Got copy from', addr)
+                data = conn.recv(1024).decode()
+                print ("[Info] [AI] Stream received:", repr(data))
             except socket.timeout:
+                print("[Info] [AI] Socket listening...")
                 pass
             except socket.error as e:
                 if self.clean == False:
@@ -44,10 +47,9 @@ class Paster(Thread):
                     print("[Error] [AI] Socket Error /break : "+str(e))
                     break
             else:
-                data = conn.recv(4096)
-                if data :
+                if data:
                     l=len(data)
-                    print("[Info] [AI] Received data : "+data+"/"+str(l)+"/"+str(data.find("\n")))
+                    print("[Info] [AI] Received data...\n")
                     if data.find('\n')==-1 and data.find('\r')==-1:
                         if data.find("#?#")!=-1:
                             print("[Info] [AI] Adding to grid")
@@ -79,6 +81,8 @@ class Paster(Thread):
                             fc=open(self.parent.target_dir+"globalnet.txt","a")
                             fc.write(data+"\n")
                             fc.close()
+                        else:
+                            print("[Error] [AI] Unknown data...")
                     conn.close()
         print('[Info] [AI] Done!!!')
         self.sock.close()
@@ -185,7 +189,7 @@ class Grider ( Thread ):
         s=None
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
+            s.settimeout(30)
             s.bind(('', port))
         except socket.error as e:
             if e.errno == 98: # if is in use wait a bit and retry

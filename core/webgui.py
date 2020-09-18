@@ -1828,11 +1828,16 @@ function Send() {
         }
       }
 
-function PlayStream() {
-                video_id = document.getElementById("play_button").value;
-                document.getElementById("play_button").style.display = 'none';
-                document.getElementById("video").style.display = 'block';
-                document.getElementById("video").innerHTML = "<div id='player'></div>";
+function PlayStream(stream_num) {
+                var str1 = "play_button_";
+                var str2 = stream_num;
+                var play_button_id = str1.concat(str2);
+                var str3 = "video_";
+                var video_play = str3.concat(str2);
+                video_id = document.getElementById(play_button_id).value;
+                document.getElementById(play_button_id).style.display = 'none';
+                document.getElementById(video_play).style.display = 'block';
+                document.getElementById(video_play).innerHTML = "<div id='player'></div>";
                 var tag = document.createElement('script');
                 tag.src = "https://www.youtube.com/iframe_api";
                 var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -1859,12 +1864,14 @@ function PlayStream() {
                     done = true;
                 }
                 if (event.data === 0) {
-                   document.getElementById("play_button").style.display = 'block';
-                   document.getElementById("video").style.display = 'none';
+                   document.getElementById(play_button_id).style.display = 'block';
+                   document.getElementById(video_play).style.display = 'none';
                   }
             }
             function stopVideo() {
                 player.stopVideo();
+                   document.getElementById(play_button_id).style.display = 'block';
+                   document.getElementById(video_play).style.display = 'none';
             }
 </script>
 </head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
@@ -5656,7 +5663,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest grid after submit
                             grid = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/grid.txt').read().decode('utf-8')
@@ -5732,7 +5739,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest wargames after submit
                             wargames = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/wargames.txt').read().decode('utf-8')
@@ -5796,7 +5803,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest links after submit
                             links = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/links.txt').read().decode('utf-8')
@@ -5860,7 +5867,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest links after submit
                             streams = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/streams.txt').read().decode('utf-8')
@@ -5871,9 +5878,9 @@ function runCommandX(cmd,params) {
                             pass
                         streams_trans = "[Info] [AI] Link transferred! -> [OK!]\n"
                     except:
-                        streams_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+                        streams_trans = "[Error] [AI] Something wrong uploading stream. Try it again...\n"
                 except:
-                    streams_trans = "[Error] [AI] Something wrong uploading link. Try it again...\n"
+                    streams_trans = "[Error] [AI] Something wrong uploading stream. Try it again...\n"
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(streams_trans)
@@ -5935,7 +5942,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest globalnet after submit
                             globalnet = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/globalnet.txt').read().decode('utf-8')
@@ -6036,7 +6043,7 @@ function runCommandX(cmd,params) {
                         gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
                         gs.settimeout(5.0)
                         gs.connect((host, cport))
-                        gs.send(stream)
+                        gs.send(stream.encode())
                         gs.close()
                         try: # download latest board after submit
                             board = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/board.txt').read().decode('utf-8')
@@ -7229,6 +7236,7 @@ function runCommandX(cmd,params) {
                 streams_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('creation','"+str(stream_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('topic','"+str(stream_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('url','"+str(stream_deckey)+"')>STREAM:</a></td><td align='center'>VIDEO:</td></tr>"
                 f = open("/tmp/out", "w")
                 self.list_streams_rev = reversed(self.list_streams) # order by DESC
+                stream_num = 0 
                 for m in self.list_streams_rev: # list = creation, topic, url
                     if streams_msg_sep in m:
                         m = m.split(streams_msg_sep)
@@ -7256,10 +7264,11 @@ function runCommandX(cmd,params) {
                             stream_topic = nodec_text
                         self.decryptedtext = "" # clean decryptedtext buffer
                         stream_id = str(stream_url.split("v=")[1]) # extract (Youtube) VideoID
+                        stream_num = stream_num + 1
                     else:
                         stream_url = "KEY?"
                         stream_id = None
-                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button' value='"+stream_id+"' onclick='PlayStream();return false;'>PLAY!</button><div id='video'></div></td></tr>"
+                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button_"+str(stream_num)+"' value='"+str(stream_id)+"' onclick='PlayStream("+str(stream_num)+");return false;'>PLAY!</button><div id='video_"+str(stream_num)+"'></div></td></tr>"
                 streams_table += "</table><br>"
                 f.write(streams_table)
                 f.write(end_mark)

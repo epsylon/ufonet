@@ -60,9 +60,9 @@ UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes
      python3-requests - elegant and simple HTTP library for Python3, built for human beings
      python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
 
-Puedes obtener todas las librerías requeridas automáticamente usando:
+Puedes obtener todas las librerías requeridas automáticamente usando (como root):
 
-     sudo python setup.py install
+     python3 setup.py install
 
 Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
 
@@ -70,14 +70,14 @@ Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza:
 
 En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 
-     pip install GeoIP
-     pip install python-geoip
-     pip install pygeoip
-     pip install requests
-     pip install pycrypto
-     pip install pycurl
-     pip install whois
-     pip install scapy-python3
+     pip3 install GeoIP
+     pip3 install python-geoip
+     pip3 install pygeoip
+     pip3 install requests
+     pip3 install pycrypto
+     pip3 install pycurl
+     pip3 install whois
+     pip3 install scapy-python3
 
 Paquetes fuente de las librerías:
 
