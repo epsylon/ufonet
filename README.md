@@ -81,6 +81,8 @@ and on the Layer3 (Network) abusing the protocol.
 
        python3-pycurl - Python bindings to libcurl (Python 3)
        python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
+       libgeoip-dev - Development files for the GeoIP library
+       libgeoip1 - non-DNS IP-to-country resolver library
        python3-whois - Python module for retrieving WHOIS information - Python 3
        python3-crypto - cryptographic algorithms and protocols for Python 3
        python3-requests - elegant and simple HTTP library for Python3, built for human beings
@@ -90,9 +92,9 @@ and on the Layer3 (Network) abusing the protocol.
 
        python3 setup.py install
 
-  For manual installation, on Debian-based systems (ex: Ubuntu), run: 
+  For manual installation, on Debian-based systems (ex: Ubuntu), run:
 
-       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy
+       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy libgeoip1 libgeoip-dev
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 

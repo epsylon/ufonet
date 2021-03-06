@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -2226,7 +2226,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                 else:
                     job_target_dec = ""
                 self.decryptedtext = ""
-                if job_target_dec is not "":
+                if job_target_dec != "":
                     job_target_dec = "http://" + job_target_dec # set target prefix to http://
                     try: # read global army supply (json)
                         with open(self.mothership_supplycfg_file) as data_file:
@@ -2375,21 +2375,21 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.top_ufommander = []
         self.top_ufoleet = []
         for k, v in ranking_items.items():
-            if v is 0: # not any data (or decryption allowed) on grid so discard
+            if v == 0: # not any data (or decryption allowed) on grid so discard
                 pass
-            if v is 1: # add this player as a rookie
+            if v == 1: # add this player as a rookie
                 self.ranking_grid_rookie = self.ranking_grid_rookie + 1
                 self.top_rookie.append(k)
-            elif v is 2: # add this player as a mercenary
+            elif v == 2: # add this player as a mercenary
                 self.ranking_grid_mercenary = self.ranking_grid_mercenary + 1
                 self.top_mercenary.append(k)
-            elif v is 3: # add this player as a bandit
+            elif v == 3: # add this player as a bandit
                 self.ranking_grid_bandit = self.ranking_grid_bandit + 1
                 self.top_bandit.append(k)
-            elif v is 4: # add this player as a ufommander
+            elif v == 4: # add this player as a ufommander
                 self.ranking_grid_ufommander = self.ranking_grid_ufommander + 1
                 self.top_ufommander.append(k)
-            elif v is 5: # add this player as a ufoleet
+            elif v == 5: # add this player as a ufoleet
                 self.ranking_grid_ufoleet = self.ranking_grid_ufoleet + 1
                 self.top_ufoleet.append(k)
             else: # add this player as unknown
@@ -4226,7 +4226,7 @@ function runCommandX(cmd,params) {
                 job_id = pGet["id"]
             except:
                 job_id = ""
-            if job_id is not "":
+            if job_id != "":
                 self.list_wargames.reverse() 
                 try:
                     job_task = self.list_wargames[(int(job_id)-1)]
@@ -4253,7 +4253,7 @@ function runCommandX(cmd,params) {
                 key = key_params.rsplit(sep, 1)[0]
             except:
                 key = ""
-            if key is not "":
+            if key != "":
                 try:
                     self.list_wargames.reverse()
                     now = strftime("%d-%m-%Y %H:%M:%S", gmtime())
@@ -4332,7 +4332,7 @@ function runCommandX(cmd,params) {
                 job_id = job_params.rsplit(sep, 1)[0]
             except:
                 job_id = ""
-            if job_id is not "":
+            if job_id != "":
                 self.list_wargames.reverse() 
                 try:
                     job_task = self.list_wargames[(int(job_id)-1)]
@@ -4394,7 +4394,7 @@ function runCommandX(cmd,params) {
                 job_id = job_params.rsplit(sep, 1)[0]
             except:
                 job_id = ""
-            if job_id is not "":
+            if job_id != "":
                 self.list_wargames.reverse() 
                 try:
                     job_task = self.list_wargames[(int(job_id)-1)]
@@ -5505,7 +5505,7 @@ function runCommandX(cmd,params) {
             except:
                 grid_key = ""
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if grid_key is not "": # stream creation + encryption + package send
+            if grid_key != "": # stream creation + encryption + package send
                 try:
                     grid_json_file = open(self.mothership_gridcfg_file, "r") # extract grid profile conf
                     grid_data = json.load(grid_json_file)
@@ -5716,7 +5716,7 @@ function runCommandX(cmd,params) {
                 wargames_trans = "[Error] [AI] Date time is not using a correct format!. Try it again...\n"
                 wargames_enckey = ""
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if wargames_enckey is not "": # stream creation + encryption + package send
+            if wargames_enckey != "": # stream creation + encryption + package send
                 wargames_creation = strftime("%d-%m-%Y %H:%M:%S", wargames_creation)
                 wargames_estimated = strftime("%d-%m-%Y %H:%M:%S", wargames_estimated)
                 try:
@@ -5782,7 +5782,7 @@ function runCommandX(cmd,params) {
                 link_url = link_url.replace("www.","")
             link_topic = pGet["link_topic"]
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if link_enckey is not "": # stream creation + encryption + package send
+            if link_enckey != "": # stream creation + encryption + package send
                 try:
                     self.encrypt(link_enckey, link_creation)
                     if self.encryptedtext:
@@ -5846,7 +5846,7 @@ function runCommandX(cmd,params) {
                 stream_url = stream_url.replace("www.","")
             stream_topic = pGet["stream_topic"]
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if stream_enckey is not "": # stream creation + encryption + package send
+            if stream_enckey != "": # stream creation + encryption + package send
                 try:
                     self.encrypt(stream_enckey, stream_creation)
                     if self.encryptedtext:
@@ -5917,7 +5917,7 @@ function runCommandX(cmd,params) {
                     except:
                         globalnet_ip = "Unknown!"
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if globalnet_enckey is not "": # stream creation + encryption + package send
+            if globalnet_enckey != "": # stream creation + encryption + package send
                 try:
                     self.encrypt(globalnet_enckey, globalnet_owner)
                     if self.encryptedtext:
@@ -6007,7 +6007,7 @@ function runCommandX(cmd,params) {
             except:
                 board_message = ""
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if board_key is not "" or board_topic is not "" or board_message is not "": # stream creation (topic | icon | nick | id | comment) + encryption (board_key) + package send (default blackhole)
+            if board_key != "" or board_topic != "" or board_message != "": # stream creation (topic | icon | nick | id | comment) + encryption (board_key) + package send (default blackhole)
                 try:  
                     board_json_file = open(self.mothership_boardcfg_file, "r") # extract board profile conf
                     board_data = json.load(board_json_file)
@@ -6077,7 +6077,7 @@ function runCommandX(cmd,params) {
             except:
                 missions_key = ""
             end_mark = "\n[Info] [AI] End of decryption."
-            if news_key is not "": # news decryption
+            if news_key != "": # news decryption
                 self.decrypted_news = []
                 nodec_text = "*** [This message cannot be solved with that KEY...]"
                 news_key = pGet["news_key"]
@@ -6099,7 +6099,7 @@ function runCommandX(cmd,params) {
                 f.write(end_mark)
                 f.close()
             else:
-                if missions_key is not "": # missions decryption
+                if missions_key != "": # missions decryption
                     self.decrypted_missions = []
                     nodec_text = "*** [This message cannot be solved with that KEY...]"
                     missions_key = pGet["missions_key"]
@@ -6206,7 +6206,7 @@ function runCommandX(cmd,params) {
             except:
                 filter = ""
             end_mark = "\n[Info] [AI] End of decryption."
-            if board_key is not "": # board decryption
+            if board_key != "": # board decryption
                 nodec_text = "***[ENCRYPTED WITH OTHER KEY]"
                 f = open("/tmp/out", "w")
                 b = "<center><table border='1' cellpadding='10' cellspacing='5' align=center>"
@@ -6285,7 +6285,7 @@ function runCommandX(cmd,params) {
             except:
                 grid_key = ""
             end_mark = "[Info] [AI] End of decryption."
-            if grid_key is not "": # grid decryption
+            if grid_key != "": # grid decryption
                 # Mothership stats counters
                 mothership_members = 0
                 unknown_members = 0
@@ -7037,7 +7037,7 @@ function runCommandX(cmd,params) {
             except:
                 wargames_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
-            if wargames_deckey is not "": # wargames decryption
+            if wargames_deckey != "": # wargames decryption
                 nodec_text = "KEY?"
                 try: # read global army supply from configuration file (json)
                     with open(self.mothership_supplycfg_file) as data_file:
@@ -7181,7 +7181,7 @@ function runCommandX(cmd,params) {
             except:
                 link_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
-            if link_deckey is not "": # links decryption
+            if link_deckey != "": # links decryption
                 nodec_text = "KEY?"
                 links_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('creation','"+str(link_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('topic','"+str(link_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('url','"+str(link_deckey)+"')>URL:</a></td></tr>"
                 f = open("/tmp/out", "w")
@@ -7231,7 +7231,7 @@ function runCommandX(cmd,params) {
             except:
                 stream_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
-            if stream_deckey is not "": # streams decryption
+            if stream_deckey != "": # streams decryption
                 nodec_text = "KEY?"
                 streams_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('creation','"+str(stream_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('topic','"+str(stream_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('url','"+str(stream_deckey)+"')>STREAM:</a></td><td align='center'>VIDEO:</td></tr>"
                 f = open("/tmp/out", "w")
@@ -7285,7 +7285,7 @@ function runCommandX(cmd,params) {
             except:
                 globalnet_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
-            if globalnet_deckey is not "": # globalnet decryption
+            if globalnet_deckey != "": # globalnet decryption
                 nodec_text = "KEY?"
                 globalnet_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_owner' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('owner','"+str(globalnet_deckey)+"');>OWNER:</a></td><td align='center'><a id='filter_comment' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('comment','"+str(globalnet_deckey)+"')>COMMENT:</a></td><td align='center'><a id='filter_warp' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('warp','"+str(globalnet_deckey)+"')>WARPING:</a></td><td align='center'><a id='filter_ip' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('ip','"+str(globalnet_deckey)+"')>IP:</a></td></tr>"
                 f = open("/tmp/out", "w")

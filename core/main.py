@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -3322,7 +3322,7 @@ class UFONet(object):
             if 'http' not in url_link:
                 url_link = "" # discarded
             else:
-                if url_link not in zombies and url_link+os.linesep not in zombies_found and url_link is not "": # AI mode (parsing search engines mixed pool and stored army)
+                if url_link not in zombies and url_link+os.linesep not in zombies_found and url_link != "": # AI mode (parsing search engines mixed pool and stored army)
                     print('+Victim found: ' + url_link)
                     print('-'*12)
                     zombies.append(url_link)

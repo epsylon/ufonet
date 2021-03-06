@@ -55,6 +55,8 @@ UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes
 
      python3-pycurl - Python bindings to libcurl (Python 3)
      python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
+     libgeoip-dev - Development files for the GeoIP library
+     libgeoip1 - non-DNS IP-to-country resolver library
      python3-whois - Python module for retrieving WHOIS information - Python 3
      python3-crypto - cryptographic algorithms and protocols for Python 3
      python3-requests - elegant and simple HTTP library for Python3, built for human beings
@@ -66,7 +68,7 @@ Puedes obtener todas las librerías requeridas automáticamente usando (como roo
 
 Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
 
-     sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy
+     sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy libgeoip1 libgeoip-dev
 
 En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
 

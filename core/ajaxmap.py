@@ -17,7 +17,7 @@ from .main import UFONet
 try:
     import pygeoip
 except:
-    print("\n[Error] [AI] Cannot import lib: pygeoip. \n\n To install it try:\n\n $ 'sudo apt-get install python3-geoip' or 'pip3 install pygeoip'\n")
+    print("\n[Error] [AI] Cannot import lib: pygeoip. \n\n To install it try:\n\n $ 'sudo apt-get install python3-geoip libgeoip-dev libgeoip1'\n")
     sys.exit(2)
 
 class AjaxMap(object):
