@@ -1,0 +1,129 @@
+<center>
+<table cellpadding="24" cellspacing="25" border="1">
+<tr><td><pre><table><tr><td><center><pre><h1><u>UFONet F.A.Q. v1.7 [Revision: 07/2021]</u></h1>Full Version (updated!) online: <a href="https://ufonet.03c8.net/FAQ.html">https://ufonet.03c8.net/FAQ.html</a><a href="/"></center></td></tr><tr><td><pre><ul><hr>
+<li><b>What is UFONet?</b></li>
+It is a toolkit designed to launch <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks.
+
+<hr>
+<li><b>What is a DDoS attack?</b></li>
+A Distributed Denial of Service (<a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a>) <u>attack</u> is an attempt to make an online service 
+unavailable by overwhelming it (for example, with traffic...) <u>from multiple sources</u>.
+
+<hr> 
+<li><b>What is a DoS attack?</b></li>
+A Denial of Service (<a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a>) <u>attack</u> is an attempt to make an online service 
+unavailable by overwhelming it (for example, with traffic...) <u>from a single source</u>.
+
+<hr>
+<li><b>What is a Botnet?</b></li>
+A <a href="https://en.wikipedia.org/wiki/Botnet" target="_blank">Botnet</a> is a collection of computers often referred to as "zombies" that allows an attacker
+to control them. It is commonly used to make DDoS attacks.
+
+<hr>
+<li><b>What is the philosophy behind UFONet?</b></li>
+<i>"On a samurai sword or even any tool, what matters is who goes to use it and for what, 
+not who builds it and when..."</i>
+
+<hr>
+<li><b>Why can UFONet be more special, than for example, other botnets previously built?</b></li>
+Because UFONet tries not living traces (IPs, etc...) from the origin of the attack. And
+of course, because <b><u>it is free/libre</u></b>. ;-)
+
+<hr>
+<li><b>How does UFONet work technically?</b></li>
+<a href="http://ufonet.03c8.net" target="_blank">UFONet</a> is a tool designed to launch <a href="https://en.wikipedia.org/wiki/OSI_model#Layer_7:_Application_Layer" target="_blank">Layer 7</a> (APP/HTTP) DDoS attacks, using '<a href="http://cwe.mitre.org/data/definitions/601.html" target="_blank">Open Redirect</a>'
+vectors, generally located on third-party web applications (a botnet) and other
+powerful DoS attacks, some including different <a href="https://en.wikipedia.org/wiki/OSI_model" target="_blank">OSI model</a> layers, as for example
+the <i>TCP/SYN flood attack</i>, which is performed on <a href="https://en.wikipedia.org/wiki/OSI_model#Layer_3:_Network_Layer" target="_blank">Layer 3</a> (Network).
+
+This <a href="https://ufonet.03c8.net/ufonet/ufonet-schema.png" target="_blank">schema</a> shows you how the architecture of the requests are made when performing
+a simple HTTP/WebAbuse DDoS attack.
+
+<hr>
+<li><b>Is UFONet a "strong" botnet?</b></li>
+Well!. It depends on how you understand a botnet as "strong". If you understand it as;
+
+ *  '<u>privacy</u>'; UFONet is the best -ninja- DDoS/DoS tool...
+ *  '<u>traffic volume</u>'; it depends on; 'zombies', bandwidth, target's conf, etc...
+
+With UFONet it's not about having a lot of 'zombies', it's more about those you have
+work properly. If they are nice, you can 'defeat' a 'small' webserver just with
+a 'couple of dozens'.
+
+Or for example, in a scenario in which a target is using a VPS service with some limited
+bandwidth rate (ex: 1GB/month) for the attacker is just a matter of time to run the tool
+and wait until traffic (noise) reaches the maximum limit that closes the service.
+
+Commonly people understand a botnet as an individual tool but UFONet is also a <a href="https://en.wikipedia.org/wiki/Peer-to-peer" target="_blank">P2P</a>/<a href="https://en.wikipedia.org/wiki/Darknet" target="_blank">darknet</a>,
+that can be used to connect others machines and to run complex schemas involving other people 
+working cooperatively: sharing 'zombies', reporting statistics (with rankings, clans)...
+
+Therefore, UFONet can also be defined fundamentally, as: <b>a botnet of botnets</b>, which is 
+obviously a harder and effective way to overwhelm an objective, than when a single person 
+tries it individually.
+
+<hr>
+<li><b>What's the difference between: 'zombies', 'aliens', 'droids', 'ucavs'...?</b></li>
+ * <u>Zombie</u>: HTTP GET 'Open Redirect' bot
+
+ ex: https://ZOMBIE.com/check?uri=$TARGET
+
+ * <u>Droid</u>: HTTP GET 'Open Redirect' bot with params
+
+ ex: https://ZOMBIE.COM/css-validator/validator?uri=$TARGET&profile=css3
+
+ * <u>Alien</u>: HTTP POST 'Open Redirect' bot
+
+ ex: https://ZOMBIE.com/analyze.html;$POST;url=$TARGET
+
+ * <u>Drone</u>: HTTP 'Web Abuse' bot
+
+ ex: https://www.isup.me/$TARGET
+
+ * <u>X-RPC</u>: XML-RPC Vulnerability
+
+ ex: https://ZOMBIE.COM/xmlrpc.php
+
+<hr> 
+<li><b>Is it possible to stress target's database using UFONet?</b></li>
+Yes, it is. For example, you can order to your 'zombies' to submit random valid requests 
+on a target's search input form. This floods database with queries.
+
+<hr>
+<li><b>Can I directly attack an IP address?</b></li>
+Yes, you can.
+
+<hr>
+<li><b>What kind of extra attacks does the tool have?</b></li><pre>
+ - LOIC: <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon</a>
+ - LORIS: <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">https://en.wikipedia.org/wiki/Slowloris_(software)</a>
+ - UFOSYN: <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">https://en.wikipedia.org/wiki/SYN_flood</a>
+ - FRAGGLE: <a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">https://en.wikipedia.org/wiki/Fraggle_attack</a>
+ - UFORST: <a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood</a>
+ - SPRAY: <a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">https://en.wikipedia.org/wiki/DRDOS</a>
+ - SMURF: <a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">https://en.wikipedia.org/wiki/Smurf_attack</a>
+ - XMAS: <a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">https://en.wikipedia.org/wiki/Christmas_tree_packet</a>
+ - DROPER: <a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">https://en.wikipedia.org/wiki/IP_fragmentation_attack</a>
+ - SNIPER: <a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">https://www.imperva.com/learn/application-security/snmp-reflection/</a>
+ - TACHYON: <a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">https://www.us-cert.gov/ncas/alerts/TA13-088A</a>
+ - PINGER: <a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/</a>
+ - MONLIST: <a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">https://www.us-cert.gov/ncas/alerts/TA14-013A</a>
+ - UFOACK: <a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">https://www.f5.com/services/resources/glossary/push-and-ack-flood</a>
+ - OVERLAP: <a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">https://cyberhoot.com/cybrary/fragment-overlap-attack/</a>
+ - UFOUDP: <a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">https://en.wikipedia.org/wiki/UDP_flood_attack</a>
+ - NUKE: <a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf</a></pre>
+<hr>
+<li><b>What is a 'wormhole'?</b></li>
+It is an <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat" target="_blank">IRC</a> gateway to <a href="https://en.wikipedia.org/wiki/Freenode" target="_blank">Freenode</a> where UFONet 'masters' can meet.
+
+<hr>
+<li><b>What is a 'blackhole'?</b></li>
+It is a <a href="https://en.wikipedia.org/wiki/Peer-to-peer" target="_blank">P2P</a> daemon to share 'zombies' with other UFONet 'masters'.
+
+<hr>
+<li><b>Where can I report a bug?</b></li>
+You can report errors on: <a href="https://github.com/epsylon/ufonet/issues" target="_blank">Github issues</a>.
+
+Also you can stay in touch reporting on my "mothership" (using BOARD provided by default).
+  
+If nobody gets back to you, then drop me an <a href="mailto: epsylon@riseup.net">e-mail</a>.</ul></pre></td></tr></table></pre></td></tr></table></center>

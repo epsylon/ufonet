@@ -1,0 +1,23 @@
+#infovis {
+    position:relative;
+    width:1024px;
+    height:768px;
+    margin:auto;
+    overflow:hidden;
+}
+
+.tip {
+    color: yellow;
+    width: 339px;
+    background-color: black;
+    border:1px solid yellow;
+    -moz-box-shadow:#555 2px 2px 8px;
+    -webkit-box-shadow:#555 2px 2px 8px;
+    -o-box-shadow:#555 2px 2px 8px;
+    box-shadow:#555 2px 2px 8px;
+    opacity:0.9;
+    filter:alpha(opacity=90);
+    font-size:10px;
+    font-family:Â Courier, 'Courier New', monospace;
+    padding:14px;
+}

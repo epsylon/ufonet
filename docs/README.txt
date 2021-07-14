@@ -37,15 +37,12 @@ Welcome to UFONet [ DDoS+DoS ] Botnet/C&C/Darknet ;-)
 # Summary
 ###############################
 
-UFONet - is a toolkit designed to launch DDoS and DoS attacks.
+UFONet - Is a set of hacktivist tools that allow launching coordinated 
+         DDoS and DoS attacks and combine both in a single offensive.
 
-See these links for more info:
-
-   - CWE-601:Open Redirect: 
-     https://cwe.mitre.org/data/definitions/601.html
-
-   - OWASP:URL Redirector Abuse: 
-     https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
+         It also works as an encrypted DarkNET to publish and receive
+         content by creating a global client/server network based on 
+         a direct-connect P2P architecture.
 
 ###############################
 # Installing
@@ -121,9 +118,9 @@ By default UFONet will use a search engine called 'DuckDuckGo'. But you can choo
 
 This is the list of available search engines with last time that they were working:
 
-        - duckduckgo [01/02/2020: OK!]
-        - bing       [01/02/2020: OK!]
-        - yahoo      [01/02/2020: OK!]
+        - duckduckgo  [13/07/2021: OK!]
+        - bing        [13/07/2021: OK!]
+        - yahoo       [13/07/2021: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -417,24 +414,29 @@ To launch it use:
 
 This will open a tab on your default browser with all features of the tool and some 'extra' options:
 
- - NEWS: Allows to read last "news" published by a "mothership"
- - MISSIONS: Allows to read last "missions" published by a "mothership"
- - SHIP STATS: Allows to review statistics from your "spaceship"
- - RANKING: Allows to check your "ranking" position
- - BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
- - SHIP LINKS: Allows to review links published by a "mothership"
- - SHIP STREAMS: Allows to review streams (video/audio/live) published by a "mothership"
- - SHIP GAMES: Allows to review games from your "spaceship"
- - BROWSER: Allows to navigate/surf the Internet from a sandbox
- - GLOBAL.NET: Allows to review locations published by other "motherships"
- - WARPS: Allows to interact with a "mothership" to download/upload "zombies"
- - GLOBAL GRID: Allows to review statistics from other "spaceships"
- - WARGAMES: Allows to propose and join some real "wargames"
+ - SHIP.NEWS: Allows to read last "news" published by a "mothership"
+ - SHIP.MISSIONS: Allows to read last "missions" published by a "mothership"
+ - SHIP.STATS: Allows to review statistics from your "spaceship"
+ - SHIP.RANKING: Allows to check your "ranking" position
+ - SHIP.LINKS: Allows to review links published by a "mothership"
+ - SHIP.STREAMS: Allows to review streams (video/audio/live) published by a "mothership"
+ - SHIP.TV: Allows to play videos published by a "mothership"
+ - SHIP.GAMES: Allows to review games from your "spaceship"
+ - SHIP.BROWSER: Allows to navigate/surf the Internet from a sandbox
+ - SHIP.WARPS: Allows to interact with a "mothership" to download/upload "zombies"
+ - GLOBAL.BOARD: Allows to send/receive messages to/from a "mothership" (a forum)
+ - GLOBAL.GRID: Allows to review statistics from other "spaceships"
+ - GLOBAL.WARGAMES: Allows to propose and join some real "wargames"
+ - GLOBAL.RADAR: Allows to review locations published by other "motherships"
  - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+14.07.2021 : v.1.7
+--------------------------
 
 --------------------------
 17.08.2020 : v.1.6

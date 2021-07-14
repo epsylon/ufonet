@@ -12,6 +12,9 @@
 on the Layer 7 (APP/HTTP) through the exploitation of Open Redirect vectors on third-party websites to act as a botnet 
 and on the Layer3 (Network) abusing the protocol.
 
+  It also works as an encrypted DarkNET to publish and receive content by creating a global client/server network based 
+on a direct-connect P2P architecture.
+
   See these links for more info:
 
    - FAQ:
@@ -131,21 +134,27 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-1.png "UFONet Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-1.png "UFONet Shell Version")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-2.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-2.png "UFONet Shell Board")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-shell-3.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-3.png "UFONet GUI Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-main_small.png "UFONet GUI Main Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-main_small.png "UFONet GUI Main Panel")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-botnet.png "UFONet GUI Botnet")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-help_small.png "UFONet GUI Help")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-stats.png "UFONet GUI General Stats")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-botnet.png "UFONet GUI Botnet")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-stats.png "UFONet GUI General Stats")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-ranking_small.png "UFONet GUI Ranking")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-marauder-attack.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-attack.png "UFONet GUI Attack")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-board_small.png "UFONet GUI Board")
+
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-wargames_small.png "UFONet GUI Wargames")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-gui3_small.png "UFONet GeoMap /deploying/")
 

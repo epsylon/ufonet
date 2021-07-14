@@ -4,7 +4,7 @@ How to set up a 'grider' - eg a P2P/Community stats/board server
 
 * Setup web server (apache, nginx...) with a folder "ufonet", this folder should be:
   - Located in: /var/www/ufonet
-  - Owned by the user running the blackhole
+  - Owned by the user running the grider
   - Accessible with: http(s)://<your ip>/ufonet/
 
 * Start the grider with: 

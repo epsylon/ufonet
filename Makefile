@@ -1,10 +1,8 @@
-# $Id: Makefile,v 1.6 2008/10/29 01:01:35 ghantoos Exp $
-#
 PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/ufonet
 PROJECT=ufonet
-VERSION=1.6
+VERSION=1.7
 
 all:
 	@echo "make source - Create source package"

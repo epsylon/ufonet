@@ -37,15 +37,12 @@ Bienvenida a UFONet [ DDoS+DoS ] Botnet/C&C/Darknet ;-)
 # Introducción
 ###############################
 
-UFONet - es un conjunto de herramientas diseñado para lanzar ataques DDoS y DoS.
+UFONet -  Es un conjunto de herramientas hacktivistas que permiten el lanzamiento coordinado
+          de ataques DDoS y DoS, permitiendo combinar ambas técnicas en una sola ofensiva.
 
-En los siguientes enlaces tienes más información:
-
-   - CWE-601:Open Redirect: 
-     https://cwe.mitre.org/data/definitions/601.html
-
-   - OWASP:URL Redirector Abuse: 
-     https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2
+          También funciona como un DarkNET cifrada para publicar y recibir contenido 
+          mediante la creación de una red global de cliente/servidor basada en una 
+          arquitectura P2P de conexión directa. 
 
 ###############################
 # Instalando
@@ -122,9 +119,9 @@ Por defecto, UFONet utiliza un motor de búsqueda que se llama 'DuckDuckGo'. Per
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - duckduckgo  [01/02/2020: OK!]
-        - bing        [01/02/2020: OK!]
-        - yahoo       [01/02/2020: OK!]
+        - duckduckgo  [13/07/2021: OK!]
+        - bing        [13/07/2021: OK!]
+        - yahoo       [13/07/2021: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -423,24 +420,29 @@ Para lanzarla usa:
 Ésto abrirá una pestaña (o una ventana nueva) en tu navegador por defecto, con todas las opciones de la herramienta 
 más algunas "extra":
 
- - NEWS: Permite leer las últimas "noticias" publicadas por la "nave madre"
- - MISSIONS: Permite leer las últimas "misiones" publicadas por la "nave madre"
- - SHIP STATS: Permite consultar las estadísticas de tu "nave"
- - RANKING: Permite consultar tu posición en el "ranking"
- - BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
- - SHIP LINKS: Permite revisar los enlaces publicados por otras "naves"
- - SHIP STREAMS: Permite revisar los "streams" (video/audio/directo) publicados por otras "naves"
+ - SHIP.NEWS: Permite leer las últimas "noticias" publicadas por la "nave madre"
+ - SHIP.MISSIONS: Permite leer las últimas "misiones" publicadas por la "nave madre"
+ - SHIP.STATS: Permite consultar las estadísticas de tu "nave"
+ - SHIP.RANKING: Permite consultar tu posición en el "ranking"
+ - SHIP.LINKS: Permite revisar los enlaces publicados por otras "naves"
+ - SHIP.STREAMS: Permite revisar los "streams" (video/audio/directo) publicados por otras "naves"
+ - SHIP.TV: Permite ver videos publicados por otras "naves"
  - SHIP GAMES: Permite revisar los "juegos" que contiene tu "nave madre"
- - BROWSER: Permite navegar/surfear la Internet
- - GLOBAL.NET: Permite revisar las localizaciones publicadas por otras "naves"
- - WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
- - GLOBAL GRID: Permite revisar las estadísticas de otras "naves"
- - WARGAMES: Permite proponer y participar en algunos "juegos de guerra" reales
+ - SHIP.BROWSER: Permite navegar/surfear la Internet
+ - SHIP.WARPS: Permite interactuar con una "nave madre" para subir/bajar 'zombies'
+ - GLOBAL.BOARD: Permite enviar/recibir mensajes con una "nave madre" (un foro)
+ - GLOBAL.GRID: Permite revisar las estadísticas de otras "naves"
+ - GLOBAL.WARGAMES: Permite proponer y participar en algunos "juegos de guerra" reales
+ - GLOBAL.RADAR: Permite revisar las localizaciones publicadas por otras "naves"
  - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+14.07.2021 : v.1.7
+--------------------------
 
 --------------------------
 17.08.2020 : v.1.6

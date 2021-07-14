@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -45,7 +45,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
         description='\n{(D)enial(OFF)ensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nCode: 1.6 '+"\u25BC "+'[MR3] [ M4RAuD3R ] '+"\u25BC"+'\n')
+        version='\nVersion: 1.7 '+"\u25BC "+'[dKR] /KRäK!eN/ '+"\u25BC"+'\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
@@ -89,6 +89,7 @@ class UFONetOptions(optparse.OptionParser):
         group3.add_option("--attack-me", action="store_true", dest="attackme", help="Order 'zombies' to attack you (NAT required!)")
         self.add_option_group(group3)
         group4 = optparse.OptionGroup(self, "*Community*")
+        group4.add_option("--deploy", action="store_true", dest="deploy", help="Deploy data to share in '/var/www/ufonet/'")
         group4.add_option("--grider", action="store_true", dest="grider", help="Create a 'grider' to share 'stats/wargames/messages'")
         group4.add_option("--blackhole", action="store_true", dest="blackhole", help="Generate a 'blackhole' to share 'zombies'")
         group4.add_option("--up-to", action="store", dest="upip", help="Upload 'zombies' to IP (ex: --up-to '<IP>')")
@@ -150,22 +151,22 @@ class UFONetOptions(optparse.OptionParser):
         return tools
 
     def extra_tools(self):
-        etools =  '\n     _> ABDUCTOR                   * Defensive Shield Detector'
-        etools += '\n     _> AI.BOTNET                  * Intelligent Attack System'
-        etools += '\n     _> AI.BROWSER                 * Private Sandbox Browser'
-        etools += '\n     _> AI.EVASIVE                 * Automatic Evasion System'
-        etools += '\n     _> AI.GAMES                   * Fun & Games Center'
-        etools += '\n     _> AI.GEO                     * Geomapping System'
-        etools += '\n     _> AI.GLOBAL_NET              * Global UFONET Network'
-        etools += '\n     _> AI.LIBRARY                 * Public (data.Links) Library'
-        etools += '\n     _> AI.STATS                   * Live Stats Reporter'
-        etools += '\n     _> AI.STREAMING               * Video (data.Streams) Player'
-        etools += '\n     _> AI.WEB                     * Graphical User Web-Interface'
-        etools += '\n     _> BLACKHOLE                  * Warper (p2p.Botnet) Generator'
-        etools += '\n     _> CRYPTER                    * Telegram (crypto.Community) System'
-        etools += '\n     _> INSPECTOR                  * Objective Scanning Crawler'
-        etools += '\n     _> AI.NETWORK                 * Network (MACs, IPs) Reporter'
-        etools += '\n     _> XRAY                       * Ultra-Fast Ports Scanner'
+        etools =  '\n     _> ABDUCTOR                     * Defensive Shield Detector'
+        etools += '\n     _> AI.BOTNET                    * Intelligent Attack System'
+        etools += '\n     _> AI.BROWSER                   * Private Sandbox Browser'
+        etools += '\n     _> AI.EVASIVE                   * Automatic Evasion System'
+        etools += '\n     _> AI.GAMES                     * Fun & Games Center'
+        etools += '\n     _> AI.GEO                       * Geomapping System'
+        etools += '\n     _> AI.GLOBAL_NET                * Global UFONET Network'
+        etools += '\n     _> AI.LIBRARY                   * Public (data.Links) Library'
+        etools += '\n     _> AI.STATS                     * Live Stats Reporter'
+        etools += '\n     _> AI.STREAMING                 * Video (data.Streams) Player'
+        etools += '\n     _> AI.WEB                       * Graphical User Web-Interface'
+        etools += '\n     _> BLACKHOLE                    * Warper (p2p.Botnet) Generator'
+        etools += '\n     _> CRYPTER                      * Telegram (crypto.Community) System'
+        etools += '\n     _> INSPECTOR                    * Objective Scanning Crawler'
+        etools += '\n     _> AI.NETWORK                   * Network (MACs, IPs) Reporter'
+        etools += '\n     _> XRAY                         * Ultra-Fast Ports Scanner'
         return etools
 
     def extract_weapons(self):
@@ -174,24 +175,24 @@ class UFONetOptions(optparse.OptionParser):
         return weapons
 
     def extra_weapons(self):
-        eweapons = '\n     _> FRAGGLE                    * [DDoS] UDP Amplificator'
-        eweapons += '\n     _> TACHYON                    * [DDoS] DNS Amplificator'
-        eweapons += '\n     _> MONLIST                    * [DDoS] NTP Amplificator'
-        eweapons += '\n     _> SMURF                      * [DDoS] ICMP Amplificator'
-        eweapons += '\n     _> SNIPER                     * [DDoS] SNMP Amplificator'
-        eweapons += '\n     _> SPRAY                      * [DDoS] TCP SYN Reflector'
-        eweapons += '\n     _> DBSTRESS                   * [DDoS] HTTP-DB Stresser'
-        eweapons += '\n     _> LOIC                       * [ DoS] HTTP-FAST Requester'
-        eweapons += '\n     _> LORIS                      * [ DoS] HTTP-SLOW Requester'
-        eweapons += '\n     _> UFOSYN                     * [ DoS] TCP-SYN Flooder'
-        eweapons += '\n     _> XMAS                       * [ DoS] TCP-XMAS Flooder'
-        eweapons += '\n     _> NUKE                       * [ DoS] TCP-STARVATION Flooder'
-        eweapons += '\n     _> UFOACK                     * [ DoS] TCP-ACK Flooder'
-        eweapons += '\n     _> UFORST                     * [ DoS] TCP-RST Flooder'
-        eweapons += '\n     _> DROPER                     * [ DoS] IP-FRAGMENTATION Flooder'
-        eweapons += '\n     _> OVERLAP                    * [ DoS] IP-OVERLAP Flooder'
-        eweapons += '\n     _> PINGER                     * [ DoS] ICMP Flooder'
-        eweapons += '\n     _> UFOUDP                     * [ DoS] UDP Flooder'
+        eweapons = '\n     _> FRAGGLE                      * [DDoS] UDP Amplificator'
+        eweapons += '\n     _> TACHYON                      * [DDoS] DNS Amplificator'
+        eweapons += '\n     _> MONLIST                      * [DDoS] NTP Amplificator'
+        eweapons += '\n     _> SMURF                        * [DDoS] ICMP Amplificator'
+        eweapons += '\n     _> SNIPER                       * [DDoS] SNMP Amplificator'
+        eweapons += '\n     _> SPRAY                        * [DDoS] TCP SYN Reflector'
+        eweapons += '\n     _> DBSTRESS                     * [DDoS] HTTP-DB Stresser'
+        eweapons += '\n     _> LOIC                         * [ DoS] HTTP-FAST Requester'
+        eweapons += '\n     _> LORIS                        * [ DoS] HTTP-SLOW Requester'
+        eweapons += '\n     _> UFOSYN                       * [ DoS] TCP-SYN Flooder'
+        eweapons += '\n     _> XMAS                         * [ DoS] TCP-XMAS Flooder'
+        eweapons += '\n     _> NUKE                         * [ DoS] TCP-STARVATION Flooder'
+        eweapons += '\n     _> UFOACK                       * [ DoS] TCP-ACK Flooder'
+        eweapons += '\n     _> UFORST                       * [ DoS] TCP-RST Flooder'
+        eweapons += '\n     _> DROPER                       * [ DoS] IP-FRAGMENTATION Flooder'
+        eweapons += '\n     _> OVERLAP                      * [ DoS] IP-OVERLAP Flooder'
+        eweapons += '\n     _> PINGER                       * [ DoS] ICMP Flooder'
+        eweapons += '\n     _> UFOUDP                       * [ DoS] UDP Flooder'
         return eweapons
 
     def electronic_botnet(self):
@@ -307,7 +308,7 @@ class UFONetOptions(optparse.OptionParser):
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
-        if (not options.test and not options.testrpc and not options.target and not options.target_list and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.download_github and not options.upload and not options.upload_github and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.grider and not options.cryptomsg and not options.shownet and not options.xray and not options.timeline and not options.examples and not options.autosearch and not options.testoffline and not options.testall):
+        if (not options.test and not options.testrpc and not options.target and not options.target_list and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.download_github and not options.upload and not options.upload_github and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.grider and not options.cryptomsg and not options.shownet and not options.xray and not options.timeline and not options.examples and not options.autosearch and not options.testoffline and not options.testall and not options.deploy):
             print('='*75, "\n")
             print("888     888 8888888888 .d88888b.  888b    888          888    ")   
             print("888     888 888        d88P" "Y888b  8888b   888          888    ")
