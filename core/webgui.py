@@ -46,6 +46,7 @@ links_msg_sep = "#L#" # links stream separator
 streams_msg_sep = "#S#" # streams stream separator
 games_msg_sep = "#G#" # games stream separator
 globalnet_msg_sep = "#$#" # globalnet stream separator
+badkeys = [";", "/"] # some bad keys
 
 host = "0.0.0.0"
 port = 9999
@@ -3912,8 +3913,11 @@ function runCommandX(cmd,params) {
                     if len(f) == 2:
                         var = f[0]
                         value = f[1]
-                        value = value.replace("+", " ")
+                        value = value.replace("+", " ") # quoted space
                         value = urllib.parse.unquote(value)
+                        for key in badkeys: # sanitize user-input badkeys
+                            if key in value:
+                                value = value.replace(key, " ")
                         params[var] = value
         return params
 
