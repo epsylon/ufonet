@@ -4211,8 +4211,10 @@ function runCommandX(cmd,params) {
             flag_overlap = None
             flag_pinger = None
             flag_ufoudp = None
-            nonroot_cmd = "("+python_version+" -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
-            root_cmd = "(sudo "+python_version+" -i ufonet -a '"+pGet["target"]+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            target = pGet["target"].replace(" ","/")
+            target=urllib.parse.unquote(target)
+            nonroot_cmd = "("+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            root_cmd = "(sudo "+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
             end_cmd = ""+cmd_options + "|tee /tmp/out) &"
             if pGet["dbstress"]:
                 cmd += "--db '" +str(pGet["dbstress"])+ "' "
