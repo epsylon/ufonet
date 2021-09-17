@@ -53,7 +53,7 @@ DEBUG = False # use 'True' for detailed traceback
 class UFONet(object):
     def __init__(self):
         self.exit_msg = 'Donate BTC (Bitcoin) to keep UFONet (https://ufonet.03c8.net) strong!' # set msg show at the end [FILO ;-)]
-        self.blackhole = '176.28.23.46' # default download/upload zombies [Blackhole] [Server] / Try [DIY] your own [Mirror]...
+        self.blackhole = '46.163.118.220' # default download/upload zombies [Blackhole] [Server] / Try [DIY] your own [Mirror]...
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.github_zombies = 'https://raw.githubusercontent.com/epsylon/ufonet/master/botnet/' # default [RAW] download/upload zombies [Blackhole] [GitHub] [DIY]

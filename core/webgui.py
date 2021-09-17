@@ -29,7 +29,7 @@ from .main import UFONet
 from core.tools.abductor import Abductor
 
 #######SET-YOUR-BLACKHOLE-CONF-HERE###############################D
-default_blackhole = '176.28.23.46' # default blackhole            #
+default_blackhole = '46.163.118.220' # default blackhole            #
 crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
 
