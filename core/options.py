@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2022 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -22,6 +22,8 @@ class UFONetOptions(optparse.OptionParser):
         self.ntps_file = "botnet/ntp.txt" # set source path to retrieve 'ntps'
         self.snmps_file = "botnet/snmp.txt" # set source path to retrieve 'snmp'
         self.dorks_file = "botnet/dorks.txt" # set source path to retrieve 'dorks'
+        self.nodes_file = "data/nodes.txt" # set source path to retrieve 'nodes'
+        self.globalnet_file = "data/globalnet.txt" # set source path to retrieve 'globalnet'
         self.sengines = self.extract_sengines()
         self.zombies = int(self.extract_zombies())
         self.aliens = int(self.extract_aliens())
@@ -32,6 +34,8 @@ class UFONetOptions(optparse.OptionParser):
         self.ntps = int(self.extract_ntps())
         self.snmps = int(self.extract_snmps())
         self.dorks = int(self.extract_dorks())
+        self.nodes = int(self.extract_nodes())
+        self.globalnet = int(self.extract_globalnet())
         self.tools = self.extract_tools()
         self.etools = self.extra_tools()
         self.weapons = self.extract_weapons()
@@ -45,7 +49,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
         description='\n{(D)enial(OFF)ensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nVersion: 1.7 '+"\u25BC "+'[dKR] /KRäK!eN/ '+"\u25BC"+'\n')
+        version='\nVersion: 1.8 '+"\u25BC "+'[DPh] DarK-PhAnT0m! '+"\u25BC"+'\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
@@ -92,6 +96,7 @@ class UFONetOptions(optparse.OptionParser):
         group4.add_option("--deploy", action="store_true", dest="deploy", help="Deploy data to share in '/var/www/ufonet/'")
         group4.add_option("--grider", action="store_true", dest="grider", help="Create a 'grider' to share 'stats/wargames/messages'")
         group4.add_option("--blackhole", action="store_true", dest="blackhole", help="Generate a 'blackhole' to share 'zombies'")
+        group4.add_option("--download-nodes", action="store_true", dest="download_nodes", help="Download 'zombies' from Radar")
         group4.add_option("--up-to", action="store", dest="upip", help="Upload 'zombies' to IP (ex: --up-to '<IP>')")
         group4.add_option("--down-from", action="store", dest="dip", help="Download 'zombies' from IP (ex: --down-from '<IP>')")
         group4.add_option("--upload-zombies", action="store_true", dest="upload", help="Upload 'zombies' to Community")
@@ -287,6 +292,24 @@ class UFONetOptions(optparse.OptionParser):
             dorks = "broken!"
         return dorks
 
+    def extract_nodes(self):
+        try:
+            f = open(self.nodes_file)
+            nodes = len(f.readlines())
+            f.close()
+        except:
+            nodes = "broken!"
+        return nodes
+
+    def extract_globalnet(self):
+        try:
+            f = open(self.globalnet_file)
+            globalnet = len(f.readlines())
+            f.close()
+        except:
+            globalnet = "broken!"
+        return globalnet
+
     def extract_d_energy(self): # Dark Energy Density = (Fluctuations)*(Baryon)*(Event horizont sphere)/(Age of the Universe)
         d_density = 0.8288*0.05
         d_sphere = d_density * 4 * math.pi * 16 **2
@@ -294,7 +317,7 @@ class UFONetOptions(optparse.OptionParser):
         return d_energy
 
     def extract_y_energy(self): # Y-Energy = (Momento Entropy)*(Energy of Invariability lost)  
-        y_entropy = int(self.total_botnet)+int(self.dorks)+int(self.sengines)+int(self.tools)+int(self.weapons)
+        y_entropy = int(self.total_botnet)+int(self.dorks)+int(self.sengines)+int(self.tools)+int(self.weapons)+int(self.nodes)+int(self.globalnet)
         y_energy = y_entropy * 0.49
         return y_energy
 
@@ -308,7 +331,7 @@ class UFONetOptions(optparse.OptionParser):
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
-        if (not options.test and not options.testrpc and not options.target and not options.target_list and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download and not options.download_github and not options.upload and not options.upload_github and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.grider and not options.cryptomsg and not options.shownet and not options.xray and not options.timeline and not options.examples and not options.autosearch and not options.testoffline and not options.testall and not options.deploy):
+        if (not options.test and not options.testrpc and not options.target and not options.target_list and not options.checktor and not options.search and not options.dorks and not options.inspect and not options.abduction and not options.update and not options.download_nodes and not options.download and not options.download_github and not options.upload and not options.upload_github and not options.web and not options.attackme and not options.upip and not options.dip and not options.blackhole and not options.grider and not options.cryptomsg and not options.shownet and not options.xray and not options.timeline and not options.examples and not options.autosearch and not options.testoffline and not options.testall and not options.deploy):
             print('='*75, "\n")
             print("888     888 8888888888 .d88888b.  888b    888          888    ")   
             print("888     888 888        d88P" "Y888b  8888b   888          888    ")
@@ -326,6 +349,9 @@ class UFONetOptions(optparse.OptionParser):
             print(' -> _BOTNET [DDoS]:   [', format(int(self.total_botnet), '08d'),'] '+"\u25BC"+' Bots (Available)'+ self.ebotnet)
             print('\n -> _DORKS:           [', format(int(self.dorks), '08d'), '] '+"\u25BC"+' Open Redirect (CWE-601) patterns')
             print('     _> ENGINES       [', format(int(self.sengines), '08d'), ']   * Dorking providers (Working)')
+            print('\n -> _PEERS:           [', format(int(self.globalnet)+int(self.nodes), '08d'), '] '+"\u25BC"+' Blackholes (Community)')
+            print('     _> WARPS         [', format(int(self.nodes), '08d'), ']   * Static W.A.R.P.S')
+            print('     _> NODES         [', format(int(self.globalnet), '08d'), ']   * Dynamic Radar Detector')
             print('\n -> _TOOLS:           [', format(int(self.tools), '08d'),'] '+"\u25BC"+' Extra Tools (Misc)'+self.etools)
             print('\n -> _WEAPONS:         [', format(int(self.weapons), '08d'),'] '+"\u25BC"+' Extra Attacks (DDoS & DoS)'+ self.eweapons)
             print('\n -> _X-ENERGY [X'+"\u2091"+''+"\N{SUBSCRIPT EIGHT}"+']:  [', format(int(self.x_energy), '08d'),'] '+"\u25BC"+' '+self.formula+'\n')

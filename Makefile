@@ -2,7 +2,7 @@ PYTHON=`which python`
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/ufonet
 PROJECT=ufonet
-VERSION=1.7
+VERSION=1.8
 
 all:
 	@echo "make source - Create source package"

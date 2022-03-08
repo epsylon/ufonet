@@ -48,7 +48,7 @@ UFONet -  Es un conjunto de herramientas hacktivistas que permiten el lanzamient
 # Instalando
 ###############################
 
-UFONet funciona en muchas plataformas. Requiere Python (>2.7.9) y las siguientes librerías:
+UFONet funciona en muchas plataformas. Requiere Python (>=3) y las siguientes librerías:
 
      python3-pycurl - Python bindings to libcurl (Python 3)
      python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
@@ -119,9 +119,9 @@ Por defecto, UFONet utiliza un motor de búsqueda que se llama 'DuckDuckGo'. Per
 
 Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
 
-        - duckduckgo  [13/07/2021: OK!]
-        - bing        [13/07/2021: OK!]
-        - yahoo       [13/07/2021: OK!]
+        - duckduckgo  [02/2022: OK!]
+        - bing        [02/2022: OK!]
+        - yahoo       [02/2022: OK!]
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
@@ -434,11 +434,16 @@ más algunas "extra":
  - GLOBAL.GRID: Permite revisar las estadísticas de otras "naves"
  - GLOBAL.WARGAMES: Permite proponer y participar en algunos "juegos de guerra" reales
  - GLOBAL.RADAR: Permite revisar las localizaciones publicadas por otras "naves"
+ - GLOBAL.NEWS: Permite leer noticias relacionadas con UFONet
  - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+02.03.2022 : v.1.8
+--------------------------
 
 --------------------------
 14.07.2021 : v.1.7
@@ -520,6 +525,7 @@ más algunas "extra":
 # Gracias a
 ###############################
 
+- BP<3
 - UFo & Mandingo & Ikujam
 - Phineas Fisher ;-)
 - The Shadow Brokers (TSB) ;_)

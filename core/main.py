@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2022 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -11,6 +11,8 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time, threading, base64, string, math
 import io, socket, ssl, cgi, json, gzip
+from Crypto.Cipher import AES
+from hashlib import sha1, sha256
 try:
     from urllib.parse import urlparse as urlparse
 except:
@@ -54,6 +56,7 @@ class UFONet(object):
     def __init__(self):
         self.exit_msg = 'Donate BTC (Bitcoin) to keep UFONet (https://ufonet.03c8.net) strong!' # set msg show at the end [FILO ;-)]
         self.blackhole = '46.163.118.220' # default download/upload zombies [Blackhole] [Server] / Try [DIY] your own [Mirror]...
+        self.crypto_key = "U-NATi0n!" # default cryptkey
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.github_zombies = 'https://raw.githubusercontent.com/epsylon/ufonet/master/botnet/' # default [RAW] download/upload zombies [Blackhole] [GitHub] [DIY]
@@ -80,6 +83,7 @@ class UFONet(object):
         self.links_file = "data/links.txt" # set source path to retrieve [Blackhole] [Links]
         self.streams_file = "data/streams.txt" # set source path to retrieve [Blackhole] [Streams]
         self.globalnet_file = "data/globalnet.txt" # set source path to retrieve [Blackhole] [Globalnet]
+        self.nodes_file = "data/nodes.txt" # set source path to retrieve [Blackhole] [Community] [Nodes]
         self.news_file = "data/news.txt" # set source path to retrieve [Blackhole] [News]
         self.tv_file = "data/tv.txt" # set source path to retrieve [Blackhole] [TV]
         self.missions_file = "data/missions.txt" # set source path to retrieve [Blackhole] [Missions]
@@ -165,6 +169,11 @@ class UFONet(object):
         self.expire_timing = 30 # default expiring time per round
         self.extra_zombies_lock = False # used to lock threading flow when [ARMY] is required
         self.ac_control = [] # used by 'herd.py' to lock threading flow when [Zombies] are returning
+        self.globalnet_msg_sep = "#$#" # globalnet stream separator
+        self.trans_5C = ''.join([chr (x ^ 0x5c) for x in range(256)])
+        self.trans_36 = ''.join([chr (x ^ 0x36) for x in range(256)])
+        self.trans_5C = self.trans_5C.encode("latin-1")
+        self.trans_36 = self.trans_36.encode("latin-1")
 
     def mothership_baptism(self):
         if os.path.exists(self.mothershipname) == True:
@@ -208,19 +217,19 @@ class UFONet(object):
         print("        -(00)-     + (XX) +   -(00)-            ||                                             ||")
         print("   ||     ||   O ==*~~~~~~*== 0 ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
         print(" -(00)-          (0)  XX  (0)           -(00)-  ||                                             ||")
-        print("   ||             \| (00) |/              ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
+        print("   ||    _     _  \| (00) |/  _     _     ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
         print("        (O)_  (O)  0'----'0  (O)  _(O)          ||     |-> DROIDS     #     |-> LORIS          ||")   
         print("            |  |.''.( xx ).''.|  |              ||     |-> ALIENS     #     |-> UFOSYN         ||")
-        print("            .'.'   X|'..'|X   '.'.              ||     |-> UCAVs      #     |-> XMAS           ||")
+        print("            .'.'  +X|'..'|X+  '.'.              ||     |-> UCAVs      #     |-> XMAS           ||")
         print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||     |-> X-RPCs     #     |-> NUKE           ||")
-        print("    (O).)-|0|  \   x| ## |x   /  |0|-(.(O)      ||     |-> DBSTRESS   #     |-> UFOACK         ||")
+        print("   +(O).)-|0|  \   x| ## |x   /  |0|-(.(O)+     ||     |-> DBSTRESS   #     |-> UFOACK         ||")
         print("     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||     |-> SPRAY      #     |-> UFORST         ||")
         print("        _ | ||  '-.___||___.-'  || | _          ||     |-> SMURF      #     |-> DROPER         ||")
         print("     .' _ | ||==O |   __   | O==|| | _ '.       ||     |-> TACHYON    #     |-> OVERLAP        ||")
         print("    / .' ''.|  || | /_00_\ | ||  |.'' '. \      ||     |-> MONLIST    #     |-> PINGER         ||")
-        print("    | '###  |  =| | ###### | |=  |' ###  |      ||     |-> FRAGGLE    #     |-> UFOUDP         ||")
-        print("    | |(0)| '.  0\||__**_ ||/0  .' |(0)| |      ||     |-> SNIPER     #                        ||")
-        print("    \ '._.'   '.  | \_##_/ |  .'   '._.' /      ||                                             ||")
+        print(" _  | '###  |  =| | ###### | |=  |' ###  |  _   ||     |-> FRAGGLE    #     |-> UFOUDP         ||")
+        print("(0)-| |(0)| '.  0\||__**_ ||/0  .' |(0)| |-(0)  ||     |-> SNIPER     #                        ||")
+        print(" *  \ '._.'   '.  | \_##_/ |  .'   '._.' /  *   ||                                             ||")
         print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       #|=============================================|#")
         print("    .'_.-|            YY            |-._'.      ||                                             ||")
         print("                                                ||  -> [ UFONet: https://ufonet.03c8.net ] <-  ||") 
@@ -341,6 +350,59 @@ class UFONet(object):
         chargo = self.check_mothership_chargo() # check mothership chargo
         self.update_max_chargo(int(chargo)) # update max chargo stats
         self.generate_exit_msg() # generate random exit msg
+
+    def hmac_sha1(self, key, msg):
+        if len(key) > 20:
+            key = sha1(key).digest()
+        key += chr(0).encode('utf-8') * (20 - len(key))
+        o_key_pad = key.translate(self.trans_5C)
+        i_key_pad = key.translate(self.trans_36)
+        return sha1(o_key_pad + sha1(i_key_pad + msg).digest()).digest()
+
+    def derive_keys(self, key):
+        key = key.encode('utf-8')
+        h = sha256()
+        h.update(key)
+        h.update('cipher'.encode('utf-8'))
+        cipher_key = h.digest()
+        h = sha256()
+        h.update(key)
+        h.update('mac'.encode('utf-8'))
+        mac_key = h.digest()
+        return (cipher_key, mac_key)
+
+    def decrypt(self, key, text):
+        KEY_SIZE = 32
+        BLOCK_SIZE = 16
+        MAC_SIZE = 20
+        mode = AES.MODE_CFB
+        try:
+            iv_ciphertext_mac = base64.urlsafe_b64decode(text)
+        except:
+            try:
+                padding = len(text) % 4
+                if padding == 1:
+                    return ''
+                elif padding == 2:
+                    text += b'=='
+                elif padding == 3:
+                    text += b'='
+                iv_ciphertext_mac = base64.urlsafe_b64decode(text)
+            except TypeError:
+                return None
+        iv = iv_ciphertext_mac[:BLOCK_SIZE]
+        ciphertext = iv_ciphertext_mac[BLOCK_SIZE:-MAC_SIZE]
+        mac = iv_ciphertext_mac[-MAC_SIZE:]
+        (cipher_key, mac_key) = self.derive_keys(key)
+        expected_mac = self.hmac_sha1(mac_key, iv + ciphertext)
+        if mac != expected_mac:
+            return None
+        aes = AES.new(cipher_key, mode, iv)
+        self.decryptedtext = aes.decrypt(ciphertext)
+        try:
+            self.decryptedtext = self.decryptedtext.decode('utf-8')
+        except:
+            pass
 
     def run(self, opts=None):
         if opts:
@@ -1334,7 +1396,7 @@ class UFONet(object):
                     os.makedirs(np)
                     print("[AI] Created folder at: '"+self.warping_path+"'\n")
                 else:
-                    print("[AI] Path to folder: '"+self.warping_path+"' exists! -> [PASSING!]\n")
+                    print("[AI] Path to folder: '"+self.warping_path+"' exists! -> [Passing!]\n")
                 from pathlib import Path # import pathlib
                 import shutil # import shutil
                 src = 'data/'
@@ -1493,6 +1555,17 @@ class UFONet(object):
             options.upload = True
             self.blackhole = options.upip
 
+        # download list of [Zombies] from Community nodes (Radar) [02/02/2022 OK!]
+        if options.download_nodes:
+            try:
+                self.banner()
+                print("\n[AI] Downloading list of [Zombies] from [Radar] [Blackhole] [Nodes] ...\n")
+                print('='*22 + '\n')
+                download_nodes_list = self.downloading_nodes_list()
+            except Exception as e:
+                print ("[Error] [AI] Something wrong downloading! -> [Exiting!]\n")
+                return
+
         # download list of [Zombies] from Community server [20/01/2020 OK!]
         if options.download:
             try:
@@ -1638,7 +1711,43 @@ class UFONet(object):
             self.list_rpcs.append(name_rpc)
         self.num_rpcs = str(len(self.rpcs))
         f.close()
-        self.total_botnet = str(int(self.num_zombies) + int(self.num_aliens) + int(self.num_droids) + int(self.num_ucavs) + int(self.num_rpcs))
+        f = open(self.dnss_file)
+        self.dnss = f.readlines()
+        self.dnss = [dns.replace('\n', '') for dns in self.dnss]
+        self.list_dnss = []
+        for dns in self.dnss:
+            t = urlparse(dns)
+            name_dns = t.netloc
+            if name_dns == "":
+                name_dns = dns
+            self.list_dnss.append(name_dns)
+        self.num_dnss = str(len(self.dnss))
+        f.close()
+        f = open(self.ntps_file)
+        self.ntps = f.readlines()
+        self.ntps = [ntp.replace('\n', '') for ntp in self.ntps]
+        self.list_ntps = []
+        for ntp in self.ntps:
+            t = urlparse(ntp)
+            name_ntp = t.netloc
+            if name_ntp == "":
+                name_ntp = ntp
+            self.list_ntps.append(name_ntp)
+        self.num_ntps = str(len(self.ntps))
+        f.close()
+        f = open(self.snmps_file)
+        self.snmps = f.readlines()
+        self.snmps = [snmp.replace('\n', '') for snmp in self.snmps]
+        self.list_snmps = []
+        for snmp in self.snmps:
+            t = urlparse(snmp)
+            name_snmp = t.netloc
+            if name_snmp == "":
+                name_snmp = snmp
+            self.list_snmps.append(name_snmp)
+        self.num_snmps = str(len(self.snmps))
+        f.close()
+        self.total_botnet = str(int(self.num_zombies) + int(self.num_aliens) + int(self.num_droids) + int(self.num_ucavs) + int(self.num_rpcs) + int(self.num_dnss) + int(self.num_ntps) + int(self.num_snmps))
         return self.total_botnet
 
     def update_flying_stats(self):
@@ -2466,6 +2575,8 @@ class UFONet(object):
             streams_reply = urllib.request.urlopen(streams, context=self.ctx, timeout=timeout).read().decode('utf-8')
             globalnet = urllib.request.Request('https://'+self.blackhole+'/ufonet/globalnet.txt', None, headers)
             globalnet_reply = urllib.request.urlopen(globalnet, context=self.ctx, timeout=timeout).read().decode('utf-8')
+            nodes = urllib.request.Request('https://'+self.blackhole+'/ufonet/nodes.txt', None, headers)
+            nodes_reply = urllib.request.urlopen(nodes, context=self.ctx, timeout=timeout).read().decode('utf-8')
         else:
             news = urllib.request.Request('http://'+self.blackhole+'/ufonet/news.txt', None, headers)
             news_reply = urllib.request.urlopen(news, context=self.ctx).read().decode('utf-8')
@@ -2485,6 +2596,8 @@ class UFONet(object):
             streams_reply = urllib.request.urlopen(streams, context=self.ctx).read().decode('utf-8')
             globalnet = urllib.request.Request('http://'+self.blackhole+'/ufonet/globalnet.txt', None, headers)
             globalnet_reply = urllib.request.urlopen(globalnet, context=self.ctx).read().decode('utf-8')
+            nodes = urllib.request.Request('http://'+self.blackhole+'/ufonet/nodes.txt', None, headers)
+            nodes_reply = urllib.request.urlopen(nodes, context=self.ctx).read().decode('utf-8')
         f = open(self.news_file, 'w')
         f.write(news_reply)
         f.close()
@@ -2512,6 +2625,9 @@ class UFONet(object):
         f = open(self.globalnet_file, 'w')
         f.write(globalnet_reply)
         f.close()
+        f = open(self.nodes_file, 'w')
+        f.write(nodes_reply)
+        f.close()
         print('-'*25 + "\n")
         print("[Info] [AI] GUI data correctly updated:\n")
         if news_reply:
@@ -2532,6 +2648,8 @@ class UFONet(object):
             print("[Info] [AI] [TV]       : OK!")
         if globalnet_reply:
             print("[Info] [AI] [GlobalNet]: OK!")
+        if nodes_reply:
+            print("[Info] [AI] [Nodes]    : OK!")
         print('-'*25)
         print("\n[AI] "+self.exit_msg+"\n")
 
@@ -2919,10 +3037,432 @@ class UFONet(object):
                     print("\n[AI] "+self.exit_msg+"\n")
                     return
 
+    def downloading_nodes_list(self):
+        # add your node to protect/share/distribute... [Zombies]
+        from io import BytesIO
+        self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+        headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        n = open(self.globalnet_file, 'r')
+        nodes = n.readlines()
+        n.close()
+        if not nodes:
+            print("[AI] [Control] Not any [Nodes] present in your [Radar]... [Exiting!]\n")
+            return
+        globalnet_list = []
+        if self.options.timeout: # set timeout
+            try:
+                timeout = int(self.options.timeout)
+            except:
+                timeout = 5
+        else:
+            timeout = 5
+        if timeout < 1:
+            timeout = 5 
+        if self.options.proxy: # set proxy
+            self.proxy_transport(self.options.proxy)
+        for m in nodes:
+            m = m.replace('\n','')
+            if self.globalnet_msg_sep in m:
+                m = m.split(self.globalnet_msg_sep)
+                enc_globalnet_owner = m[0] # owner
+                enc_globalnet_comment = m[1] # comment
+                enc_globalnet_warp = m[2] # warp
+                enc_globalnet_ip = m[3] # extract IP
+                self.decrypt(self.crypto_key, enc_globalnet_ip)
+                if self.decryptedtext:
+                    globalnet_ip = self.decryptedtext
+                self.decryptedtext = "" # clean decryptedtext buffer
+                print("[AI] Trying [Radar] [Blackhole] [Node]:", globalnet_ip, "\n")
+                if self.options.forcessl:
+                    if self.options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/abductions.txt.gz', None, headers)
+                        abductions_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        abductions_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/troops.txt.gz', None, headers)
+                        troops_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        troops_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/robots.txt.gz', None, headers)
+                        robots_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        robots_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/drones.txt.gz', None, headers)
+                        drones_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        drones_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/reflectors.txt.gz', None, headers)
+                        reflectors_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        reflectors_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/crystals.txt.gz', None, headers)
+                        crystals_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        crystals_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/warps.txt.gz', None, headers)
+                        warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        warps_reply = ""
+                    try:
+                        req = urllib.request.Request('https://'+globalnet_ip+'/ufonet/bosons.txt.gz', None, headers)
+                        bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        bosons_reply = ""
+                else:
+                    if self.options.proxy: # set proxy
+                        self.proxy_transport(options.proxy)
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/abductions.txt.gz', None, headers)
+                        abductions_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        abductions_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/troops.txt.gz', None, headers)
+                        troops_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        troops_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/robots.txt.gz', None, headers)
+                        robots_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        robots_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/drones.txt.gz', None, headers)
+                        drones_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        drones_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/reflectors.txt.gz', None, headers)
+                        reflectors_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        reflectors_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/crystals.txt.gz', None, headers)
+                        crystals_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        crystals_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/warps.txt.gz', None, headers)
+                        warps_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        warps_reply = ""
+                    try:
+                        req = urllib.request.Request('http://'+globalnet_ip+'/ufonet/bosons.txt.gz', None, headers)
+                        bosons_reply = urllib.request.urlopen(req, context=self.ctx, timeout=timeout).read()
+                    except:
+                        bosons_reply = ""
+            if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "" and bosons_reply == "":
+                print("[AI] [Radar] [Blackhole] [Node] Reply: [VORTEX FAILED!]\n")
+                print("[AI] [Control] [Radar] [Blackhole] [Node] Action: [Removing!]")
+                print('-'*12 + '\n')
+            else:
+                print("[AI] [Radar] [Blackhole] [Node] Reply: [VORTEX READY!] ;-)")
+                print('-'*12)
+                num_zombies = 0
+                if abductions_reply is not "":
+                    f_in_abductions = gzip.open(BytesIO(abductions_reply), 'rb')
+                    f_out_abductions = open('botnet/abductions.txt', 'wb')
+                    f_out_abductions.write(f_in_abductions.read())
+                    f_in_abductions.close()
+                    f_out_abductions.close()
+                    with open('botnet/abductions.txt') as f:
+                        for _ in f:
+                            num_zombies = num_zombies + 1
+                print("\n[Info] [Radar] [Blackhole] Total [Zombies]: "+ str(num_zombies))
+                num_robots = 0
+                if robots_reply is not "":
+                    f_in_robots = gzip.open(BytesIO(robots_reply), 'rb')
+                    f_out_robots = open('botnet/robots.txt', 'wb')
+                    f_out_robots.write(f_in_robots.read())
+                    f_in_robots.close()
+                    f_out_robots.close()
+                    with open('botnet/robots.txt') as f:
+                        for _ in f:
+                            num_robots = num_robots + 1
+                print("[Info] [Radar] [Blackhole] Total [Droids] : "+ str(num_robots))
+                num_aliens = 0
+                if troops_reply is not "":
+                    f_in_troops = gzip.open(BytesIO(troops_reply), 'rb')
+                    f_out_troops = open('botnet/troops.txt', 'wb')
+                    f_out_troops.write(f_in_troops.read())
+                    f_in_troops.close()
+                    f_out_troops.close()
+                    with open('botnet/troops.txt') as f:
+                        for _ in f:
+                            num_aliens = num_aliens + 1
+                print("[Info] [Radar] [Blackhole] Total [Aliens] : "+ str(num_aliens))
+                num_drones = 0
+                if drones_reply is not "":
+                    f_in_drones = gzip.open(BytesIO(drones_reply), 'rb')
+                    f_out_drones = open('botnet/drones.txt', 'wb')
+                    f_out_drones.write(f_in_drones.read())
+                    f_in_drones.close()
+                    f_out_drones.close()
+                    with open('botnet/drones.txt') as f:
+                        for _ in f:
+                            num_drones = num_drones + 1
+                print("[Info] [Radar] [Blackhole] Total [UCAVs]  : "+ str(num_drones))
+                num_reflectors = 0
+                if reflectors_reply is not "":
+                    f_in_reflectors = gzip.open(BytesIO(reflectors_reply), 'rb')
+                    f_out_reflectors = open('botnet/reflectors.txt', 'wb')
+                    f_out_reflectors.write(f_in_reflectors.read())
+                    f_in_reflectors.close()
+                    f_out_reflectors.close()
+                    with open('botnet/reflectors.txt') as f:
+                        for _ in f:
+                            num_reflectors = num_reflectors + 1
+                print("[Info] [Radar] [Blackhole] Total [X-RPCs] : "+ str(num_reflectors))
+                num_crystals = 1 # black magic!
+                if crystals_reply is not "":
+                    f_in_crystals = gzip.open(BytesIO(crystals_reply), 'rb')
+                    f_out_crystals = open('botnet/crystals.txt', 'wb')
+                    f_out_crystals.write(f_in_crystals.read())
+                    f_in_crystals.close()
+                    f_out_crystals.close()
+                    with open('botnet/crystals.txt') as f:
+                        for _ in f:
+                            num_crystals = num_crystals + 1
+                print("[Info] [Radar] [Blackhole] Total [NTPs]   : "+ str(num_crystals))
+                num_warps = 1 # black magic!
+                if warps_reply is not "":
+                    f_in_warps = gzip.open(BytesIO(warps_reply), 'rb')
+                    f_out_warps = open('botnet/warps.txt', 'wb')
+                    f_out_warps.write(f_in_warps.read())
+                    f_in_warps.close()
+                    f_out_warps.close()
+                    with open('botnet/warps.txt') as f:
+                        for _ in f:
+                            num_warps = num_warps + 1
+                print("[Info] [Radar] [Blackhole] Total [DNSs]   : "+ str(num_warps))
+                num_bosons = 0
+                if bosons_reply is not "":
+                    f_in_bosons = gzip.open(BytesIO(bosons_reply), 'rb')
+                    f_out_bosons = open('botnet/bosons.txt', 'wb')
+                    f_out_bosons.write(f_in_bosons.read())
+                    f_in_bosons.close()
+                    f_out_bosons.close()
+                    with open('botnet/bosons.txt') as f:
+                        for _ in f:
+                            num_bosons = num_bosons + 1
+                print("[Info] [Radar] [Blackhole] Total [SNMPs]  : "+ str(num_bosons))
+                print('-'*12 + '\n')
+                zombies = self.extract_zombies()
+                if not zombies:
+                    return
+                zombies_added = 0
+                if os.path.isfile('botnet/abductions.txt'):
+                    f = open('botnet/abductions.txt')
+                    abductions = f.readlines()
+                    abductions = [abduction.strip() for abduction in abductions]
+                    f.close()
+                    fz = open(self.zombies_file)
+                    zombies = fz.readlines()
+                    zombies = [zombie.strip() for zombie in zombies]
+                    fz.close()
+                    az = open('botnet/zombies.txt', 'a')
+                    for abduction in abductions:
+                        if abduction not in zombies:
+                            zombies_added = zombies_added + 1
+                            az.write(abduction+os.linesep)
+                        else:
+                            pass
+                    az.close()
+                    os.remove('botnet/abductions.txt') # remove abductions file
+                print("[Info] [Radar] [Blackhole] Added [Zombies]: " + str(zombies_added))
+                droids = self.extract_droids()
+                if not droids:
+                    return
+                droids_added = 0
+                if os.path.isfile('botnet/robots.txt'):
+                    f = open('botnet/robots.txt')
+                    robots = f.readlines()
+                    robots = [robot.strip() for robot in robots]
+                    f.close()
+                    fz = open(self.droids_file)
+                    droids = fz.readlines()
+                    droids = [droid.strip() for droid in droids]
+                    fz.close()
+                    ad = open('botnet/droids.txt', 'a')
+                    for robot in robots:
+                        if robot not in droids:
+                            droids_added = droids_added + 1
+                            ad.write(robot+os.linesep)
+                        else:
+                            pass
+                    ad.close()
+                    os.remove('botnet/robots.txt') # remove robots file
+                print("[Info] [Radar] [Blackhole] Added [Droids] : " + str(droids_added))
+                aliens = self.extract_aliens()
+                if not aliens:
+                    return
+                aliens_added = 0
+                if os.path.isfile('botnet/troops.txt'):
+                    f = open('botnet/troops.txt')
+                    troops = f.readlines()
+                    troops = [troop.strip() for troop in troops]
+                    f.close()
+                    fz = open(self.aliens_file)
+                    aliens = fz.readlines()
+                    aliens = [alien.strip() for alien in aliens]
+                    fz.close()
+                    at = open('botnet/aliens.txt', 'a')
+                    for troop in troops:
+                        if troop not in aliens:
+                            aliens_added = aliens_added + 1
+                            at.write(troop+os.linesep)
+                        else:
+                            pass
+                    at.close()
+                    os.remove('botnet/troops.txt') # remove troops file
+                print("[Info] [Radar] [Blackhole] Added [Aliens] : " + str(aliens_added))
+                ucavs = self.extract_ucavs()
+                if not ucavs:
+                    return
+                ucavs_added = 0
+                if os.path.isfile('botnet/drones.txt'):
+                    f = open('botnet/drones.txt')
+                    drones = f.readlines()
+                    drones = [drone.strip() for drone in drones]
+                    f.close()
+                    fz = open(self.ucavs_file)
+                    ucavs = fz.readlines()
+                    ucavs = [ucav.strip() for ucav in ucavs]
+                    fz.close()
+                    au = open('botnet/ucavs.txt', 'a')
+                    for drone in drones:
+                        if drone not in ucavs:
+                            ucavs_added = ucavs_added + 1
+                            au.write(drone+os.linesep)
+                        else:
+                            pass
+                    au.close()
+                    os.remove('botnet/drones.txt') # remove ucavs file
+                print("[Info] [Radar] [Blackhole] Added [UCAVs]  : " + str(ucavs_added))
+                rpcs = self.extract_rpcs()
+                if not rpcs:
+                    return
+                rpcs_added = 0
+                if os.path.isfile('botnet/reflectors.txt'):
+                    f = open('botnet/reflectors.txt')
+                    reflectors = f.readlines()
+                    reflectors = [reflector.strip() for reflector in reflectors]
+                    f.close()
+                    fz = open(self.rpcs_file)
+                    rpcs = fz.readlines()
+                    rpcs = [rpc.strip() for rpc in rpcs]
+                    fz.close()
+                    ar = open('botnet/rpcs.txt', 'a')
+                    for reflector in reflectors:
+                        if reflector not in rpcs:
+                            rpcs_added = rpcs_added + 1
+                            ar.write(reflector+os.linesep)
+                        else:
+                            pass
+                    ar.close()
+                    os.remove('botnet/reflectors.txt') # remove rpcs file
+                print("[Info] [Radar] [Blackhole] Added [X-RPCs] : " + str(rpcs_added))
+                ntps = self.extract_ntps()
+                if not ntps:
+                    return
+                ntps_added = 0
+                if os.path.isfile('botnet/crystals.txt'):
+                    f = open('botnet/crystals.txt')
+                    crystals = f.readlines()
+                    crystals = [crystal.strip() for crystal in crystals]
+                    f.close()
+                    fz = open(self.ntps_file)
+                    ntps = fz.readlines()
+                    ntps = [ntp.strip() for ntp in ntps]
+                    fz.close()
+                    an = open('botnet/ntp.txt', 'a')
+                    for crystal in crystals:
+                        if crystal not in ntps:
+                            ntps_added = ntps_added + 1
+                            an.write(crystal+os.linesep)
+                        else:
+                            pass
+                    an.close()
+                    os.remove('botnet/crystals.txt') # remove crystals file
+                print("[Info] [Radar] [Blackhole] Added [NTPs]   : " + str(ntps_added))
+                dnss = self.extract_dnss()
+                if not dnss:
+                    return
+                dnss_added = 0
+                if os.path.isfile('botnet/warps.txt'):
+                    f = open('botnet/warps.txt')
+                    warps = f.readlines()
+                    warps = [warp.strip() for warp in warps]
+                    f.close()
+                    fz = open(self.dnss_file)
+                    dnss = fz.readlines()
+                    dnss = [dns.strip() for dns in dnss]
+                    fz.close()
+                    ad = open('botnet/dns.txt', 'a')
+                    for warp in warps:
+                        if warp not in dnss:
+                            dnss_added = dnss_added + 1
+                            ad.write(warp+os.linesep)
+                        else:
+                            pass
+                    ad.close()
+                    os.remove('botnet/warps.txt') # remove warps file
+                print("[Info] [Radar] [Blackhole] Added [DNSs]   : " + str(dnss_added))
+                snmps = self.extract_snmps()
+                if not snmps:
+                    return
+                snmps_added = 0
+                if os.path.isfile('botnet/bosons.txt'):
+                    f = open('botnet/bosons.txt')
+                    bosons = f.readlines()
+                    bosons = [boson.strip() for boson in bosons]
+                    f.close()
+                    fz = open(self.snmps_file)
+                    snmps = fz.readlines()
+                    snmps = [snmp.strip() for snmp in snmps]
+                    fz.close()
+                    asn = open('botnet/snmp.txt', 'a')
+                    for boson in bosons:
+                        if boson not in snmps:
+                            snmps_added = snmps_added + 1
+                            asn.write(boson+os.linesep)
+                        else:
+                            pass
+                    asn.close()
+                    os.remove('botnet/bosons.txt') # remove snmps file
+                print("[Info] [Radar] [Blackhole] Added [SNMPs]  : " + str(snmps_added))
+                print('-'*12 + '\n')
+                if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0 and ntps_added == 0 and dnss_added == 0 and snmps_added == 0: # not any zombie
+                    print("[AI] [Control] [Radar] [Blackhole] [Node] These [Zombies] are already in your [Army] -> [Passing!]")
+                    print('-'*12 + '\n')
+                else:
+                    total_zombies = zombies_added + aliens_added + droids_added + ucavs_added + rpcs_added + ntps_added + dnss_added + snmps_added
+                    print("[Info] [AI] Congratulations!. Total [Zombies] added: " + str(total_zombies))
+                    print('-'*12)
+                    print("\n[Info] [AI] Botnet updated! -> ;-)\n")
+                    self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
+                    stream = str(enc_globalnet_owner)+self.globalnet_msg_sep+str(enc_globalnet_comment)+self.globalnet_msg_sep+str(enc_globalnet_warp)+self.globalnet_msg_sep+str(enc_globalnet_ip)
+                    globalnet_list.append(stream)
+                    print('='*22 + '\n')
+        if globalnet_list is not None:
+            f = open(self.globalnet_file, "w") # write to globalnet.txt
+            for node in globalnet_list:
+                node = node.replace('\n','')
+                f.write(node)
+            f.close()
+
     def downloading_github_list(self): 
         # add your mirror to protect/share/distribute... [Zombies]
         try:
-            print(("[AI] Trying [Blackhole] [GitHub]: "+self.github_zombies+"\n"))
+            print("[AI] Trying [Blackhole] [GitHub]: "+self.github_zombies+"\n")
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
             if self.options.timeout: # set timeout
@@ -4293,14 +4833,14 @@ class UFONet(object):
             for zombie in zombies_ready:
                 f.write(zombie + os.linesep)
             f.close()
-        if options.search or options.dorks or options.autosearch or options.download or options.download_github: # append only new zombies to list (dorking supported)
+        if options.search or options.dorks or options.autosearch or options.download or options.download_github or options.download_nodes: # append only new zombies to list (dorking supported)
             f = open(self.zombies_file)
             zombies_on_file = f.read().splitlines()
             with open(self.zombies_file, "a") as zombie_list: 
                 for zombie in zombies_ready:
                     if zombie not in zombies_on_file: # parse possible repetitions
                         zombie_list.write(zombie + os.linesep)
-                        if options.download or options.download_github:
+                        if options.download or options.download_github or options.download_nodes:
                             self.trans_zombies = self.trans_zombies + 1 # update trans stats only with new zombies (blackhole)
                         else:
                             self.scanned_zombies = self.scanned_zombies + 1 # update scanner stats only with new zombies (dorking)
@@ -4309,7 +4849,7 @@ class UFONet(object):
     def update_aliens(self, aliens_ready):
         # update aliens on file
         options = self.options
-        if options.download or options.download_github: # append only new aliens to list
+        if options.download or options.download_github or options.download_nodes: # append only new aliens to list
             f = open(self.aliens_file)
             aliens_on_file = f.read().splitlines()
             with open(self.aliens_file, "a") as alien_list:
@@ -4322,7 +4862,7 @@ class UFONet(object):
     def update_droids(self, droids_ready):
         # update droids on file
         options = self.options
-        if options.download or options.download_github: # append only new droids to list
+        if options.download or options.download_github or options.download_nodes: # append only new droids to list
             f = open(self.droids_file)
             droids_on_file = f.read().splitlines()
             with open(self.droids_file, "a") as droid_list:
@@ -4335,7 +4875,7 @@ class UFONet(object):
     def update_ucavs(self, ucavs_ready):
         # update ucavs on file
         options = self.options
-        if options.download or options.download_github: # append only new ucavs to list
+        if options.download or options.download_github or options.download_nodes: # append only new ucavs to list
             f = open(self.ucavs_file)
             ucavs_on_file = f.read().splitlines()
             with open(self.ucavs_file, "a") as ucav_list:
@@ -4353,7 +4893,7 @@ class UFONet(object):
             for rpc in rpcs_ready: # add only rpc verified zombies
                 f.write(rpc + os.linesep)
             f.close()
-        if options.download or options.download_github: # append only new rpcs to list
+        if options.download or options.download_github or options.download_nodes: # append only new rpcs to list
             f = open(self.rpcs_file)
             rpcs_on_file = f.read().splitlines()
             with open(self.rpcs_file, "a") as rpc_list:
@@ -4366,7 +4906,7 @@ class UFONet(object):
     def update_dnss(self, dnss_ready):
         # update dns on file
         options = self.options
-        if options.download or options.download_github: # append only new dns to list
+        if options.download or options.download_github or options.download_nodes: # append only new dns to list
             f = open(self.dnss_file)
             dnss_on_file = f.read().splitlines()
             with open(self.dnss_file, "a") as dns_list:
@@ -4379,7 +4919,7 @@ class UFONet(object):
     def update_ntps(self, ntps_ready):
         # update ntps on file
         options = self.options
-        if options.download or options.download_github: # append only new ntps to list
+        if options.download or options.download_github or options.download_nodes: # append only new ntps to list
             f = open(self.ntps_file)
             ntps_on_file = f.read().splitlines()
             with open(self.ntps_file, "a") as ntp_list:
@@ -4392,7 +4932,7 @@ class UFONet(object):
     def update_snmps(self, snmps_ready):
         # update snmps on file
         options = self.options
-        if options.download or options.download_github: # append only new snmps to list
+        if options.download or options.download_github or options.download_nodes: # append only new snmps to list
             f = open(self.snmps_file)
             snmps_on_file = f.read().splitlines()
             with open(self.snmps_file, "a") as snmp_list:

@@ -118,9 +118,9 @@ By default UFONet will use a search engine called 'DuckDuckGo'. But you can choo
 
 This is the list of available search engines with last time that they were working:
 
-        - duckduckgo  [13/07/2021: OK!]
-        - bing        [13/07/2021: OK!]
-        - yahoo       [13/07/2021: OK!]
+        - duckduckgo  [02/2022: OK!]
+        - bing        [02/2022: OK!]
+        - yahoo       [02/2022: OK!]
 
 You can also search massively using all search engines supported:
 
@@ -428,11 +428,16 @@ This will open a tab on your default browser with all features of the tool and s
  - GLOBAL.GRID: Allows to review statistics from other "spaceships"
  - GLOBAL.WARGAMES: Allows to propose and join some real "wargames"
  - GLOBAL.RADAR: Allows to review locations published by other "motherships"
+ - GLOBAL.NEWS: Allows to read news related to UFONet
  - [...]
 
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+02.03.2022 : v.1.8
+--------------------------
 
 --------------------------
 14.07.2021 : v.1.7
@@ -514,6 +519,7 @@ This will open a tab on your default browser with all features of the tool and s
 # Thanks to
 ###############################
 
+- BP<3
 - UFo & Mandingo & Ikujam
 - Phineas Fisher ;-)
 - The Shadow Brokers (TSB) ;_)

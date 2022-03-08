@@ -1,54 +1,23 @@
-Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36
-Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36
-Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.811.0 Safari/535.1
 Mozilla/5.0 (X11; CrOS i686 12.433.109) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.93 Safari/534.30
 Mozilla/5.0 (Macintosh; U; Mac OS X 10_6_1; en-US) AppleWebKit/530.5 (KHTML, like Gecko) Chrome/ Safari/530.5
 Mozilla/5.0 (Linux; U; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.27 Safari/525.13
-Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1
-Mozilla/5.0 (Windows NT 6.1; rv:21.0) Gecko/20130401 Firefox/21.0
-Mozilla/6.0 (Windows; U; Windows NT 7.0; en-US; rv:1.9.0.8) Gecko/2009032609 Firefox/3.0.9 (.NET CLR 3.5.30729)
 Mozilla/5.0 (X11; U; Linux x86_64; fr; rv:1.9.0.9) Gecko/2009042114 Ubuntu/9.04 (jaunty) Firefox/3.0.9
-Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-TW; rv:1.8.0.2) Gecko/20060308 Firefox/1.5.0.2
-Mozilla/5.0 (Windows; U; Windows NT5.1; en; rv:1.7.10) Gecko/20050716 Firefox/1.0.5
 Mozilla/5.0 (Windows; U; Win98; fr-FR; rv:1.7.6) Gecko/20050226 Firefox/1.0.1
 Mozilla/5.0 (X11; U; Linux i686; de-DE; rv:1.6) Gecko/20040207 Firefox/0.8
 Mozilla/5.0 (X11) KHTML/4.9.1 (like Gecko) Konqueror/4.9
 Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)
 Mozilla/5.0 (compatible; Konqueror/3.5; NetBSD 4.0_RC3; X11) KHTML/3.5.7 (like Gecko)
-Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko
-Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko
-Mozilla/4.0(compatible; MSIE 7.0b; Windows NT 6.0)
-Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 7.0; InfoPath.3; .NET CLR 3.1.40767; Trident/6.0; en-IN)
-Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)
-Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)
-Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/4.0; InfoPath.2; SV1; .NET CLR 2.0.50727; WOW64)
 Mozilla/5.0 (compatible; MSIE 10.0; Macintosh; Intel Mac OS X 10_7_3; Trident/6.0)
-Mozilla/4.0 (Compatible; MSIE 8.0; Windows NT 5.2; Trident/6.0)
 Mozilla/1.22 (compatible; MSIE 10.0; Windows 3.1)
-Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0
-Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; yie8)
-Mozilla/4.0 (compatible; MSIE 7.0; AOL 9.0; Windows NT 5.1; .NET CLR 1.1.4322; Zango 10.1.181.0)
-Mozilla/4.0 (compatible; MSIE 7.0; AOL 9.5; AOLBuild 4337.35; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)
-Mozilla/4.0 (compatible; MSIE 6.0; AOL 8.0; Windows NT 5.1; SV1)
 Mozilla/5.0 (X11; Ubuntu; Linux armv7l; rv:17.0) Gecko/20100101 Firefox/17.0
 Mozilla/2.02E (Win95; U)
 Mozilla/5.0 (iPhone; U; CPU iOS 2_0 like Mac OS X; en-us)
 Mozilla/5.0 (Linux; U; Android 0.5; en-us)
-Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)
-Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
-Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.13 (KHTML, like Gecko) Chrome/0.2.149.29 Safari/525.13
-Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
 Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)
-Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 (FM Scene 4.6.1)
-Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 (.NET CLR 3.5.30729) (Prevx 3.0.5)
 Mozilla/5.0 (compatible; Konqueror/4.5; FreeBSD) KHTML/4.5.4 (like Gecko)
-Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:5.0) Whistler/20110021 myibrow/5.0.0.0
-Mozilla/4.08 [en] (WinNT; I ;Nav)
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Oupeng/10.2.1.86910 Safari/534.30
 Mozilla/5.0 (SMART-TV; Linux; Tizen 2.3) AppleWebkit/538.1 (KHTML, like Gecko) SamsungBrowser/1.0 Safari/538.1
-myibrow/2.2 (Windows; U; Windows NT 5.1; cs; rv:1.8.1.14) Gecko/20080001 My Internet Browser/2.2.0.0 20080913235045
-Opera/9.25 (Windows NT 6.0; U; en)
 Privoxy/1.0
 CERN-LineMode/2.15
 cg-eye interactive
@@ -80,20 +49,6 @@ Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_0) AppleWebKit/537.36 (KHTML, like 
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14
 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Safari/602.1.50
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0
-Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
-Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36
-Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
-Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36
-Mozilla/5.0 (Windows NT 6.1; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0
-Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko
-Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0
-Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36
 Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0
 Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36
@@ -127,18 +82,13 @@ Mozilla/5.0 (Linux; Android 5.0.2; SAMSUNG SM-T550 Build/LRX22G) AppleWebKit/537
 Mozilla/5.0 (Linux; Android 4.4.3; KFTHWI Build/KTU84M) AppleWebKit/537.36 (KHTML, like Gecko) Silk/47.1.79 like Chrome/47.0.2526.80 Safari/537.36
 Mozilla/5.0 (Linux; Android 5.0.2; LG-V410/V41020c Build/LRX22G) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/34.0.1847.118 Safari/537.36
 Mozilla/5.0 (Nintendo WiiU) AppleWebKit/536.30 (KHTML, like Gecko) NX/3.0.4.2.12 NintendoBrowser/4.3.1.11264.US
-Mozilla/5.0 (Windows NT 10.0; Win64; x64; XBOX_ONE_ED) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393
 Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Xbox; Xbox One) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Mobile Safari/537.36 Edge/13.10586
 Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+
 Mozilla/5.0 (Linux; U; en-US) AppleWebKit/528.5+ (KHTML, like Gecko, Safari/528.5+) Version/4.0 Kindle/3.0 (screen 600x800; rotate)
 Mozilla/5.0 (PlayStation Vita 3.61) AppleWebKit/537.73 (KHTML, like Gecko) Silk/3.2
 Mozilla/5.0 (PlayStation 4 3.11) AppleWebKit/537.73 (KHTML, like Gecko)
 Mozilla/5.0 (Nintendo 3DS; U; ; en) Version/1.7412.EU
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
 Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0
 Mozilla/5.0 (X11; Linux i686; rv:89.0) Gecko/20100101 Firefox/89.0
 Mozilla/5.0 (Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0
 Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:89.0) Gecko/20100101 Firefox/89.0
@@ -148,19 +98,271 @@ Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/605.1.15 (KHTML, like G
 Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1
 Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1
 Mozilla/5.0 (iPod touch; CPU iPhone 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59
 Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59
 Mozilla/5.0 (Linux; Android 10; HD1913) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 EdgA/46.3.4.5155
 Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 EdgA/46.3.4.5155
 Mozilla/5.0 (Linux; Android 10; Pixel 3 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 EdgA/46.3.4.5155
 Mozilla/5.0 (Linux; Android 10; ONEPLUS A6003) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36 EdgA/46.3.4.5155
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 OPR/77.0.4054.203
-Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 OPR/77.0.4054.203
 Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 OPR/77.0.4054.203
 Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 OPR/77.0.4054.203
-Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 YaBrowser/21.6.0 Yowser/2.5 Safari/537.36
-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 YaBrowser/21.6.0 Yowser/2.5 Safari/537.36
 Mozilla/5.0 (Macintosh; Intel Mac OS X 11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 YaBrowser/21.6.0 Yowser/2.5 Safari/537.36
 Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 YaBrowser/21.5.6.744 Mobile/15E148 Safari/604.1
 Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 YaBrowser/21.5.6.744 Mobile/15E148 Safari/605.1
 Mozilla/5.0 (iPod touch; CPU iPhone 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 YaBrowser/21.5.6.744 Mobile/15E148 Safari/605.1
+Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16.2
+Opera/9.80 (X11; Linux i686; Ubuntu/14.10) Presto/2.12.388 Version/12.16
+Opera/9.80 (Macintosh; Intel Mac OS X 10.14.1) Presto/2.12.388 Version/12.16
+Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; fr) Presto/2.9.168 Version/11.52
+Opera/9.80 (Macintosh; Intel Mac OS X 10.6.8; U; de) Presto/2.9.168 Version/11.52
+Opera/9.80 (X11; Linux x86_64; U; fr) Presto/2.9.168 Version/11.50
+Opera/9.80 (X11; Linux i686; U; hu) Presto/2.9.168 Version/11.50
+Opera/9.80 (X11; Linux i686; U; ru) Presto/2.8.131 Version/11.11
+Opera/9.80 (X11; Linux i686; U; es-ES) Presto/2.8.131 Version/11.11
+Opera/9.80 (X11; Linux x86_64; U; bg) Presto/2.8.131 Version/11.10
+Opera/9.80 (X11; Linux x86_64; U; Ubuntu/10.10 (maverick); pl) Presto/2.7.62 Version/11.01
+Opera/9.80 (X11; Linux i686; U; ja) Presto/2.7.62 Version/11.01
+Opera/9.80 (X11; Linux i686; U; fr) Presto/2.7.62 Version/11.01
+Opera/9.80 (X11; Linux x86_64; U; pl) Presto/2.7.62 Version/11.00
+Opera/9.80 (X11; Linux i686; U; it) Presto/2.7.62 Version/11.00
+Mozilla/4.0 (compatible; MSIE 8.0; X11; Linux x86_64; pl) Opera 11.00
+Mozilla/5.0 (X11; Linux x86_64; U; de; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 Opera 10.62
+Mozilla/4.0 (compatible; MSIE 8.0; X11; Linux x86_64; de) Opera 10.62
+Opera/9.80 (X11; Linux i686; U; pl) Presto/2.6.30 Version/10.61
+Opera/9.80 (X11; Linux i686; U; es-ES) Presto/2.6.30 Version/10.61
+Opera/9.80 (Macintosh; Intel Mac OS X; U; nl) Presto/2.6.30 Version/10.61
+Opera/9.80 (X11; Linux i686; U; en) Presto/2.5.27 Version/10.60
+Opera/9.80 (X11; Linux i686; U; it) Presto/2.5.24 Version/10.54
+Opera/9.80 (X11; Linux i686; U; en-GB) Presto/2.5.24 Version/10.53
+Opera/9.80 (Linux i686; U; en) Presto/2.5.22 Version/10.51
+Mozilla/5.0 (Linux i686; U; en; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6 Opera 10.51
+Mozilla/4.0 (compatible; MSIE 8.0; Linux i686; en) Opera 10.51
+Opera/9.80 (S60; SymbOS; Opera Tablet/9174; U; en) Presto/2.7.81 Version/10.5
+Opera/9.80 (X11; U; Linux i686; en-US; rv:1.9.2.3) Presto/2.2.15 Version/10.10
+Opera/9.80 (X11; Linux x86_64; U; it) Presto/2.2.15 Version/10.10
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; de) Opera 10.10
+Opera/9.80 (X11; Linux x86_64; U; en-GB) Presto/2.2.15 Version/10.01
+Opera/9.80 (X11; Linux x86_64; U; en) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux x86_64; U; de) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; ru) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; pt-BR) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; pl) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; nb) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; en-GB) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; en) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; Debian; pl) Presto/2.2.15 Version/10.00
+Opera/9.80 (X11; Linux i686; U; de) Presto/2.2.15 Version/10.00
+Opera/9.99 (X11; U; sk)
+Opera/9.70 (Linux ppc64 ; U; en) Presto/2.2.1
+Opera/9.70 (Linux i686 ; U; zh-cn) Presto/2.2.0
+Opera/9.70 (Linux i686 ; U; en-us) Presto/2.2.0
+Opera/9.70 (Linux i686 ; U; en) Presto/2.2.1
+Opera/9.70 (Linux i686 ; U; en) Presto/2.2.0
+Opera/9.70 (Linux i686 ; U; ; en) Presto/2.2.1
+Opera/9.70 (Linux i686 ; U;  ; en) Presto/2.2.1
+Mozilla/5.0 (Linux i686 ; U; en; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 9.70
+Mozilla/4.0 (compatible; MSIE 6.0; Linux i686 ; en) Opera 9.70
+Opera/9.64 (X11; Linux x86_64; U; pl) Presto/2.1.1
+Opera/9.64 (X11; Linux x86_64; U; hr) Presto/2.1.1
+Opera/9.64 (X11; Linux x86_64; U; en-GB) Presto/2.1.1
+Opera/9.64 (X11; Linux x86_64; U; en) Presto/2.1.1
+Opera/9.64 (X11; Linux x86_64; U; de) Presto/2.1.1
+Opera/9.64 (X11; Linux x86_64; U; cs) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; tr) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; sv) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; pl) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; nb) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; Linux Mint; nb) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; Linux Mint; it) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; en) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; de) Presto/2.1.1
+Opera/9.64 (X11; Linux i686; U; da) Presto/2.1.1
+Opera/9.63 (X11; Linux x86_64; U; ru) Presto/2.1.1
+Opera/9.63 (X11; Linux x86_64; U; cs) Presto/2.1.1
+Opera/9.63 (X11; Linux i686; U; ru) Presto/2.1.1
+Opera/9.63 (X11; Linux i686; U; ru)
+Opera/9.63 (X11; Linux i686; U; nb) Presto/2.1.1
+Opera/9.63 (X11; Linux i686; U; en)
+Opera/9.63 (X11; Linux i686; U; de) Presto/2.1.1
+Opera/9.63 (X11; Linux i686)
+Opera/9.63 (X11; FreeBSD 7.1-RELEASE i386; U; en) Presto/2.1.1
+Opera/9.62 (X11; Linux x86_64; U; ru) Presto/2.1.1
+Opera/9.62 (X11; Linux x86_64; U; en_GB, en_US) Presto/2.1.1
+Opera/9.62 (X11; Linux i686; U; pt-BR) Presto/2.1.1
+Opera/9.62 (X11; Linux i686; U; Linux Mint; en) Presto/2.1.1
+Opera/9.62 (X11; Linux i686; U; it) Presto/2.1.1
+Opera/9.62 (X11; Linux i686; U; fi) Presto/2.1.1
+Opera/9.62 (X11; Linux i686; U; en) Presto/2.1.1
+Opera/9.61 (X11; Linux x86_64; U; fr) Presto/2.1.1
+Opera/9.61 (X11; Linux i686; U; ru) Presto/2.1.1
+Opera/9.61 (X11; Linux i686; U; pl) Presto/2.1.1
+Opera/9.61 (X11; Linux i686; U; en) Presto/2.1.1
+Opera/9.61 (X11; Linux i686; U; de) Presto/2.1.1
+Opera/9.61 (Macintosh; Intel Mac OS X; U; de) Presto/2.1.1
+Opera/9.60 (X11; Linux x86_64; U)
+Opera/9.60 (X11; Linux i686; U; ru) Presto/2.1.1
+Opera/9.60 (X11; Linux i686; U; en-GB) Presto/2.1.1
+Mozilla/5.0 (X11; Linux x86_64; U; en; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 9.60
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux x86_64; en) Opera 9.60
+Opera/9.52 (X11; Linux x86_64; U; ru)
+Opera/9.52 (X11; Linux x86_64; U; en)
+Opera/9.52 (X11; Linux x86_64; U)
+Opera/9.52 (X11; Linux ppc; U; de)
+Opera/9.52 (X11; Linux i686; U; fr)
+Opera/9.52 (X11; Linux i686; U; en)
+Opera/9.52 (X11; Linux i686; U; cs)
+Opera/9.52 (Macintosh; PPC Mac OS X; U; ja)
+Opera/9.52 (Macintosh; PPC Mac OS X; U; fr)
+Opera/9.52 (Macintosh; Intel Mac OS X; U; pt-BR)
+Opera/9.52 (Macintosh; Intel Mac OS X; U; pt)
+Opera/9.51 (X11; Linux i686; U; Linux Mint; en)
+Opera/9.51 (X11; Linux i686; U; fr)
+Opera/9.51 (X11; Linux i686; U; de)
+Opera/9.51 (Macintosh; Intel Mac OS X; U; en)
+Mozilla/5.0 (X11; Linux i686; U; en; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 9.51
+Opera/9.50 (X11; Linux x86_64; U; pl)
+Opera/9.50 (X11; Linux x86_64; U; nb)
+Opera/9.50 (X11; Linux ppc; U; en)
+Opera/9.50 (X11; Linux i686; U; es-ES)
+Opera/9.50 (Macintosh; Intel Mac OS X; U; en)
+Opera/9.50 (Macintosh; Intel Mac OS X; U; de)
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux x86_64; en) Opera 9.50
+Opera/9.30 (Nintendo Wii; U; ; 2071; Wii Shop Channel/1.0; en)
+Opera/9.30 (Nintendo Wii; U; ; 2047-7;pt-br)
+Opera/9.30 (Nintendo Wii; U; ; 2047-7;es)
+Opera/9.30 (Nintendo Wii; U; ; 2047-7;en)
+Opera/9.30 (Nintendo Wii; U; ; 2047-7; fr)
+Opera/9.30 (Nintendo Wii; U; ; 2047-7; de)
+Opera/9.27 (X11; Linux i686; U; fr)
+Opera/9.27 (X11; Linux i686; U; en)
+Opera/9.27 (Macintosh; Intel Mac OS X; U; sv)
+Mozilla/5.0 (Macintosh; Intel Mac OS X; U; en; rv:1.8.0) Gecko/20060728 Firefox/1.5.0 Opera 9.27
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 9.27
+Opera/9.26 (Windows; U; pl)
+Opera/9.26 (Macintosh; PPC Mac OS X; U; en)
+Opera/9.25 (X11; Linux i686; U; fr-ca)
+Opera/9.25 (X11; Linux i686; U; fr)
+Opera/9.25 (X11; Linux i686; U; en)
+Opera/9.25 (OpenSolaris; U; en)
+Opera/9.25 (Macintosh; PPC Mac OS X; U; en)
+Opera/9.25 (Macintosh; Intel Mac OS X; U; en)
+Opera/9.24 (X11; SunOS i86pc; U; en)
+Opera/9.24 (X11; Linux i686; U; de)
+Opera/9.24 (Macintosh; PPC Mac OS X; U; en)
+Mozilla/4.0 (compatible; MSIE 6.0; Mac_PowerPC; en) Opera 9.24
+Opera/9.23 (X11; Linux x86_64; U; en)
+Opera/9.23 (X11; Linux i686; U; es-es)
+Opera/9.23 (X11; Linux i686; U; en)
+Opera/9.23 (Nintendo Wii; U; ; 1038-58; Wii Internet Channel/1.0; en)
+Opera/9.23 (Macintosh; Intel Mac OS X; U; ja)
+Opera/9.23 (Mac OS X; ru)
+Opera/9.23 (Mac OS X; fr)
+Mozilla/5.0 (X11; Linux i686; U; en; rv:1.8.0) Gecko/20060728 Firefox/1.5.0 Opera 9.23
+Opera/9.22 (X11; OpenBSD i386; U; en)
+Opera/9.22 (X11; Linux i686; U; en)
+Opera/9.22 (X11; Linux i686; U; de)
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 9.22
+Opera/9.21 (X11; Linux x86_64; U; en)
+Opera/9.21 (X11; Linux i686; U; es-es)
+Opera/9.21 (X11; Linux i686; U; en)
+Opera/9.21 (X11; Linux i686; U; de)
+Opera/9.21 (Macintosh; PPC Mac OS X; U; en)
+Opera/9.21 (Macintosh; Intel Mac OS X; U; en)
+Opera/9.20 (X11; Linux x86_64; U; en)
+Opera/9.20 (X11; Linux ppc; U; en)
+Opera/9.20 (X11; Linux i686; U; tr)
+Opera/9.20 (X11; Linux i686; U; ru)
+Opera/9.20 (X11; Linux i686; U; pl)
+Opera/9.20 (X11; Linux i686; U; es-es)
+Opera/9.20 (X11; Linux i686; U; en)
+Opera/9.20 (X11; Linux i586; U; en)
+Opera/9.12 (X11; Linux i686; U; en) (Ubuntu)
+Opera/9.10 (X11; Linux; U; en)
+Opera/9.10 (X11; Linux x86_64; U; en)
+Opera/9.10 (X11; Linux i686; U; pl)
+Opera/9.10 (X11; Linux i686; U; kubuntu;pl)
+Opera/9.10 (X11; Linux i686; U; en)
+Opera/9.10 (X11; Linux i386; U; en)
+Opera/9.02 (X11; Linux i686; U; pl)
+Opera/9.02 (X11; Linux i686; U; hu)
+Opera/9.02 (X11; Linux i686; U; en)
+Opera/9.02 (X11; Linux i686; U; de)
+Opera/9.02 (Windows; U; nl)
+Opera/9.02 (Windows XP; U; ru)
+Opera/9.01 (X11; Linux i686; U; en)
+Opera/9.01 (X11; FreeBSD 6 i386; U;pl)
+Opera/9.01 (X11; FreeBSD 6 i386; U; en)
+Opera/9.01 (Macintosh; PPC Mac OS X; U; it)
+Opera/9.01 (Macintosh; PPC Mac OS X; U; en)
+Opera/9.00 (X11; Linux i686; U; pl)
+Opera/9.00 (X11; Linux i686; U; en)
+Opera/9.00 (X11; Linux i686; U; de)
+Opera/9.00 (Windows; U)
+Opera/9.00 (Nintendo Wii; U; ; 1038-58; Wii Internet Channel/1.0; en)
+Opera/9.00 (Macintosh; PPC Mac OS X; U; es)
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; Sprint:PPC-6700) Opera 8.65 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 320x320)Opera 8.65 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 320x320) Opera 8.65 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x320) Opera 8.65 [zh-cn]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x320) Opera 8.65 [nl]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x320) Opera 8.65 [de]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x240) Opera 8.65 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC) Opera 8.65 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x320) Opera 8.60 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; PPC; 240x240) Opera 8.60 [en]
+Opera/8.54 (X11; Linux i686; U; pl)
+Opera/8.54 (X11; Linux i686; U; de)
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 8.54
+Opera/8.52 (X11; Linux x86_64; U; en)
+Opera/8.52 (X11; Linux i686; U; en)
+Mozilla/5.0 (X11; Linux i686; U; en) Opera 8.52
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 8.52
+Opera/8.51 (X11; U; Linux i686; en-US; rv:1.8)
+Opera/8.51 (X11; Linux x86_64; U; en)
+Opera/8.51 (X11; Linux i686; U; en)
+Opera/8.51 (Macintosh; PPC Mac OS X; U; de)
+Opera/8.51 (FreeBSD 5.1; U; en)
+Mozilla/5.0 (Macintosh; PPC Mac OS X; U; en) Opera 8.51
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; ru) Opera 8.51
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 8.51
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686; en) Opera 8.02
+Opera/8.01 (Macintosh; U; PPC Mac OS; en)
+Opera/8.01 (Macintosh; PPC Mac OS X; U; en)
+Opera/8.0 (X11; Linux i686; U; cs)
+Mozilla/4.0 (compatible; MSIE 6.0; Windows CE) Opera 8.0  [en]
+Mozilla/5.0 (X11; Linux i386; U) Opera 7.60  [en-GB]
+Opera/7.54 (X11; Linux i686; U)  [en]
+Mozilla/5.0 (X11; Linux i686; U) Opera 7.54 [en]
+Mozilla/5.0 (X11; Linux i686; U) Opera 7.54  [en]
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686) Opera 7.54  [en]
+Mozilla/4.0 (compatible; MSIE 5.23; Mac_PowerPC) Opera 7.54  [en]
+Opera/7.53 (X11; Linux i686; U) [en_US]
+Opera/7.51 (X11; SunOS sun4u; U) [de]
+Opera/7.51 (Linux) [en]
+Opera/7.50 (Windows XP; U)
+Mozilla/4.0 (compatible; MSIE 6.0; ; Linux x86_64) Opera 7.50 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; ; Linux i686) Opera 7.50 [en]
+Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux i686) Opera 7.23  [fi]
+Opera/7.11 (Linux 2.6.0-test4 i686; U)  [en]
+Mozilla/5.0 (Linux 2.4.21-0.13mdk i686; U) Opera 7.11  [en]
+Opera/7.10 (Linux Debian;en-US)
+Mozilla/4.0 (compatible; MSIE 6.0; MSIE 5.5; Windows XP) Opera 7.0  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; UNIX) Opera 6.12  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.20-4GB i686) Opera 6.12  [de]
+Opera/6.11 (Linux 2.4.18-bf2.4 i686; U)  [en]
+Opera/6.11 (Linux 2.4.18-4GB i686; U)  [en]
+Opera/6.11 (Linux 2.4.10-4GB i686; U)  [en]
+Opera/6.11 (FreeBSD 4.7-RELEASE i386; U)  [en]
+Mozilla/5.0 (Linux 2.4.19-16mdk i686; U) Opera 6.11  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; UNIX) Opera 6.11  [fr]
+Mozilla/4.0 (compatible; MSIE 5.0; UNIX) Opera 6.11  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.4 i686) Opera 6.11  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.20-13.7 i686) Opera 6.11  [de]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.19-4GB i686) Opera 6.11  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.19-16mdk i686) Opera 6.11  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.18 i686) Opera 6.11  [de]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.10-4GB i686) Opera 6.11  [en]
+Mozilla/5.0 (Linux 2.4.18-ltsp-1 i686; U) Opera 6.1  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.19 i686) Opera 6.1  [en]
+Mozilla/4.0 (compatible; MSIE 5.0; Linux 2.4.18-4GB i686) Opera 6.1  [de]
+Mozilla/5.0 (Windows XP; U) Opera 6.06  [en]
+Opera/6.05 (Windows XP; U) [en]

@@ -321,7 +321,10 @@ class Eater(Thread):
         dns_meat = "community_dnss.txt.gz"
         snmp_meat = "community_snmps.txt.gz"
         while 1:
-            data = self.client.recv(1024)
+            try:
+                data = self.client.recv(4096).decode("utf-8")
+            except:
+                data = ""
             if not data:
                 break
         if zombie_meat in data: # get zombies

@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2021 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2022 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -37,6 +37,8 @@ browser_init_page = "https://searchencrypt.com" # initial webpage for ship.brows
 check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
 check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
 check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
+
+torrent_seed = "https://ufonet.03c8.net/ufonet/ufonet-v1.8.tar.gz.torrent" # current torrent seed
 
 blackhole_sep = "|" # blackhole stream separator
 board_msg_sep = "#!#" # board stream separator
@@ -2565,7 +2567,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.ranking = "Rookie Star" # set starting rank
         self.decryptedtext = "" # set buffer for decryption
         self.encryptedtext = "" # set buffer for encryption
-        self.blackholes = "data/nodes.dat" # set source path to retrieve server blackholes (nodes.dat)
+        self.blackholes = "data/nodes.txt" # set source path to retrieve server [Community] blackholes (nodes)
         self.blackhole = default_blackhole # set default blackhole
         self.blackholes_status = "Not connected!" # set default status for blackholes
         self.blackholes_status_color = "red" # set default status color for blackholes
@@ -2618,7 +2620,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.trans_5C = self.trans_5C.encode("latin-1")
         self.trans_36 = self.trans_36.encode("latin-1")
         f.close()
-        f = open(self.blackholes) # double extract blackholes (nodes.dat)
+        f = open(self.blackholes) # double extract blackholes (nodes.txt)
         self.blackholes_text = f.read()
         f.close()
         f = open(self.blackholes)
@@ -2627,7 +2629,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.list_blackholes = []
         for b in self.blackholes_block:
             self.list_blackholes.append(b)
-        self.blackholes_datetime = time.ctime(os.path.getctime('data/nodes.dat')) # extract nodes.dat datetime
+        self.blackholes_datetime = time.ctime(os.path.getctime('data/nodes.txt')) # extract nodes datetime
         if self.blackholes_datetime == self.release_date_file: # never connected to feeds
             self.blackholes_status_color = "red" # set status color for blackholes to 'red'
         else:
@@ -3046,13 +3048,14 @@ function Wargames() {
 """ + self.options.version + """</b> 
  - Rel: """ + self.release_date + """ - Dep: """ + time.ctime(os.path.getctime('ufonet')) + """ 
 
-| <a href='javascript:runCommandX("cmd_view_changelog")'>LOG</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">C0DE</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">MIRROR</a> - <a href="https://ufonet.03c8.net/ufonet/ufonet-v1.7.tar.gz.torrent" target="_blank">SEED</a> | <a href='javascript:runCommandX("cmd_check_tool")'>UPDATE!</a> |
+| <a href='javascript:runCommandX("cmd_view_changelog")'>LOG</a> | <a href="https://code.03c8.net/epsylon/ufonet" target="_blank">C0DE</a> - <a href="https://github.com/epsylon/ufonet" target="_blank">MIRROR</a> - <a href='"""+torrent_seed+"""' target="_blank">SEED</a> | <a href='javascript:runCommandX("cmd_check_tool")'>UPDATE!</a> |
 
 -------------------------------------
 
 Mothership ID: <b>""" + str(self.mothership_id) + """</b>
  - Stats: <a href="/stats" target="_blank"><b>""" + str(self.mothership_model) + """</b></a>
  - Ranking: <a href="/ranking" target="_blank"><b>""" + str(self.ranking) + """</b></a><br>
+ - Proxy: <a href='javascript:runCommandX("cmd_check_tor")'><b>CHECK-TOR!</b></a><br>
  - Chargo: <a href='javascript:runCommandX("cmd_list_army")'><b>"""+ self.total_botnet +"""</b></a><br>
  - Nodes: <a href='javascript:runCommandX("cmd_list_nodes")'><b>"""+str(len(self.list_globalnet)+len(self.list_blackholes))+"""</b></a><br>
 """+str(self.current_tasks)+"""</td>
@@ -3199,7 +3202,7 @@ function HideAll()
   * Exclude this search engines: <input type="text" name="exclude_engines" id="exclude_engines" size="10" placeholder="Yahoo,Bing"></div></form>
   <button title="Start to search for zombies..." style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Start()>SEARCH!</button>
 <br><hr>
-Download Botnet: <center><br><a href='javascript:runCommandX("cmd_list_nodes")'>LIST NODES</a> <input type="text" name="download_botnet_ip" id="download_botnet_ip" size="20" value='"""+default_blackhole+"""'> <button title="Start to search for zombies..." style="color:yellow; height:40px; width:140px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Download_Botnet_IP()>TAKE IT!</button></center>
+<br>Download Botnet: <center><br><a href='javascript:runCommandX("cmd_list_nodes")'>LIST NODES</a> | <a href='javascript:runCommandX("cmd_download_nodes")'>TAKE ALL!</a> | <input type="text" name="download_botnet_ip" id="download_botnet_ip" size="20" value='"""+default_blackhole+"""'> <button title="Start to search for zombies..." style="color:yellow; height:40px; width:140px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Download_Botnet_IP()>TAKE IT!</button></center>
 <hr>
 Test Botnet: <center><br><a href='javascript:runCommandX("cmd_test_offline")'>Offline</a> | <a href='javascript:runCommandX("cmd_test_all")'>ALL</a> | <a href='javascript:runCommandX("cmd_test_army")'>Zombies</a> | <a href='javascript:runCommandX("cmd_test_rpcs")'>XML-RPCs</a> | <a href='javascript:runCommandX("cmd_attack_me")'>Attack Me!</a></center>
 <hr>
@@ -3858,7 +3861,7 @@ function runCommandX(cmd,params) {
                                 if(newcmd=="cmd_list_army"||newcmd=="cmd_list_nodes"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_download_nodes" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_check_tor" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -4063,6 +4066,14 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_check_tool_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_check_tor":
+            self.pages["/cmd_check_tor"] = "<pre>Waiting for results from the Tor check...</pre>"
+            runcmd = "("+python_version+" -i ufonet --check-tor |tee /tmp/out) &"
+        if page == "/cmd_check_tor_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_check_tor_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_view_changelog":
            f = open("docs/VERSION", "r")
            changelog = f.read()
@@ -4139,6 +4150,14 @@ function runCommandX(cmd,params) {
         if page == "/cmd_attack_me":
             self.pages["/cmd_attack_me"] = "<pre>Waiting for 'attack-me' results...</pre>"
             runcmd = "("+python_version+" -i ufonet --attack-me " + cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_download_nodes":
+            self.pages["/cmd_download_nodes"] = "<pre>Waiting for nodes downloading results...</pre>"
+            runcmd = "("+python_version+" -i ufonet --download-nodes "+ cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_download_nodes_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_download_nodes_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_attack_me_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close()
@@ -4331,14 +4350,14 @@ function runCommandX(cmd,params) {
             blackhole_ip = pGet["blackholes_source"]
             blackhole_ip = urllib.parse.unquote(blackhole_ip)
             try:
-                blackholes = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/nodes.dat').read().decode('utf-8')
-                f = open(self.blackholes, "w") # write updates to nodes.dat
+                blackholes = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/nodes.txt').read().decode('utf-8')
+                f = open(self.blackholes, "w") # write updates to nodes
                 f.write(blackholes)
                 f.close()
                 self.blackholes_text = blackholes
             except:
                 blackholes = "[Error] [AI] Something wrong downloading. Try it again or using another source...\n"
-            end_mark = "\n[Info] [AI] End of blackholes list (nodes.dat). -> [Refreshing!]"
+            end_mark = "\n[Info] [AI] End of blackholes list (nodes.txt). -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(str(blackholes))
             f.write(end_mark)
@@ -6230,7 +6249,50 @@ function runCommandX(cmd,params) {
         if page == "/cmd_transfer_globalnet":
             self.pages["/cmd_transfer_globalnet"] = "<pre>Waiting for 'blackhole' connection...</pre>"
             blackhole_ip = pGet["globalnet_source2"]
+            globalnet_deckey = crypto_key
+            nodec_text = "*** [This message cannot be solved with that KEY...]"
             blackhole_ip = urllib.parse.unquote(blackhole_ip)
+            blackhole_flag = False # used to check for repetitions
+            self.list_globalnet_rev = reversed(self.list_globalnet) # order by DESC
+            for m in self.list_globalnet_rev: # list = owner, comment, warping, ip
+                if globalnet_msg_sep in m:
+                    m = m.split(globalnet_msg_sep)
+                    globalnet_owner = m[0] # owner
+                    self.decrypt(globalnet_deckey, globalnet_owner)
+                    if self.decryptedtext:
+                        globalnet_owner = self.decryptedtext
+                    else:
+                        globalnet_owner = nodec_text
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    globalnet_comment = m[1] # comment
+                    self.decrypt(globalnet_deckey, globalnet_comment)
+                    if self.decryptedtext:
+                        globalnet_comment = self.decryptedtext
+                    else:
+                        globalnet_comment = nodec_text
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    globalnet_warp = m[2] # warp
+                    self.decrypt(globalnet_deckey, globalnet_warp)
+                    if self.decryptedtext:
+                        globalnet_warp = self.decryptedtext
+                    else:
+                        globalnet_warp = nodec_text
+                    if globalnet_warp == "OFF":
+                        warp_color = "pink"
+                    elif globalnet_warp == "ON1":
+                        warp_color = "orange"
+                    else: # ON2
+                        warp_color = "blue"
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    globalnet_ip = m[3] # ip
+                    self.decrypt(globalnet_deckey, globalnet_ip)
+                    if self.decryptedtext:
+                        globalnet_ip = self.decryptedtext
+                    else:
+                        globalnet_ip = nodec_text
+                    self.decryptedtext = "" # clean decryptedtext buffer
+                    if globalnet_ip == blackhole_ip: # only add NEW blackholes into the list
+                        blackhole_flag = True
             try:
                 globalnet_enckey = pGet["globalnet_enckey"]
             except:
@@ -6252,46 +6314,48 @@ function runCommandX(cmd,params) {
                         globalnet_ip = requests.get(check_ip_service1).text
                     except:
                         globalnet_ip = "Unknown!"
-            end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
-            if globalnet_enckey != "": # stream creation + encryption + package send
-                try:
-                    self.encrypt(globalnet_enckey, globalnet_owner)
-                    if self.encryptedtext:
-                        globalnet_owner = self.encryptedtext
-                    self.encryptedtext = "" # clean encryptedtext buffer
-                    self.encrypt(globalnet_enckey, globalnet_comment)
-                    if self.encryptedtext:
-                        globalnet_comment = self.encryptedtext
-                    self.encryptedtext = "" # clean encryptedtext buffer 
-                    self.encrypt(globalnet_enckey, globalnet_warp)
-                    if self.encryptedtext:
-                        globalnet_warp = self.encryptedtext
-                    self.encryptedtext = "" # clean encryptedtext buffer
-                    self.encrypt(globalnet_enckey, globalnet_ip)
-                    if self.encryptedtext:
-                        globalnet_ip = self.encryptedtext
-                    self.encryptedtext = "" # clean encryptedtext buffer
-                    stream = str(globalnet_owner)+globalnet_msg_sep+str(globalnet_comment)+globalnet_msg_sep+str(globalnet_warp)+globalnet_msg_sep+str(globalnet_ip)
-                    try: 
-                        host = blackhole_ip
-                        cport = 9992 # port used by mothership grider (server side script)
-                        gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        gs.settimeout(5.0)
-                        gs.connect((host, cport))
-                        gs.send(stream.encode())
-                        gs.close()
-                        try: # download latest globalnet after submit
-                            globalnet = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/globalnet.txt').read().decode('utf-8')
-                            f = open(self.globalnet_file, "w") # write updates to globalnet.txt
-                            f.write(globalnet)
-                            f.close()
+            if blackhole_flag == False: # only add NEW blackholes/IPs into the list
+                if globalnet_enckey != "": # stream creation + encryption + package send
+                    try:
+                        self.encrypt(globalnet_enckey, globalnet_owner)
+                        if self.encryptedtext:
+                            globalnet_owner = self.encryptedtext
+                        self.encryptedtext = "" # clean encryptedtext buffer
+                        self.encrypt(globalnet_enckey, globalnet_comment)
+                        if self.encryptedtext:
+                            globalnet_comment = self.encryptedtext
+                        self.encryptedtext = "" # clean encryptedtext buffer 
+                        self.encrypt(globalnet_enckey, globalnet_warp)
+                        if self.encryptedtext:
+                            globalnet_warp = self.encryptedtext
+                        self.encryptedtext = "" # clean encryptedtext buffer
+                        self.encrypt(globalnet_enckey, globalnet_ip)
+                        if self.encryptedtext:
+                            globalnet_ip = self.encryptedtext
+                        self.encryptedtext = "" # clean encryptedtext buffer
+                        stream = str(globalnet_owner)+globalnet_msg_sep+str(globalnet_comment)+globalnet_msg_sep+str(globalnet_warp)+globalnet_msg_sep+str(globalnet_ip)
+                        try: 
+                            host = blackhole_ip
+                            cport = 9992 # port used by mothership grider (server side script)
+                            gs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                            gs.settimeout(5.0)
+                            gs.connect((host, cport))
+                            gs.send(stream.encode())
+                            gs.close()
+                            try: # download latest globalnet after submit
+                                globalnet = urllib.request.urlopen('http://'+blackhole_ip+'/ufonet/globalnet.txt').read().decode('utf-8')
+                                f = open(self.globalnet_file, "w") # write updates to globalnet.txt
+                                f.write(globalnet)
+                                f.close()
+                            except:
+                                pass
+                            globalnet_trans = "[Info] [AI] Location transferred! -> [OK!]\n"
                         except:
-                            pass
-                        globalnet_trans = "[Info] [AI] Location transferred! -> [OK!]\n"
+                            globalnet_trans = "[Error] [AI] Something wrong uploading location. Try it again...\n"
                     except:
                         globalnet_trans = "[Error] [AI] Something wrong uploading location. Try it again...\n"
-                except:
-                    globalnet_trans = "[Error] [AI] Something wrong uploading location. Try it again...\n"
+            else: # blackhole/ip is into 'globalnet.txt' file
+                globalnet_trans = "[Error] [AI] Your 'Blackhole/IP' is currently into the list. Aborting...\n"
             end_mark = "\n[Info] [AI] End of transmission. -> [Refreshing!]"
             f = open("/tmp/out", "w")
             f.write(globalnet_trans)
@@ -6456,7 +6520,7 @@ function runCommandX(cmd,params) {
                         f.write("["+str(num_mission)+"] " + str(m)+"\n") 
                     f.write(end_mark)
                     f.close()
-                else: # blackholes (nodes.dat) decryption + data showing
+                else: # blackholes (nodes) decryption + data showing
                     self.decrypted_blackholes = []
                     nodec_text = "*** [This message cannot be solved with that key...]"
                     blackhole_key = pGet["blackhole_key"]

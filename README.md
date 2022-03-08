@@ -134,17 +134,17 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-1.png "UFONet Shell Version")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-1.png "UFONet Shell Version")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-2.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-2.png "UFONet Shell Board")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-shell-3.png "UFONet GUI Shell")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-3.png "UFONet GUI Shell")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-main_small.png "UFONet GUI Main Panel")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-main_small.png "UFONet GUI Main Panel")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-help_small.png "UFONet GUI Help")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-botnet.png "UFONet GUI Botnet")
+  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-botnet.png "UFONet GUI Botnet")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-stats.png "UFONet GUI General Stats")
 
