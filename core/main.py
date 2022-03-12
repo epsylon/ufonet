@@ -3450,12 +3450,11 @@ class UFONet(object):
                     print("\n[Info] [AI] Botnet updated! -> ;-)\n")
                     self.update_transferred_stats(self.trans_zombies) # update json file with transferred stats (blackhole)
                     stream = str(enc_globalnet_owner)+self.globalnet_msg_sep+str(enc_globalnet_comment)+self.globalnet_msg_sep+str(enc_globalnet_warp)+self.globalnet_msg_sep+str(enc_globalnet_ip)
-                    globalnet_list.append(stream)
+                    globalnet_list.append(stream+os.linesep)
                     print('='*22 + '\n')
         if globalnet_list is not None:
             f = open(self.globalnet_file, "w") # write to globalnet.txt
             for node in globalnet_list:
-                node = node.replace('\n','')
                 f.write(node)
             f.close()
 

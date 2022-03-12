@@ -302,7 +302,10 @@ class BlackRay(Thread):
                         print("[Info] [AI] [BlackRay] Meat ready : "+data[5:])
                 conn.close()
         print('[Info] [AI] [BlackRay] End of emission')
-        self.sock.close()
+        try:
+            self.sock.close()
+        except:
+            pass
 
 class Eater(Thread):
     def __init__(self, client, parent):
