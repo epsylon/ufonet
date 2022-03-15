@@ -2101,7 +2101,7 @@ class UFONet(object):
             if abductions_reply == "" and troops_reply == "" and robots_reply == "" and drones_reply == "" and reflectors_reply == "" and crystals_reply == "" and warps_reply == "" and bosons_reply == "":
                 print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX FAILED!]")
                 print('-'*12 + '\n')
-                print("[Error] [AI] Unable to uploading list of [Zombies] to this [Blackhole] [Server] -> [Exiting!]\n")
+                print("[Error] [AI] Unable to upload list of [Zombies] to this [Blackhole] [Server] -> [Exiting!]\n")
                 return
             print("[AI] [Control] [Blackhole] [Server] Reply: [VORTEX READY!] ;-)")
             f_in_abductions = gzip.open(BytesIO(abductions_reply), 'rb')
@@ -2113,7 +2113,7 @@ class UFONet(object):
             with open('botnet/abductions.txt') as f:
                 for _ in f:
                     num_zombies = num_zombies + 1
-            print("\n[Info] [Zombies] on [Blackhole]: "+ str(num_zombies))
+            print("\n[Info] [Blackhole] Total [Zombies]: "+ str(num_zombies))
             f_in_robots = gzip.open(BytesIO(robots_reply), 'rb')
             f_out_robots = open('botnet/robots.txt', 'wb')
             f_out_robots.write(f_in_robots.read())
@@ -2123,7 +2123,7 @@ class UFONet(object):
             with open('botnet/robots.txt') as f:
                 for _ in f:
                     num_robots = num_robots + 1
-            print("[Info] [Droids] on [Blackhole] : "+ str(num_robots))
+            print("[Info] [Blackhole] Total [Droids] : "+ str(num_robots))
             f_in_troops = gzip.open(BytesIO(troops_reply), 'rb')
             f_out_troops = open('botnet/troops.txt', 'wb')
             f_out_troops.write(f_in_troops.read())
@@ -2133,7 +2133,7 @@ class UFONet(object):
             with open('botnet/aliens.txt') as f:
                 for _ in f:
                     num_aliens = num_aliens + 1
-            print("[Info] [Aliens] on [Blackhole] : "+ str(num_aliens))
+            print("[Info] [Blackhole] Total [Aliens] : "+ str(num_aliens))
             f_in_drones = gzip.open(BytesIO(drones_reply), 'rb')
             f_out_drones = open('botnet/drones.txt', 'wb')
             f_out_drones.write(f_in_drones.read())
@@ -2143,7 +2143,7 @@ class UFONet(object):
             with open('botnet/drones.txt') as f:
                 for _ in f:
                     num_drones = num_drones + 1
-            print("[Info] [UCAVs] on [Blackhole] : "+ str(num_drones))
+            print("[Info] [Blackhole] Total [UCAVs]  : "+ str(num_drones))
             f_in_reflectors = gzip.open(BytesIO(reflectors_reply), 'rb')
             f_out_reflectors = open('botnet/reflectors.txt', 'wb')
             f_out_reflectors.write(f_in_reflectors.read())
@@ -2153,7 +2153,7 @@ class UFONet(object):
             with open('botnet/reflectors.txt') as f:
                 for _ in f:
                     num_reflectors = num_reflectors + 1
-            print("[Info] [X-RPCs] on [Blackhole] : "+ str(num_reflectors))
+            print("[Info] [Blackhole] Total [X-RPCs] : "+ str(num_reflectors))
             f_in_crystals = gzip.open(BytesIO(crystals_reply), 'rb')
             f_out_crystals = open('botnet/crystals.txt', 'wb')
             f_out_crystals.write(f_in_crystals.read())
@@ -2163,7 +2163,7 @@ class UFONet(object):
             with open('botnet/crystals.txt') as f:
                 for _ in f:
                     num_crystals = num_crystals + 1
-            print("[Info] [NTPs] on [Blackhole]   : "+ str(num_crystals))
+            print("[Info] [Blackhole] Total [NTPs]   : "+ str(num_crystals))
             f_in_warps = gzip.open(BytesIO(warps_reply), 'rb')
             f_out_warps = open('botnet/warps.txt', 'wb')
             f_out_warps.write(f_in_warps.read())
@@ -2173,7 +2173,7 @@ class UFONet(object):
             with open('botnet/warps.txt') as f:
                 for _ in f:
                     num_warps = num_warps + 1
-            print("[Info] [DNSs] on [Blackhole]   : "+ str(num_warps))
+            print("[Info] [Blackhole] Total [DNSs]   : "+ str(num_warps))
             f_in_bosons = gzip.open(BytesIO(bosons_reply), 'rb')
             f_out_bosons = open('botnet/bosons.txt', 'wb')
             f_out_bosons.write(f_in_bosons.read())
@@ -2183,7 +2183,7 @@ class UFONet(object):
             with open('botnet/bosons.txt') as f:
                 for _ in f:
                     num_bosons = num_bosons + 1
-            print("[Info] [SNMPs] on [Blackhole]   : "+ str(num_bosons))
+            print("[Info] [Blackhole] Total [SNMPs]  : "+ str(num_bosons))
             print('-'*12 + '\n')
             if not self.options.forceyes:
                 update_reply = input("[AI] Do you want to merge ONLY the new [Zombies] into [Blackhole]? (Y/n)")
@@ -2224,7 +2224,7 @@ class UFONet(object):
                         zombies_added = zombies_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [Zombies] found: " + str(zombies_added))
+                print("[Info] [Blackhole] Added [Zombies]: " + str(zombies_added))
                 aliens = self.extract_aliens()
                 if not aliens:
                     return
@@ -2244,7 +2244,7 @@ class UFONet(object):
                         aliens_added = aliens_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [Aliens] found : " + str(aliens_added))
+                print("[Info] [Blackhole] Added [Aliens] : " + str(aliens_added))
                 droids = self.extract_droids()
                 if not droids:
                     return
@@ -2264,7 +2264,7 @@ class UFONet(object):
                         droids_added = droids_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [Droids] found : " + str(droids_added))
+                print("[Info] [Blackhole] Added [Droids] : " + str(droids_added))
                 ucavs = self.extract_ucavs()
                 if not ucavs:
                     return
@@ -2284,7 +2284,7 @@ class UFONet(object):
                         ucavs_added = ucavs_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [UCAVs] found  : " + str(ucavs_added))
+                print("[Info] [Blackhole] Added [UCAVs]  : " + str(ucavs_added))
                 rpcs = self.extract_rpcs()
                 if not rpcs:
                     return
@@ -2304,7 +2304,7 @@ class UFONet(object):
                         rpcs_added = rpcs_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [X-RPCs] found : " + str(rpcs_added))
+                print("[Info] [Blackhole] Added [X-RPCs] : " + str(rpcs_added))
                 ntps = self.extract_ntps()
                 if not ntps:
                     return
@@ -2324,7 +2324,7 @@ class UFONet(object):
                         ntps_added = ntps_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [NTPs] found   : " + str(ntps_added))
+                print("[Info] [Blackhole] Added [NTPs]   : " + str(ntps_added))
                 dnss = self.extract_dnss()
                 if not dnss:
                     return
@@ -2344,7 +2344,7 @@ class UFONet(object):
                         dnss_added = dnss_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [DNSs] found   : " + str(dnss_added))
+                print("[Info] [Blackhole] Added [DNSs]   : " + str(dnss_added))
                 snmps = self.extract_snmps()
                 if not snmps:
                     return
@@ -2364,7 +2364,7 @@ class UFONet(object):
                         snmps_added = snmps_added + 1
                     else:
                         pass
-                print("[Info] [AI] New [SNMPs] found   : " + str(snmps_added))
+                print("[Info] [Blackhole] Added [SNMPs]  : " + str(snmps_added))
                 print('-'*12 + '\n')
                 if zombies_added == 0 and aliens_added == 0 and droids_added == 0 and ucavs_added == 0 and rpcs_added == 0 and ntps_added == 0 and dnss_added == 0 and snmps_added == 0: # not any zombie
                     os.remove('botnet/abductions.txt') # remove abductions file
@@ -2378,152 +2378,152 @@ class UFONet(object):
                     print("[Info] [AI] Try to search for new [Zombies]. These are already in this [Blackhole] -> [Exiting!]\n")
                     return
                 else:
+                    print("[Info] [AI] Trying to upload new [Zombies] to [Blackhole]...\n")
                     fc = gzip.open('botnet/community_zombies.txt.gz', 'wb')
                     for zombie in zombies_community:
-                        fc.write(zombie.strip()+"\n")
+                        fc.write(b'zombie.strip()')
                     fc.close()
                     os.remove('botnet/abductions.txt') # remove abductions file
                     fc = gzip.open('botnet/community_aliens.txt.gz', 'wb')
                     for alien in aliens_community:
-                        fc.write(alien.strip()+"\n")
+                        fc.write(b'alien.strip()')
                     fc.close()
                     os.remove('botnet/troops.txt') # remove troops file
                     fc = gzip.open('botnet/community_droids.txt.gz', 'wb')
                     for droid in droids_community:
-                        fc.write(droid.strip()+"\n")
+                        fc.write(b'droid.strip()')
                     fc.close()
                     os.remove('botnet/robots.txt') # remove robots file
                     fc = gzip.open('botnet/community_ucavs.txt.gz', 'wb')
                     for ucav in ucavs_community:
-                        fc.write(ucav.strip()+"\n")
+                        fc.write(b'ucav.strip()')
                     fc.close()
                     os.remove('botnet/drones.txt') # remove drones file
                     fc = gzip.open('botnet/community_rpcs.txt.gz', 'wb')
                     for rpc in rpcs_community:
-                        fc.write(rpc.strip()+"\n")
+                        fc.write(b'rpc.strip()')
                     fc.close()
                     os.remove('botnet/reflectors.txt') # remove reflectors file
                     fc = gzip.open('botnet/community_ntps.txt.gz', 'wb')
                     for ntp in ntps_community:
-                        fc.write(ntp.strip()+"\n")
+                        fc.write(b'ntp.strip()')
                     fc.close()
                     os.remove('botnet/crystals.txt') # remove crystals file
                     fc = gzip.open('botnet/community_dnss.txt.gz', 'wb')
                     for dns in dnss_community:
-                        fc.write(dns.strip()+"\n")
+                        fc.write(b'dns.strip()')
                     fc.close()
                     os.remove('botnet/warps.txt') # remove warps file
                     fc = gzip.open('botnet/community_snmps.txt.gz', 'wb')
                     for snmp in snmps_community:
-                        fc.write(snmp.strip()+"\n")
+                        fc.write(b'snmp.strip()')
                     fc.close()
                     os.remove('botnet/bosons.txt') # remove bosons file
-                    print("[Info] [AI] Starting to upload new [Zombies]...\n")
                     try: # open a socket and send data to the blackhole reciever port
                         host = self.blackhole 
                         cport = 9991
                         mport = 9990
                         try:
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_zombies.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_zombies.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_zombies.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_zombies.txt.gz') # remove local zombies .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_aliens.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_aliens.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_aliens.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_aliens.txt.gz') # remove local aliens .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_robots.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_robots.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_droids.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_droids.txt.gz') # remove local droids .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_ucavs.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_ucavs.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_ucavs.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_ucavs.txt.gz') # remove local ucavs .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_rpcs.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_rpcs.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_rpcs.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_rpcs.txt.gz') # remove local rpcs .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_ntps.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_ntps.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_ntps.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_ntps.txt.gz') # remove local ntps .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_dnss.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_dnss.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_dnss.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_dnss.txt.gz') # remove local dnss .gz file after transfer
                             time.sleep(1)
                             cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # send data one by one recieved by multithreading
-                            cs.connect(host, cport)
-                            cs.send("SEND " + 'community_snmps.txt.gz')
+                            cs.connect((host, cport))
+                            cs.send(("SEND " + 'community_snmps.txt.gz').encode())
                             cs.close()
                             f = open('botnet/community_snmps.txt.gz', "rb")
                             data = f.read()
                             f.close()
                             ms = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                            ms.connect(host, mport)
+                            ms.connect((host, mport))
                             ms.send(data)
                             ms.close()
                             os.remove('botnet/community_snmps.txt.gz') # remove local snmps .gz file after transfer
@@ -2536,7 +2536,8 @@ class UFONet(object):
                         print('-'*12 + '\n')
                         print("[Error] [AI] Connecting sockets to [Blackhole] -> [Aborting!]\n")
                         return
-        except:
+        except Exception as e:
+            print(str(e) + "\n")
             print('-'*12 + '\n')
             print("[Error] [AI] Unable to upload list of [Zombies] to this [Blackhole] -> [Exiting!]\n")
             return
@@ -5430,19 +5431,20 @@ class UFONet(object):
                 print('='*24)
                 print("Working [Zombies]:", num_active_zombie)
                 print('='*24)
-                if not self.options.forceyes:
-                    update_reply = input("\n[AI] Do you want to update your army? (Y/n)")
-                    print('-'*25)
-                else:
-                    update_reply = "Y"
-                if update_reply == "n" or update_reply == "N":
-                    print("[AI] "+self.exit_msg+"\n")
-                    return 
-                else:
-                    self.update_zombies(zombies_ready)
-                    if not self.options.upload:
-                        print("\n[Info] [AI] Botnet updated! -> ;-)\n")
-                        self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
+                if not self.options.upload:
+                    if not self.options.forceyes:
+                        update_reply = input("\n[AI] Do you want to update your army? (Y/n)")
+                        print('-'*25)
+                    else:
+                        update_reply = "Y"
+                    if update_reply == "n" or update_reply == "N":
+                        print("[AI] "+self.exit_msg+"\n")
+                        return 
+                    else:
+                        self.update_zombies(zombies_ready)
+                        if not self.options.upload:
+                            print("\n[Info] [AI] Botnet updated! -> ;-)\n")
+                            self.update_scanner_stats(self.scanned_zombies) # update json file with scanner stats (found via dorking)
         else:
             print('-'*25 + "\n")
             print('='*24)
