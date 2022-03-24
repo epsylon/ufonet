@@ -3168,7 +3168,7 @@ class UFONet(object):
                 print("[AI] [Radar] [Blackhole] [Node] Reply: [VORTEX READY!] ;-)")
                 print('-'*12)
                 num_zombies = 0
-                if abductions_reply is not "":
+                if abductions_reply:
                     f_in_abductions = gzip.open(BytesIO(abductions_reply), 'rb')
                     f_out_abductions = open('botnet/abductions.txt', 'wb')
                     f_out_abductions.write(f_in_abductions.read())
@@ -3179,7 +3179,7 @@ class UFONet(object):
                             num_zombies = num_zombies + 1
                 print("\n[Info] [Radar] [Blackhole] Total [Zombies]: "+ str(num_zombies))
                 num_robots = 0
-                if robots_reply is not "":
+                if robots_reply:
                     f_in_robots = gzip.open(BytesIO(robots_reply), 'rb')
                     f_out_robots = open('botnet/robots.txt', 'wb')
                     f_out_robots.write(f_in_robots.read())
@@ -3190,7 +3190,7 @@ class UFONet(object):
                             num_robots = num_robots + 1
                 print("[Info] [Radar] [Blackhole] Total [Droids] : "+ str(num_robots))
                 num_aliens = 0
-                if troops_reply is not "":
+                if troops_reply:
                     f_in_troops = gzip.open(BytesIO(troops_reply), 'rb')
                     f_out_troops = open('botnet/troops.txt', 'wb')
                     f_out_troops.write(f_in_troops.read())
@@ -3201,7 +3201,7 @@ class UFONet(object):
                             num_aliens = num_aliens + 1
                 print("[Info] [Radar] [Blackhole] Total [Aliens] : "+ str(num_aliens))
                 num_drones = 0
-                if drones_reply is not "":
+                if drones_reply:
                     f_in_drones = gzip.open(BytesIO(drones_reply), 'rb')
                     f_out_drones = open('botnet/drones.txt', 'wb')
                     f_out_drones.write(f_in_drones.read())
@@ -3212,7 +3212,7 @@ class UFONet(object):
                             num_drones = num_drones + 1
                 print("[Info] [Radar] [Blackhole] Total [UCAVs]  : "+ str(num_drones))
                 num_reflectors = 0
-                if reflectors_reply is not "":
+                if reflectors_reply:
                     f_in_reflectors = gzip.open(BytesIO(reflectors_reply), 'rb')
                     f_out_reflectors = open('botnet/reflectors.txt', 'wb')
                     f_out_reflectors.write(f_in_reflectors.read())
@@ -3223,7 +3223,7 @@ class UFONet(object):
                             num_reflectors = num_reflectors + 1
                 print("[Info] [Radar] [Blackhole] Total [X-RPCs] : "+ str(num_reflectors))
                 num_crystals = 1 # black magic!
-                if crystals_reply is not "":
+                if crystals_reply:
                     f_in_crystals = gzip.open(BytesIO(crystals_reply), 'rb')
                     f_out_crystals = open('botnet/crystals.txt', 'wb')
                     f_out_crystals.write(f_in_crystals.read())
@@ -3234,7 +3234,7 @@ class UFONet(object):
                             num_crystals = num_crystals + 1
                 print("[Info] [Radar] [Blackhole] Total [NTPs]   : "+ str(num_crystals))
                 num_warps = 1 # black magic!
-                if warps_reply is not "":
+                if warps_reply:
                     f_in_warps = gzip.open(BytesIO(warps_reply), 'rb')
                     f_out_warps = open('botnet/warps.txt', 'wb')
                     f_out_warps.write(f_in_warps.read())
@@ -3245,7 +3245,7 @@ class UFONet(object):
                             num_warps = num_warps + 1
                 print("[Info] [Radar] [Blackhole] Total [DNSs]   : "+ str(num_warps))
                 num_bosons = 0
-                if bosons_reply is not "":
+                if bosons_reply:
                     f_in_bosons = gzip.open(BytesIO(bosons_reply), 'rb')
                     f_out_bosons = open('botnet/bosons.txt', 'wb')
                     f_out_bosons.write(f_in_bosons.read())
