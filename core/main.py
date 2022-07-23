@@ -60,12 +60,12 @@ class UFONet(object):
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.github_zombies = 'https://raw.githubusercontent.com/epsylon/ufonet/master/botnet/' # default [RAW] download/upload zombies [Blackhole] [GitHub] [DIY]
-        self.external_check_service1 = 'https://status.ws/' # set external check service 1 [OK! 26/02/2020]
-        self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 26/02/2020]
-        self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site
-        self.check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
+        self.external_check_service1 = 'https://www.isitdownrightnow.com/' # set external check service 1 [OK! 23/07/2022]
+        self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 23/07/2022]
+        self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site [OK! 23/07/2022]
+        self.check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 23/07/2022]
         self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
-        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
+        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [23/07/2022]
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
         self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve [Zombies]
@@ -1340,7 +1340,7 @@ class UFONet(object):
                     print("\n[Info] [AI] [Control] Aborting 'Attack-Me' test... -> [Exiting!]\n")
                     return
                 self.mothership_hash = str(random.getrandbits(128)) # generating random evasion hash  
-                print("\nMothership ID: " + self.mothership_id + "RND: " + self.mothership_hash)
+                print("\n[Info] Mothership ID: " + self.mothership_id + "\n[Info] RND: " + self.mothership_hash)
                 print("\n[AI] Checking NAT/IP configuration:\n")
                 nat = self.check_nat()
                 f = open("alien", "w") # generate random alien worker
@@ -4031,12 +4031,12 @@ class UFONet(object):
             self.nat_error_flag = "ON"
             return #sys.exit(2)
         try:
-            data = str(urlopen(self.check_ip_service1).read()) # check for public ip
-            self.pub_ip = re.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(data).group(1)
+            data = str(urllib.request.urlopen(self.check_ip_service1).read()) # check for public ip
+            self.pub_ip = re.compile(r'(\d+\.\d+\.\d+\.\d+)').search(data).group(1)
             check_ip_service = self.check_ip_service1
         except:
             try: # another check for public ip
-                data = str(urlopen(self.check_ip_service2).read())
+                data = str(urllib.request.urlopen(self.check_ip_service2).read())
                 self.pub_ip = re.compile(r'">(\d+\.\d+\.\d+\.\d+)</span>').search(data).group(1)
                 check_ip_service = self.check_ip_service2
             except:
@@ -5855,15 +5855,19 @@ class UFONet(object):
             if not options.attackme:
                 try:
                     target = self.parse_url_encoding(target) # parse for proper url encoding
+                    if target.startswith("http://"):
+                        target = target.replace("http://", "")
+                    else:
+                        target = target.replace("https://", "")
                     try:
-                        url = self.external_check_service1 + target # check from external service [1]
+                        url = self.external_check_service1 + target + ".html" # check from external service [1] [23/07/2022]
                         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
                         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
                         if options.proxy: # set proxy
                             self.proxy_transport(options.proxy)
                         req = urllib.request.Request(url, None, headers)
                         external_reply = urllib.request.urlopen(req, context=self.ctx).read()
-                        if b"returned code 200 OK and is up" in external_reply:
+                        if b"is UP and reachable" in external_reply:
                             t = urlparse(self.external_check_service1)
                             name_external1 = t.netloc
                             print("[Info] [AI] [Control] From OTHERS: YES -> ["+name_external1+"]")
@@ -5906,7 +5910,7 @@ class UFONet(object):
                         print("[Info] [AI] [Control] From OTHERS: YES -> [Mothership OK!] -> ["+str(self.pub_ip)+":8080]")
                         head_check_external = True
                     else:
-                        print("[Info] [AI] [Control] From OTHERS: NO -> [Cannot connect!] -> [NAT is failing!]")
+                        print("\n[Error] [AI] [Control] From OTHERS: NO -> [Cannot connect!] -> [NAT is failing!]")
                         head_check_external = False
                         head_check_here = False # stop attack if not public IP available
                 except Exception:

@@ -34,9 +34,9 @@ crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
 
 browser_init_page = "https://searchencrypt.com" # initial webpage for ship.browser [OK! 16/06/2021]
-check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 06/06/2020]
+check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 23/07/2022]
 check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
-check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [06/06/2020]
+check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [23/07/2022]
 
 torrent_seed = "https://ufonet.03c8.net/ufonet/ufonet-v1.8.tar.gz.torrent" # current torrent seed
 
@@ -6253,6 +6253,7 @@ function runCommandX(cmd,params) {
             nodec_text = "*** [This message cannot be solved with that KEY...]"
             blackhole_ip = urllib.parse.unquote(blackhole_ip)
             blackhole_flag = False # used to check for repetitions
+            blackhole_ip_list = [] # used to check for repetitions
             self.list_globalnet_rev = reversed(self.list_globalnet) # order by DESC
             for m in self.list_globalnet_rev: # list = owner, comment, warping, ip
                 if globalnet_msg_sep in m:
@@ -6293,6 +6294,11 @@ function runCommandX(cmd,params) {
                     self.decryptedtext = "" # clean decryptedtext buffer
                     if globalnet_ip == blackhole_ip: # only add NEW blackholes into the list
                         blackhole_flag = True
+                    else:
+                        if globalnet_ip in blackhole_ip_list:
+                            blackhole_flag = True
+                        else:
+                            blackhole_ip_list.append(globalnet_ip)
             try:
                 globalnet_enckey = pGet["globalnet_enckey"]
             except:
@@ -7264,6 +7270,8 @@ function runCommandX(cmd,params) {
                                 grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>" # js error contact view
                             else:
                                 try:
+                                    grid_contact = grid_contact.replace("b'", "")
+                                    grid_contact = grid_contact.replace("'", "")
                                     if " " in grid_contact: # m[25] = grid_contact
                                         grid_contact = grid_contact.replace(" ","")
                                     grid_contact = "<a href=javascript:alert('"+str(grid_contact)+"');>View</a>" # js contact view
@@ -7770,6 +7778,7 @@ function runCommandX(cmd,params) {
                 globalnet_table = "<table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_owner' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('owner','"+str(globalnet_deckey)+"');>OWNER:</a></td><td align='center'><a id='filter_comment' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('comment','"+str(globalnet_deckey)+"')>COMMENT:</a></td><td align='center'><a id='filter_warp' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('warp','"+str(globalnet_deckey)+"')>WARPING:</a></td><td align='center'><a id='filter_ip' style='color:red;text-decoration:underline red;' onclick=javascript:GlobalnetFilter('ip','"+str(globalnet_deckey)+"')>IP:</a></td></tr>"
                 f = open("/tmp/out", "w")
                 self.list_globalnet_rev = reversed(self.list_globalnet) # order by DESC
+                blackhole_ip_list = [] # used to check for repetitions
                 for m in self.list_globalnet_rev: # list = owner, comment, warping, ip
                     if globalnet_msg_sep in m:
                         m = m.split(globalnet_msg_sep)
@@ -7807,10 +7816,9 @@ function runCommandX(cmd,params) {
                         else:
                             globalnet_ip = nodec_text
                         self.decryptedtext = "" # clean decryptedtext buffer
-                    else:
-                        globalnet_owner = "KEY?"
-                        globalnet_comment = "KEY?"
-                    globalnet_table += "<tr><td align='center'>"+str(globalnet_owner)+"</td><td align='center'>"+str(globalnet_comment)+"</td><td align='center'><font color="+warp_color+">"+str(globalnet_warp)+"</font></td><td align='center'><font color="+warp_color+">"+str(globalnet_ip)+"</font></td></tr>"
+                        if globalnet_ip not in blackhole_ip_list:
+                            blackhole_ip_list.append(globalnet_ip)
+                            globalnet_table += "<tr><td align='center'>"+str(globalnet_owner)+"</td><td align='center'>"+str(globalnet_comment)+"</td><td align='center'><font color="+warp_color+">"+str(globalnet_warp)+"</font></td><td align='center'><font color="+warp_color+">"+str(globalnet_ip)+"</font></td></tr>"
                 globalnet_table += "</table><br>"
                 f.write(globalnet_table)
                 f.write(end_mark)
