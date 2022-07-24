@@ -3061,6 +3061,7 @@ class UFONet(object):
             timeout = 5 
         if self.options.proxy: # set proxy
             self.proxy_transport(self.options.proxy)
+        globalnet_ip_list = [] # used to check for repetitions
         for m in nodes:
             m = m.replace('\n','')
             if self.globalnet_msg_sep in m:
@@ -3072,6 +3073,10 @@ class UFONet(object):
                 self.decrypt(self.crypto_key, enc_globalnet_ip)
                 if self.decryptedtext:
                     globalnet_ip = self.decryptedtext
+                    if globalnet_ip not in globalnet_ip_list:
+                        globalnet_ip_list.append(globalnet_ip)
+                    else:
+                        return
                 self.decryptedtext = "" # clean decryptedtext buffer
                 print("[AI] Trying [Radar] [Blackhole] [Node]:", globalnet_ip, "\n")
                 if self.options.forcessl:

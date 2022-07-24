@@ -2252,6 +2252,26 @@ function RefreshBlackhole(){
          }
       }
 </script>
+<script language="javascript">
+function Download_Botnet_IP(single_ip_num){
+        var a = "down_ip_";
+        var b = single_ip_num;
+        var c = a.concat(b);
+        blackhole=document.getElementById(c).value
+        params="blackhole="+escape(blackhole)
+        runCommandX("cmd_download_botnet_ip",params)      
+        }
+</script>
+<script language="javascript">
+function Upload_Botnet_IP(single_ip_num){
+        var a = "up_ip_";
+        var b = single_ip_num;
+        var c = a.concat(b);
+        blackhole=document.getElementById(c).value
+        params="blackhole="+escape(blackhole)
+        runCommandX("cmd_upload_botnet_ip",params)      
+        }
+</script>
 </head><body bgcolor="black" text="yellow" style="font-family:Â Courier, 'Courier New', monospace;" onload="start()" onresize="resize()" onorientationchange="resize()" onmousedown="context.fillStyle='rgba(0,0,0,'+opacity+')'" onmouseup="context.fillStyle='rgb(0,0,0)'">
 <canvas id="starfield" style="z-index:-1; background-color:#000000; position:fixed; top:0; left:0;"></canvas>
 <br>
@@ -3861,7 +3881,7 @@ function runCommandX(cmd,params) {
                                 if(newcmd=="cmd_list_army"||newcmd=="cmd_list_nodes"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_download_nodes" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_check_tor" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_download_nodes" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_upload_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_check_tor" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -4087,14 +4107,18 @@ function runCommandX(cmd,params) {
             for blackholes_text in self.list_blackholes:
                 self.decrypt(crypto_key, blackholes_text)
                 if self.decryptedtext:
-                    self.dec_list_blackholes.append(self.decryptedtext)
+                    if self.decryptedtext not in self.dec_list_blackholes:
+                        self.dec_list_blackholes.append(self.decryptedtext)
+                    else:
+                        return
                 self.decryptedtext = "" # clean decryptedtext buffer
             num_blackholes = 0 # blackholes nodes counter
             for b in self.dec_list_blackholes:
-                num_blackholes = num_blackholes + 1
                 s = b.rsplit(blackhole_sep, 1)[0]
                 ip_b = str(s.rsplit(blackhole_sep, 1)[0].rsplit(":", 1)[1])
-                self.decrypted_blackholes.append(ip_b)
+                if ip_b not in self.decrypted_blackholes:
+                    self.decrypted_blackholes.append(ip_b)
+                    num_blackholes = num_blackholes + 1
             self.decrypted_globalnet = []
             with open(self.globalnet_file) as f:
                 ls = f.read().splitlines()
@@ -4106,9 +4130,10 @@ function runCommandX(cmd,params) {
                     globalnet_ip = m[3] # ip
                     self.decrypt(crypto_key, globalnet_ip)
                     if self.decryptedtext:
-                        num_globalnet = num_globalnet + 1
                         ip_g = self.decryptedtext
-                        self.decrypted_globalnet.append(ip_g)
+                        if ip_g not in self.decrypted_globalnet:
+                            self.decrypted_globalnet.append(ip_g)
+                            num_globalnet = num_globalnet + 1
                     self.decryptedtext = "" # clean decryptedtext buffer
             if num_blackholes == 0:
                 ip_b = "-"
@@ -4189,6 +4214,16 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_upload_community_update"] = "<pre>"+f.read()+"<pre>"
+        if page == "/cmd_upload_botnet_ip":
+            blackhole = pGet["blackhole"]
+            blackhole=urllib.parse.unquote(blackhole)
+            self.pages["/cmd_upload_botnet_ip"] = "<pre>Waiting for uploading results...</pre>"
+            runcmd = "("+python_version+" -i ufonet --up-to '"+blackhole+"' "+ cmd_options + "|tee /tmp/out) &"
+        if page == "/cmd_upload_botnet_ip_update":
+            if not os.path.exists('/tmp/out'):
+                open('/tmp/out', 'w').close()
+            with open('/tmp/out', 'r') as f:
+                self.pages["/cmd_upload_botnet_ip_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_test_army_update":
             if not os.path.exists('/tmp/out'):
                 open('/tmp/out', 'w').close() 
@@ -6539,18 +6574,21 @@ function runCommandX(cmd,params) {
                         self.decryptedtext = "" # clean decryptedtext buffer
                     f = open("/tmp/out", "w")
                     num_blackholes = 0 # blackholes counter
+                    single_ip_num = 0
                     for b in self.decrypted_blackholes:
                         num_blackholes = num_blackholes + 1
                         if blackhole_sep in b: # IP | Mode | Comment | Actions
                             s = b.rsplit(blackhole_sep, 1)[0]
                             ip = str(s.rsplit(blackhole_sep, 1)[0])
-                            mode =  str(s.rsplit(blackhole_sep, 1)[1])
+                            single_ip = ip.replace("IP:","")
+                            single_ip_num = single_ip_num + 1
+                            mode = str(s.rsplit(blackhole_sep, 1)[1])
                             if mode == "D": # Download only mode
-                                mode = "<a href=javascript:runCommandX('cmd_download_community')>Download</a>"
+                                mode = "<input type='hidden' name='down_ip_"+str(single_ip_num)+"' id='down_ip_"+str(single_ip_num)+"' value='"+single_ip+"'><button onclick='Download_Botnet_IP("+str(single_ip_num)+")'>Download</button>"
                             elif mode == "U": # Upload only mode
-                                mode = "<a href=javascript:runCommandX('cmd_upload_community')>Upload</a>"
-                            else: # Upload/Download mode
-                                mode = "<a href=javascript:runCommandX('cmd_download_community')>Download</a>" + " - " + "<a href=javascript:runCommandX('cmd_upload_community')>Upload</a>"
+                                mode = "<input type='hidden' name='up_ip_"+str(single_ip_num)+"' id='up_ip_"+str(single_ip_num)+"' value='"+single_ip+"'><button onclick='Upload_Botnet_IP("+str(single_ip_num)+")'>Upload</button>"
+                            else: # Download/Upload mode
+                                mode = "<input type='hidden' name='down_ip_"+str(single_ip_num)+"' id='down_ip_"+str(single_ip_num)+"' value='"+single_ip+"'><button onclick='Download_Botnet_IP("+str(single_ip_num)+")'>Download</button>" + " - " + "<input type='hidden' name='up_ip_"+str(single_ip_num)+"' id='up_ip_"+str(single_ip_num)+"' value='"+single_ip+"'><button onclick='Upload_Botnet_IP("+str(single_ip_num)+")'>Upload</button>"
                             comment = str(b.rsplit(blackhole_sep, 1)[1])
                             b = ip + " " + blackhole_sep + " Botnet: " + mode + " " + blackhole_sep + " Comment: " + comment
                             f.write("["+str(num_blackholes)+"] " + str(b)+"\n")
