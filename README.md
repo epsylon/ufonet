@@ -97,7 +97,7 @@ on a direct-connect P2P architecture.
 
   For manual installation, on Debian-based systems (ex: Ubuntu), run:
 
-       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy libgeoip1 libgeoip-dev
+       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-pycryptodome python3-requests python3-scapy libgeoip1 libgeoip-dev
 
   On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
 
