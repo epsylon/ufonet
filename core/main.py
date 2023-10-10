@@ -11,7 +11,7 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time, threading, base64, string, math
 import io, socket, ssl, cgi, json, gzip
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from hashlib import sha1, sha256
 try:
     from urllib.parse import urlparse as urlparse

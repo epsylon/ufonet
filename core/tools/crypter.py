@@ -20,7 +20,7 @@ MAC_SIZE = 20
 import base64
 from os import urandom
 from hashlib import sha1, sha256
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 trans_5C = ''.join([chr (x ^ 0x5c) for x in range(256)])
 trans_36 = ''.join([chr (x ^ 0x36) for x in range(256)])

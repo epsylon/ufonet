@@ -20,7 +20,7 @@ import urllib.request, urllib.error, urllib.parse
 from urllib.parse import urlparse as urlparse
 from core.tools.crypter import Cipher
 from time import gmtime, strftime, strptime
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from hashlib import sha1, sha256
 from decimal import Decimal
 from random import shuffle
