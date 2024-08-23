@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -15,9 +15,9 @@ try:
 except:
     from urllib.parse import urlparse
 try:
-    from scapy.all import *
+    from scapy import *
 except:
-    print("\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-scapy'\n")
+    print("\nError importing: scapy lib.\n")
     sys.exit(2)
 
 # UFONet IP FRAGMENTATION flooder (DROPER)

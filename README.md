@@ -80,48 +80,18 @@ on a direct-connect P2P architecture.
 
 #### Installing:
 
-  UFONet runs on many platforms. It requires Python (>=3) and the following libraries:
+  UFONet runs on many platforms:
 
-       python3-pycurl - Python bindings to libcurl (Python 3)
-       python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
-       libgeoip-dev - Development files for the GeoIP library
-       libgeoip1 - non-DNS IP-to-country resolver library
-       python3-whois - Python module for retrieving WHOIS information - Python 3
-       python3-crypto - cryptographic algorithms and protocols for Python 3
-       python3-requests - elegant and simple HTTP library for Python3, built for human beings
-       python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
+  You can try to automatically get all required libraries using (as root):
 
-  You can automatically get all required libraries using (as root):
+       python3 setup.py
 
-       python3 setup.py install
+  For manual installation, run:
 
-  For manual installation, on Debian-based systems (ex: Ubuntu), run:
-
-       sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy libgeoip1 libgeoip-dev
-
-  On other systems such as: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... also run:
-
-       pip3 install GeoIP
-       pip3 install python-geoip
-       pip3 install pygeoip
-       pip3 install requests
-       pip3 install pycrypto
-       pip3 install pycurl
-       pip3 install whois
-       pip3 install scapy-python3
-
-####  Source libs:
-
-   * Python: https://www.python.org/downloads/
-   * PyCurl: http://pycurl.sourceforge.net/
-   * GeoIP: https://pypi.python.org/pypi/GeoIP/
-   * Python-geoip: https://pypi.org/project/python-geoip/
-   * Pygeoip: https://pypi.org/project/pygeoip/
-   * Whois: https://pypi.python.org/pypi/whois
-   * PyCrypto: https://pypi.python.org/pypi/pycrypto
-   * PyRequests: https://pypi.python.org/pypi/requests
-   * Scapy-Python3: https://pypi.org/project/scapy-python3/
-   * Leaflet: http://leafletjs.com/ (provided)
+       sudo apt-get install -y --no-install-recommends libpython3.11-dev python3-pycurl python3-geoip python3-whois python3-cryptography python3-requests libgeoip1 libgeoip-dev
+       python3 -m pip install --upgrade pip --no-warn-script-location --root-user-action=ignore
+       python3 -m pip install pycurl --upgrade --root-user-action=ignore
+       python3 -m pip install GeoIP python-geoip pygeoip requests whois scapy pycryptodomex duckduckgo-search --ignore-installed --root-user-action=ignore
 
 ----------
 

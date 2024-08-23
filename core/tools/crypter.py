@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -20,7 +20,7 @@ MAC_SIZE = 20
 import base64
 from os import urandom
 from hashlib import sha1, sha256
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 trans_5C = ''.join([chr (x ^ 0x5c) for x in range(256)])
 trans_36 = ''.join([chr (x ^ 0x36) for x in range(256)])
@@ -66,7 +66,7 @@ class Cipher(object):
         return self.key
 
     def set_text(self, text):
-        self.text = text 
+        self.text = text.encode("utf-8") 
         return self.text
 
     def encrypt(self):

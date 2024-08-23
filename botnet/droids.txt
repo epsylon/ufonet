@@ -1,1 +1,1 @@
-https://jigsaw.w3.org/css-validator/validator?uri=$TARGET&profile=css3&usermedium=all&vextwarning=true
+https://validator.w3.org/check?uri=$TARGET&charset=%28detect+automatically%29&doctype=Inline&group=0&verbose=1

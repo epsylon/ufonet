@@ -48,48 +48,18 @@ UFONet -  Es un conjunto de herramientas hacktivistas que permiten el lanzamient
 # Instalando
 ###############################
 
-UFONet funciona en muchas plataformas. Requiere Python (>=3) y las siguientes librerías:
+UFONet funciona en muchas plataformas:
 
-     python3-pycurl - Python bindings to libcurl (Python 3)
-     python3-geoip - Python3 bindings for the GeoIP IP-to-country resolver library
-     libgeoip-dev - Development files for the GeoIP library
-     libgeoip1 - non-DNS IP-to-country resolver library
-     python3-whois - Python module for retrieving WHOIS information - Python 3
-     python3-crypto - cryptographic algorithms and protocols for Python 3
-     python3-requests - elegant and simple HTTP library for Python3, built for human beings
-     python3-scapy - Packet crafting/sniffing/manipulation/visualization security tool
+Puedes tratar de de obtener automáticamente todas las librerías requeridas usando (como root):
 
-Puedes obtener todas las librerías requeridas automáticamente usando (como root):
+     python3 setup.py
 
-     python3 setup.py install
+Para instalación manual, intenta lo siguiente:
 
-Para instalarlas manualmente en sistemas basados en Debian (ex: Ubuntu), lanza: 
-
-     sudo apt-get install python3-pycurl python3-geoip python3-whois python3-crypto python3-requests python3-scapy libgeoip1 libgeoip-dev
-
-En otros sistemas como: Kali, Ubuntu, ArchLinux, ParrotSec, Fedora, etc... también lanzar:
-
-     pip3 install GeoIP
-     pip3 install python-geoip
-     pip3 install pygeoip
-     pip3 install requests
-     pip3 install pycrypto
-     pip3 install pycurl
-     pip3 install whois
-     pip3 install scapy-python3
-
-Paquetes fuente de las librerías:
-
-     * Python: https://www.python.org/downloads/
-     * PyCurl: http://pycurl.sourceforge.net/
-     * GeoIP: https://pypi.python.org/pypi/GeoIP/
-     * Python-geoip: https://pypi.org/project/python-geoip/
-     * Pygeoip: https://pypi.org/project/pygeoip/
-     * Whois: https://pypi.python.org/pypi/whois
-     * PyCrypto: https://pypi.python.org/pypi/pycrypto
-     * PyRequests: https://pypi.python.org/pypi/requests
-     * Scapy-Python3: https://pypi.org/project/scapy-python3/
-     * Leaflet: http://leafletjs.com/ (provided)
+     sudo apt-get install -y --no-install-recommends libpython3.11-dev python3-pycurl python3-geoip python3-whois python3-cryptography python3-requests libgeoip1 libgeoip-dev
+     python3 -m pip install --upgrade pip --no-warn-script-location --root-user-action=ignore
+     python3 -m pip install pycurl --upgrade --root-user-action=ignore
+     python3 -m pip install GeoIP python-geoip pygeoip requests whois scapy pycryptodomex duckduckgo-search --ignore-installed --root-user-action=ignore
 
 ###############################
 # Buscando 'zombies'
@@ -100,14 +70,14 @@ web vulnerables a 'Open Redirect'.
 
 Generalmente los parámetros de las peticiones, suelen ser similares a los siguientes:
 
-        'proxy.php?url='
+        'page.php?url='
         'check.cgi?url='
         'checklink?uri='
         'validator?uri='
 
 Por ejemplo, puedes comenzar una búsqueda con:
 
-       ./ufonet -s 'proxy.php?url='
+       ./ufonet -s 'page.php?url='
 
 O utilizando una lista de "dorks" que tengas en un fichero:
 
@@ -115,17 +85,11 @@ O utilizando una lista de "dorks" que tengas en un fichero:
 
 Por defecto, UFONet utiliza un motor de búsqueda que se llama 'DuckDuckGo'. Pero puedes elegir uno diferente:
 
-       ./ufonet -s 'proxy.php?url=' --se 'bing'
-
-Ésta es la lista de motores de búsqueda que funcionan con la fecha de la última vez que se han probado:
-
-        - duckduckgo  [02/2022: OK!]
-        - bing        [02/2022: OK!]
-        - yahoo       [02/2022: OK!]
+       ./ufonet -s 'page.php?url=' --se 'bing'
 
 También puedes buscar masívamente utilizando todos los motores de búsqueda soportados:
 
-       ./ufonet -s 'proxy.php?url=' --sa 
+       ./ufonet -s 'page.php?url=' --sa 
 
 Para controlar cuantos 'zombies' recibir como resultado puedes utilizar:
 
@@ -151,7 +115,7 @@ Si respondes 'Y', tus nuevos 'zombies' se sumarán al fichero: zombies.txt
   -------------
   Ejemplos:
 
-     + con detalle:       ./ufonet -s 'proxy.php?url=' -v
+     + con detalle:       ./ufonet -s 'page.php?url=' -v
      + con hilos:         ./ufonet --sd 'botnet/dorks.txt' --sa --threads 100
 
 ###############################
@@ -440,6 +404,10 @@ más algunas "extra":
 ###############################
 # Timelog
 ###############################
+
+--------------------------
+25.08.2024 : v.1.9
+--------------------------
 
 --------------------------
 02.03.2022 : v.1.8

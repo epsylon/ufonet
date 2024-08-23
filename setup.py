@@ -3,57 +3,59 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2022 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import sys
+import sys, time
 
 if sys.version_info[0] != 3:
     sys.exit("Sorry, UFONet requires Python >= 3")
-    
-from setuptools import setup, find_packages
 
-setup(
-    name='ufonet',
-    version='1.8',
-    license='GPLv3',
-    author_email='epsylon@riseup.net',
-    author='psy',
-    description='Denial of Service Toolkit',
-    url='https://ufonet.03c8.net/',
-    long_description=open('docs/README.txt').read(),
-    packages=find_packages(),
-    install_requires=['GeoIP >= 1.3.2', 'python-geoip >= 1.2', 'pygeoip >= 0.3.2', 'requests >= 2.21.0', 'pycrypto >= 2.6.1', 'pycurl >= 7.43.0', 'whois >= 0.7', 'scapy-python3 >= 0.20'],
-    include_package_data=True,
-    package_data={
-        'core': ['js/*.css', 'js/*.js', 'js/leaflet/*.css', 'js/leaflet/*.js', 'js/cluster/*', 'txt/*.txt', 'images/crew/*', 'images/aliens/*', 'images/*.txt'],
-        'data': ['*.dat', '*.txt'],
-    },
-    entry_points={
-        'console_scripts': [
-            'ufonet=UFONet:core.main',
-        ],
-        'gui_scripts': [
-            'ufonet=UFONet:core.main',
-        ],
-    },
-    keywords='Toolkit WebAbuse DoS DDoS Botnet Darknet UFONet',
-    classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        "Environment :: Web Environment",
-        "Environment :: Console", 
-        "Intended Audience :: System Administrators",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python",
-        'Programming Language :: Python :: 3',
-        "Topic :: Internet", 
-        "Topic :: Security", 
-        "Topic :: System :: Networking",
-      ],
-      zip_safe=False
-)
+libs = ("GeoIP", "python-geoip", "pygeoip", "requests", "whois", "scapy", "pycryptodomex", "duckduckgo-search")
+    
+import subprocess, os
+
+def speech():
+    print("[MASTER] Connecting UFONET [AI] system, remotely...\n")
+    time.sleep(5)
+    print("\n[AI] Hello Master!... ;-)\n")
+    print("\n[AI] Launching self-deployment protocols...\n")
+    time.sleep(2)
+    print(r"      _______")
+    print(r"    |.-----.|")
+    print(r"    ||x . x||")
+    print(r"    ||_.-._||")
+    print(r"    `--)-(--`")
+    print(r"   __[=== o]___")
+    print(r"  |:::::::::::|")
+
+def checkeuid():
+    try:
+        euid = os.geteuid()
+    except:
+        sys.exit(2) # return
+    return euid
+
+
+def install(package):
+    subprocess.run(["python3", "-m", "pip", "install", "--upgrade", "pip", "--no-warn-script-location", "--root-user-action=ignore"])
+    subprocess.run(["python3", "-m", "pip", "install", "pycurl", "--upgrade", "--no-warn-script-location", "--root-user-action=ignore"])
+    for lib in libs:
+        subprocess.run(["python3", "-m", "pip", "install", lib, "--no-warn-script-location", "--ignore-installed", "--root-user-action=ignore"])
+
+if __name__ == '__main__':
+    euid = checkeuid()
+    if euid != 0:
+        try:
+            args = ['sudo', sys.executable] + sys.argv + [os.environ]
+            os.execlpe('sudo', *args)
+        except: 
+            sys.exit()
+        sys.exit()
+    speech()
+    os.system("sudo apt-get install -y --no-install-recommends libpython3.11-dev python3-pycurl python3-geoip python3-whois python3-requests libgeoip1 libgeoip-dev")
+    install(libs)
+    print("\n[UFONET] Setup has been completed!. You can now try to run: ./ufonet\n")

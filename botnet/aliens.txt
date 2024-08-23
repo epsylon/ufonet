@@ -1,1 +1,1 @@
-https://gtmetrix.com/analyze.html;$POST;url
+https://isitdown.me/check_domain.php;$POST;domain

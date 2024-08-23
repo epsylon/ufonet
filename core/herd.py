@@ -81,7 +81,7 @@ class Herd(object):
     # head count (+/- headless zombies)
     # active thread count = 1 principal + 1/zombie
     def no_more_zombies(self):
-        ac=threading.active_count()
+        ac=threading.active_count()-1
         options = self.ufonet.options
         if options.verbose == True:
             if ac>self.living:

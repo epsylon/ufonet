@@ -49,7 +49,7 @@ class UFONetOptions(optparse.OptionParser):
         optparse.OptionParser.__init__(self, 
         description='\n{(D)enial(OFF)ensive(S)ervice[ToolKit]}-{by_(io=psy+/03c8.net)}',
         prog='./ufonet',
-        version='\nVersion: 1.8 '+"\u25BC "+'[DPh] DarK-PhAnT0m! '+"\u25BC"+'\n')
+        version='\nVersion: 1.9 '+"\u25BC "+'[F4T] F4ll0uT! '+"\u25BC"+'\n')
         self.add_option("-v", "--verbose", action="store_true", dest="verbose", help="active verbose on requests")
         self.add_option("--examples", action="store_true", dest="examples", help="print some examples")
         self.add_option("--timeline", action="store_true", dest="timeline", help="show program's code timeline")
@@ -83,7 +83,7 @@ class UFONetOptions(optparse.OptionParser):
         group2.add_option("--sn", action="store", dest="num_results", help="Set max number of results for engine (default: 10)")
         group2.add_option("--se", action="store", dest="engine", help="Search engine for 'dorking' (default: DuckDuckGo)")
         group2.add_option("--sa", action="store_true", dest="allengines", help="Search massively using all engines (may take time!)")
-        group2.add_option("--sax", action="store", dest="ex_engine", help="Exclude engines when mass searching (ex: 'Bing,Yahoo')")
+        group2.add_option("--sax", action="store", dest="ex_engine", help="Exclude engines when mass searching (ex: 'Bing')")
         self.add_option_group(group2)
         group3 = optparse.OptionGroup(self, "*Test Botnet*")
         group3.add_option("--test-offline", action="store_true", dest="testoffline", help="Fast check to discard offline bots")
@@ -146,7 +146,7 @@ class UFONetOptions(optparse.OptionParser):
         self.add_option_group(group8)
 
     def extract_sengines(self):
-        sengines = ["Yahoo", "Bing", "DuckDuckGo"]
+        sengines = ["Bing", "DuckDuckGo"]
         sengines = len(sengines)
         return sengines
 

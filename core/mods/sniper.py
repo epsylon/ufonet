@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -11,9 +11,9 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys, random
 try:
-    from scapy.all import *
+    from scapy import *
 except:
-    print("\nError importing: scapy lib. \n\n To install it on Debian based systems:\n\n $ 'sudo apt-get install python3-scapy'\n")
+    print("\nError importing: scapy lib.\n")
     sys.exit(2)
 
 snmp_file = "botnet/snmp.txt" # SNMP servers IP list
