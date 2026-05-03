@@ -1,61 +1,83 @@
-#!/usr/bin/env python 
-# -*- coding: utf-8 -*-"
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-This file is part of the UFONet project, https://ufonet.03c8.net
+Modernized safe setup.py for a UFONet-style research toolkit.
+Paste this file as setup.py at the repository root.
 
-Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
-
-You should have received a copy of the GNU General Public License along
-with UFONet; if not, write to the Free Software Foundation, Inc., 51
-Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+NOTES (read before running):
+- This is a packaging file only. It does NOT escalate privileges, run apt-get,
+  or auto-install system packages.
+- Always install inside a virtual environment or container:
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install --upgrade pip
+    pip install .
+- This project is intended for lawful research, education, and testing on
+  systems you own or where you have explicit permission. Do NOT use it to
+  target third-party infrastructure without consent.
 """
-import sys, time
+from pathlib import Path
+from setuptools import setup, find_packages
 
-if sys.version_info[0] != 3:
-    sys.exit("Sorry, UFONet requires Python >= 3")
+# Basic metadata
+NAME = "ufonet_reborn"
+VERSION = "0.1.0"
+DESCRIPTION = "UFONet Reborn — modernized research/stress-testing toolkit (for private use)"
+AUTHOR = "You"
+AUTHOR_EMAIL = "you@example.com"
+LICENSE = "GPL-3.0-or-later"
+PYTHON_REQUIRES = ">=3.10"
 
-libs = ("GeoIP", "python-geoip", "pygeoip", "requests", "whois", "scapy", "pycryptodomex", "duckduckgo-search")
-    
-import subprocess, os
+# Minimal, maintained dependencies. Keep this list conservative and audited.
+# Replace or remove packages you don't actually use.
+INSTALL_REQUIRES = [
+    "requests>=2.28",
+    "scapy>=2.5; platform_system!='Windows'",
+    "python-whois>=0.7",
+    "pycryptodome>=3.18",
+    "duckduckgo-search>=2.6",
+]
 
-def speech():
-    print("[MASTER] Connecting UFONET [AI] system, remotely...\n")
-    time.sleep(5)
-    print("\n[AI] Hello Master!... ;-)\n")
-    print("\n[AI] Launching self-deployment protocols...\n")
-    time.sleep(2)
-    print(r"      _______")
-    print(r"    |.-----.|")
-    print(r"    ||x . x||")
-    print(r"    ||_.-._||")
-    print(r"    `--)-(--`")
-    print(r"   __[=== o]___")
-    print(r"  |:::::::::::|")
+# Read long description from README if present
+README = Path(__file__).with_name("README.md")
+long_description = README.read_text(encoding="utf-8") if README.exists() else (
+    DESCRIPTION + "\n\n" +
+    "IMPORTANT: This software is intended for lawful research and testing only. "
+    "Do not use it to attack or disrupt systems you do not own or have explicit permission to test."
+)
 
-def checkeuid():
-    try:
-        euid = os.geteuid()
-    except:
-        sys.exit(2) # return
-    return euid
+# Classifiers (helpful metadata)
+CLASSIFIERS = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Testing",
+]
 
+# Entry points: console script 'ufonet' will call ufonet.cli:main
+# Make sure your package contains ufonet/cli.py with a safe main() function.
+ENTRY_POINTS = {
+    "console_scripts": [
+        "ufonet=ufonet.cli:main",
+    ],
+}
 
-def install(package):
-    subprocess.run(["python3", "-m", "pip", "install", "--upgrade", "pip", "--no-warn-script-location", "--root-user-action=ignore"])
-    subprocess.run(["python3", "-m", "pip", "install", "pycurl", "--upgrade", "--no-warn-script-location", "--root-user-action=ignore"])
-    for lib in libs:
-        subprocess.run(["python3", "-m", "pip", "install", lib, "--no-warn-script-location", "--ignore-installed", "--root-user-action=ignore"])
-
-if __name__ == '__main__':
-    euid = checkeuid()
-    if euid != 0:
-        try:
-            args = ['sudo', sys.executable] + sys.argv + [os.environ]
-            os.execlpe('sudo', *args)
-        except: 
-            sys.exit()
-        sys.exit()
-    speech()
-    os.system("sudo apt-get install -y --no-install-recommends libpython3.11-dev python3-pycurl python3-geoip python3-whois python3-requests libgeoip1 libgeoip-dev")
-    install(libs)
-    print("\n[UFONET] Setup has been completed!. You can now try to run: ./ufonet\n")
+# Setup call
+setup(
+    name=NAME,
+    version=VERSION,
+    description=DESCRIPTION,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    author=AUTHOR,
+    author_email=AUTHOR_EMAIL,
+    license=LICENSE,
+    python_requires=PYTHON_REQUIRES,
+    packages=find_packages(exclude=("tests", "docs", "examples")),
+    include_package_data=True,
+    install_requires=INSTALL_REQUIRES,
+    entry_points=ENTRY_POINTS,
+    classifiers=CLASSIFIERS,
+    zip_safe=False,
+)
