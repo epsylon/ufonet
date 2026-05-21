@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51

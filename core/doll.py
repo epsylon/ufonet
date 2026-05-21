@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -11,10 +11,7 @@ Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from threading import Thread
 import socket, time, os, base64, re
-try:
-    from urlparse import urlparse
-except:
-    from urllib.parse import urlparse
+from urllib.parse import urlparse
 class Needle(Thread):
     def __init__(self, client, addr, parent):
         Thread.__init__(self)

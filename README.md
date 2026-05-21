@@ -1,4 +1,4 @@
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-welcome_small.png "UFONet Welcome")
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui.png "UFONet Welcome")
 
 ----------
 
@@ -38,10 +38,10 @@ on a direct-connect P2P architecture.
      https://en.wikipedia.org/wiki/Fraggle_attack
 
    - UFORST: 
-     https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood
+     https://en.wikipedia.org/wiki/TCP_reset_attack
 
    - SPRAY: 
-     https://en.wikipedia.org/wiki/DRDOS
+     https://en.wikipedia.org/wiki/Denial-of-service_attack#Reflected_attack
 
    - SMURF: 
      https://en.wikipedia.org/wiki/Smurf_attack
@@ -53,30 +53,82 @@ on a direct-connect P2P architecture.
      https://en.wikipedia.org/wiki/IP_fragmentation_attack
 
    - SNIPER: 
-     https://www.imperva.com/learn/application-security/snmp-reflection/
+     https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol
 
    - TACHYON: 
-     https://www.us-cert.gov/ncas/alerts/TA13-088A
+     https://en.wikipedia.org/wiki/DNS_amplification_attack
 
    - PINGER: 
-     https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/
+     https://en.wikipedia.org/wiki/Ping_flood
 
    - MONLIST: 
-     https://www.us-cert.gov/ncas/alerts/TA14-013A
+     https://en.wikipedia.org/wiki/NTP_server_misuse_and_abuse
 
    - UFOACK: 
-     https://www.f5.com/services/resources/glossary/push-and-ack-flood
+     https://en.wikipedia.org/wiki/Denial-of-service_attack
 
    - OVERLAP: 
-     https://cyberhoot.com/cybrary/fragment-overlap-attack/
+     https://en.wikipedia.org/wiki/IP_fragmentation_attack#Overlapping_fragment_attack
 
    - UFOUDP: 
      https://en.wikipedia.org/wiki/UDP_flood_attack
 
    - NUKE: 
-     https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf
+     https://en.wikipedia.org/wiki/Sockstress
 
-----------
+   - MEMCACHED:
+     https://en.wikipedia.org/wiki/Memcached
+
+   - CHARGEN:
+     https://en.wikipedia.org/wiki/Character_Generator_Protocol
+
+   - CLDAP:
+     https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol
+
+   - SSDP:
+     https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol
+
+   - QOTD:
+     https://en.wikipedia.org/wiki/QOTD
+
+   - TFTP:
+     https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
+
+   - WSDISCO:
+     https://en.wikipedia.org/wiki/WS-Discovery
+
+   - COAP:
+     https://en.wikipedia.org/wiki/Constrained_Application_Protocol
+
+   - MSSQL:
+     https://en.wikipedia.org/wiki/Microsoft_SQL_Server
+
+   - ARMS:
+     https://en.wikipedia.org/wiki/Apple_Remote_Desktop
+
+   - PLEX:
+     https://en.wikipedia.org/wiki/Plex_(software)
+
+   - NETBIOS:
+     https://en.wikipedia.org/wiki/NetBIOS
+
+   - RIPV1:
+     https://en.wikipedia.org/wiki/Routing_Information_Protocol
+
+   - MIDDLEBOX:
+     https://en.wikipedia.org/wiki/Network_middlebox
+
+   - RAPIDRESET:
+     https://en.wikipedia.org/wiki/HTTP/2
+
+   - SLOWREAD:
+     https://en.wikipedia.org/wiki/Slowloris_(software)
+
+   - GOLDENEYE:
+     https://en.wikipedia.org/wiki/Denial-of-service_attack#Application-layer_attacks
+
+   - FINFLOOD:
+     https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_termination
 
 #### Installing:
 
@@ -88,10 +140,16 @@ on a direct-connect P2P architecture.
 
   For manual installation, run:
 
-       sudo apt-get install -y --no-install-recommends libpython3.11-dev python3-pycurl python3-geoip python3-whois python3-cryptography python3-requests libgeoip1 libgeoip-dev
-       python3 -m pip install --upgrade pip --no-warn-script-location --root-user-action=ignore
-       python3 -m pip install pycurl --upgrade --root-user-action=ignore
-       python3 -m pip install GeoIP python-geoip pygeoip requests whois scapy pycryptodomex duckduckgo-search --ignore-installed --root-user-action=ignore
+       sudo apt-get install -y --no-install-recommends libpython3.12-dev python3-pycurl python3-geoip python3-whois python3-requests libgeoip1 libgeoip-dev
+       python3 -m pip install --upgrade pip --no-warn-script-location --root-user-action=ignore --break-system-packages
+       python3 -m pip install pycurl --upgrade --root-user-action=ignore --break-system-packages
+       python3 -m pip install pygeoip requests urllib3 whois scapy pycryptodomex duckduckgo-search dnspython certifi --ignore-installed --root-user-action=ignore --break-system-packages
+
+  If any lib is missing at runtime, UFONet 2.0 will try to auto-install it using pip.
+
+  To run the test suite at any time:
+
+       python3 ufonet --test-ufonet
 
 ----------
 
@@ -104,23 +162,25 @@ in the [LICENSE](./docs/LICENSE) file.
 
 ####  Screenshots (current version!):
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-1.png "UFONet Shell Version")
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-tools-1.png "UFONet Tools 1")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-2.png "UFONet Shell Board")
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-tools-2.png "UFONet Tools 2")
+  
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-shell.png "UFONet GUI Shell")   
+      
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-available-engines.png "UFONet Engines")
+  
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-init.png "UFONet GUI Init")
+  
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-help.png "UFONet GUI Help")
+  
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-board.png "UFONet GUI Board")
+  
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-botnet.png "UFONet GUI Botnet")
+               
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-stats.png "UFONet GUI Stats")
 
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-shell-3.png "UFONet GUI Shell")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-main_small.png "UFONet GUI Main Panel")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-help_small.png "UFONet GUI Help")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-phantom-botnet.png "UFONet GUI Botnet")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-stats.png "UFONet GUI General Stats")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-multiverse-ranking_small.png "UFONet GUI Ranking")
-
-  ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-attack.png "UFONet GUI Attack")
+  ![UFONet](https://ufonet.03c8.net/ufonet/r3dst4r/ufonet-gui-attack.png "UFONet GUI Attack")
 
   ![UFONet](https://ufonet.03c8.net/ufonet/ufonet-kraken-board_small.png "UFONet GUI Board")
 

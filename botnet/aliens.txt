@@ -1,1 +1,1 @@
-https://isitdown.me/check_domain.php;$POST;domain
+<TBD:dork-POST-open-redirect>

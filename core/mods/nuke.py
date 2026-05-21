@@ -3,17 +3,14 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import socket, select, os, time, resource
-try:
-    from urlparse import urlparse
-except:
-    from urllib.parse import urlparse
+from urllib.parse import urlparse
 
 # UFONet TCP Starvation (NUKE)
 def connect(ip, port):
@@ -59,9 +56,9 @@ class NUKE(object):
             try:
                 import dns.resolver
                 r = dns.resolver.Resolver()
-                r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                from core._dns_pool import random_resolvers; r.nameservers = random_resolvers(2)
                 url = urlparse(target)
-                a = r.query(url.netloc, "A") # A record
+                a = r.resolve(url.netloc, "A") # A record
                 for rd in a:
                     ip = str(rd)
             except:

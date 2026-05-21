@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -14,9 +14,12 @@ import time, threading, random
 from .randomip import RandomIP
 try:
     import pycurl
-except:
-    print("\nError importing: pycurl lib. \n\n")
-    sys.exit(2)
+except ImportError:
+    from core._ensure import ensure
+    if ensure('pycurl') is None:
+        print("\nError importing: pycurl lib. \n\n")
+        sys.exit(2)
+    import pycurl
 
 class Zombie: # class representing a zombie
     # constructor: function to construct a zombie 

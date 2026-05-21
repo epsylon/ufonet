@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -81,7 +81,7 @@ class Herd(object):
     # head count (+/- headless zombies)
     # active thread count = 1 principal + 1/zombie
     def no_more_zombies(self):
-        ac=threading.active_count()-1
+        ac=threading.active_count()
         options = self.ufonet.options
         if options.verbose == True:
             if ac>self.living:
@@ -89,7 +89,7 @@ class Herd(object):
                     print("[Info] [AI] [Control] Number of Active [ARMY] returning from battle front: "+ str(ac-self.living))
                     self.ufonet.ac_control.append(ac-self.living)
         with self.lock:
-            return ac==self.living
+            return ac<=self.living
 
     # retrieve result by zombie name
     def get_result(self,zombie):

@@ -126,8 +126,13 @@ function Doll(name){
 	this.asn = data[4]
 	this.ip = data[5]
 	this.hostname = data[6]
+	while(pending_fires.length>0){
+	    var z = pending_fires.shift()
+	    try { z.fire() } catch(e){}
+	}
     }
 }
+var pending_fires = []
 
 // object for each zombie
 function zombieEntry(name,data){
@@ -174,12 +179,17 @@ function zombieEntry(name,data){
 	this.fire()
     }
     this.fire = function(){
-	if(doll){
+	if(typeof doll === 'undefined' || !doll){
+	    return
+	}
+	if(doll.latlong){
 	    var src = this.latlong
 	    var dest = doll.latlong
 	    var b = new R.BezierAnim([src, dest])
 	    map.addLayer(b)
 	    this.drawnLayers.push(b)
+	} else {
+	    pending_fires.push(this)
 	}
     }
     this.makeCustomMarker= function(){
@@ -383,7 +393,7 @@ function initMap (targetdoll=false) {
     }
     osm_sat.addTo(map)
     var baseMaps = {
-	"Sats": osm_sat,
+	"Light": osm_sat,
     }
     //  initializing controls:
     new L.control.layers(baseMaps, null, {collapsed:false}).addTo(map)

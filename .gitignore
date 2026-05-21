@@ -1,2 +1,12 @@
 __pycache__/
 *.py[cod]
+*.swp
+*.swo
+*~
+.DS_Store
+*.tmp
+*.log
+test/results/
+core/json/
+core/txt/shipname.txt
+release/

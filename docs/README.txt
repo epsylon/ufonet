@@ -400,6 +400,29 @@ This will open a tab on your default browser with all features of the tool and s
 ###############################
 
 --------------------------
+20.05.2026 : v.2.0 (R3DST4R!)
+--------------------------
+ + 18 new Extra Attacks:
+   - UDP amplification: MEMCACHED (UDP/11211, ~51000x), CHARGEN (UDP/19, ~358x),
+     CLDAP (UDP/389, ~56x), SSDP (UDP/1900, ~30x), QOTD (UDP/17, ~140x),
+     TFTP (UDP/69, ~60x), WSDISCO (UDP/3702, ~10x), COAP (UDP/5683, ~30x),
+     MSSQL (UDP/1434, ~25x), ARMS (UDP/3283, ~36x), PLEX (UDP/32414, ~5x),
+     NETBIOS (UDP/137, ~3.8x), RIPV1 (UDP/520, ~131x)
+   - Modern TCP/HTTP: RAPIDRESET (HTTP/2 CVE-2023-44487),
+     MIDDLEBOX (TCP CVE-2022, amp >65000x), SLOWREAD, GOLDENEYE, FINFLOOD
+ + Extra Attacks now run STANDALONE (no zombies needed) via -m TARGET,
+   and can be concatenated (ex: -m 'host' --ssdp 50 --loic 50)
+ + 'Extra Attack(s)' help section reordered: DDoS first, DoS second
+ + Auto-install of missing Python libs on first run
+ + Pure-Python public IP detection (OpenDNS DNS reflection + HTTPS fallback)
+ + Pool of 62 public DNS resolvers used at random (ninja mode)
+ + 7 search engines (Bing, DuckDuckGo, Brave, Mojeek, Yahoo, Startpage, Ecosia)
+ + 464 CWE-601 dorks (up from 294)
+ + CDN/WAF detection (Cloudflare/Akamai/CloudFront/Fastly/Sucuri/Imperva/...)
+ + argparse migration (was optparse); '--test-ufonet' runs the test suite
+ + Banner refreshed with R3DST4R red-star insignia
+
+--------------------------
 25.08.2024 : v.1.9
 --------------------------
 

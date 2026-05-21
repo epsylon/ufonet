@@ -3,7 +3,7 @@
 """
 This file is part of the UFONet project, https://ufonet.03c8.net
 
-Copyright (c) 2013/2020 | psy <epsylon@riseup.net>
+Copyright (c) 2013/2026 | psy <epsylon@riseup.net>
 
 You should have received a copy of the GNU General Public License along
 with UFONet; if not, write to the Free Software Foundation, Inc., 51
@@ -16,9 +16,12 @@ from urllib.parse import urlparse as urlparse
 from .main import UFONet
 try:
     import pygeoip
-except:
-    print("\n[Error] [AI] Cannot import lib: pygeoip. \n\n To install it try:\n\n $ 'sudo apt-get install python3-geoip libgeoip-dev libgeoip1'\n")
-    sys.exit(2)
+except ImportError:
+    from core._ensure import ensure
+    if ensure('pygeoip') is None:
+        print("\n[Error] [AI] Cannot import lib: pygeoip. \n\n To install it try:\n\n $ 'sudo apt-get install python3-geoip libgeoip-dev libgeoip1'\n")
+        sys.exit(2)
+    import pygeoip
 
 class AjaxMap(object):
     def __init__(self):
@@ -27,20 +30,34 @@ class AjaxMap(object):
         self._geoasn=None
         self._geoipstatus='nomap'
         self._err=''
+        self.zombies = []
         ufonet = UFONet()
         ufonet.create_options()
         try:
-            self.zombies = ufonet.extract_zombies()
-            aliens_army = ufonet.extract_aliens()
-            droids_army = ufonet.extract_droids()
-            ucavs_army = ufonet.extract_ucavs()
-            rpcs_army = ufonet.extract_rpcs()
-            self.zombies.extend(aliens_army)
-            self.zombies.extend(droids_army)
-            self.zombies.extend(ucavs_army)
-            self.zombies.extend(rpcs_army)
-        except:
-            return
+            _z = ufonet.extract_zombies() or []
+            self.zombies.extend(_z)
+        except Exception:
+            pass
+        for _fn in (ufonet.extract_aliens, ufonet.extract_droids, ufonet.extract_ucavs,
+                    ufonet.extract_rpcs, ufonet.extract_ntps, ufonet.extract_dnss,
+                    ufonet.extract_snmps):
+            try:
+                _v = _fn() or []
+                self.zombies.extend(_v)
+            except Exception:
+                pass
+        for _fpath in ('botnet/memcached.txt', 'botnet/chargen.txt', 'botnet/cldap.txt',
+                       'botnet/ssdp.txt', 'botnet/qotd.txt', 'botnet/tftp.txt',
+                       'botnet/wsdisco.txt', 'botnet/coap.txt', 'botnet/mssql.txt',
+                       'botnet/arms.txt', 'botnet/plex.txt', 'botnet/netbios.txt',
+                       'botnet/ripv1.txt', 'botnet/middlebox.txt'):
+            try:
+                from core._botnet import load_botnet_file
+                _entries, _empty, _all_ph = load_botnet_file(_fpath)
+                if _entries and not _empty and not _all_ph:
+                    self.zombies.extend(_entries)
+            except Exception:
+                pass
 
     def get_err(self):
         return self._err
@@ -142,8 +159,8 @@ class AjaxMap(object):
             try:
                 import dns.resolver
                 r = dns.resolver.Resolver()
-                r.nameservers = ['8.8.8.8', '8.8.4.4'] # google DNS resolvers
-                a = r.query(url.netloc, "A") # A record
+                from core._dns_pool import random_resolvers; r.nameservers = random_resolvers(2)
+                a = r.resolve(url.netloc, "A") # A record
                 for rd in a:
                     ip = str(rd)
             except:
@@ -246,8 +263,14 @@ class AjaxMap(object):
             target = self.geo_ip(tn)
             if target is None:
                 return "doll waiting for geoip data !"
+            try:
+                _lat = float(target['latitude'])
+                _lon = float(target['longitude'])
+            except (ValueError, TypeError):
+                _lat = 0.0
+                _lon = 0.0
             return """ doll up !<script>
-doll.setData(Array(new L.LatLng("""+str(target['latitude'])+","+str(target['longitude'])+"),'"+target['city']+"','"+target['country']+"','"+target['country_code']+"','"+target['asn']+"','"+target['ip']+"','"+target['host_name']+"'))\nufomsg('[Info] Adding target: """+tn+"""...')\ndoll.show() </script>"""
+doll.setData(Array(new L.LatLng("""+str(_lat)+","+str(_lon)+"),'"+target['city']+"','"+target['country']+"','"+target['country_code']+"','"+target['asn']+"','"+target['ip']+"','"+target['host_name']+"'))\nufomsg('[Info] Adding target: """+tn+"""...')\ndoll.show() </script>"""
         if 'doll' in list(pGet.keys()):
             tn=pGet['doll']
             return """<script>

