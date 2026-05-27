@@ -589,6 +589,9 @@ class UFONet(object):
             self.create_options(opts)
         options = self.options
 
+        options.download = False
+        options.upload = False
+
         # start threads
         if not self.options.threads:
             self.options.threads=5 # default number of threads
@@ -1361,6 +1364,8 @@ class UFONet(object):
                     print("[Info] [AI] NOT any NEW possible zombies found -> [Exiting!]\n")
             except Exception:
                 print(("\n[Error] [AI] Something wrong searching using: "+engine+"\n"))
+                if DEBUG == True:
+                    traceback.print_exc()
 
         # search for [Zombies] from a list of [Dorks]
         if options.dorks:
@@ -2029,8 +2034,6 @@ class UFONet(object):
                 print("\n[AI] Something was wrong generating [Grider]... -> [Aborting!]\n")
 
         # download list of [Zombies] from a [Blackhole] IP
-        options.download = False
-        options.upload = False
         if options.dip is not None:
             options.download = True
             self.blackhole = options.dip
