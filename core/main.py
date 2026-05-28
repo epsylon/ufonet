@@ -1529,7 +1529,18 @@ class UFONet(object):
             except:
                 print("\n[Info] [AI] Not any dork present at: 'botnet/dorks.txt' -> [Aborting!]\n")
                 return
-            engines_list = self.search_engines
+            engines_list = list(self.search_engines)
+            if options.engine:
+                sel = options.engine.lower()
+                if sel in engines_list:
+                    engines_list = [sel]
+                else:
+                    print("\n[Info] [AI] Search engine '"+str(options.engine)+"' not supported -> [Using all engines!]\n")
+            if options.ex_engine:
+                for ex in options.ex_engine.split(","):
+                    ex = ex.lower().strip()
+                    if ex in engines_list and len(engines_list) > 1:
+                        engines_list.remove(ex)
             stop_flag = False # use a flag to establish an end
             try:
                 self.banner()
@@ -1575,7 +1586,7 @@ class UFONet(object):
                     restored = lf.readlines()
                     lf.close()
                     zombies_restored = len(restored)
-                    for e in engines_list:
+                    for e in list(engines_list):
                         zombies_counter = 0 # use it also as (engine) flag
                         engine = e
                         self.options.engine = engine
@@ -1588,6 +1599,8 @@ class UFONet(object):
                             print('='*22 + '\n')
                             try:
                                 dorked_zombies = self.search_zombies(dork, zombies_found) # AI mode
+                                if dorked_zombies is None:
+                                    break
                                 for zombie in dorked_zombies:
                                     if zombie not in zombies_found: # evade repetitions for zombies found
                                         zombies_found.append(zombie)
@@ -2080,6 +2093,9 @@ class UFONet(object):
 
     # starting new zombie thread
     def connect_zombies(self, zombie):
+        max_alive = (self.options.threads or 5) + 50
+        while (threading.active_count() - self.herd.living) >= max_alive:
+            time.sleep(0.05)
         z=Zombie(self, zombie)
         t = threading.Thread(target=z.connect, name=zombie)
         t.start()
